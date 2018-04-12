@@ -1,0 +1,36 @@
+.scroll-pane > .viewport {
+   -fx-background-color: transparent;
+}
+.root,Scene,HBox,VBox,Pane{
+	-fx-background-color: #323232;
+}
+
+#selected{
+	-fx-background-color: red;
+}
+ScrollPane{
+	-fx-background-color: #424242
+}
+TextField{
+	-fx-text-fill: white;
+	-fx-background-color: #424242;
+}
+.button {
+    -fx-text-fill: white;
+    -fx-font-family: "Arial Narrow";
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(#61a2b1, #2A5058);
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(#2A5058, #61a2b1);
+}
+
+Scene, VBox, HBox, ScrollPane {
+	-fx-background-color: #323232;
+}
+
+CustomLabel {
+	-fx-text-fill: #ffffff;
+}
