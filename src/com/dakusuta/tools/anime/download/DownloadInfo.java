@@ -174,6 +174,10 @@ public class DownloadInfo implements Runnable {
 		if (tmp.exists()) tmp.delete();
 		return size;
 	}
+	
+	void setStatus(Status status) {
+		this.status=status;
+	}
 
 	// Download file.
 	public void run() {
@@ -183,7 +187,7 @@ public class DownloadInfo implements Runnable {
 
 			ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
 			File files[] = new File[MAX_THREAD];
-			for (int i = 0; i < MAX_THREAD; i++) {
+			for (int i = 0; i < segments.size(); i++) {
 				String fName = fileName + ".part" + (i + 1);
 				RandomAccessFile file = new RandomAccessFile(fName, "rw");
 				files[i] = new File(fName);

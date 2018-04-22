@@ -122,7 +122,8 @@ public class MainFXMLController implements DownloadObserver {
 			previous.setDisable(false);
 			next.setDisable(false);
 		}
-		list.getChildren().addAll(episodes);
+		current = last;
+		loadEpisodes(last);
 	}
 
 	private void loadEpisodes(int page) {
@@ -150,16 +151,16 @@ public class MainFXMLController implements DownloadObserver {
 
 	@FXML
 	protected void previous(ActionEvent event) {
-		if (current > 1) {
-			current--;
+		if (current < last) {
+			current++;
 			loadEpisodes(current);
 		}
 	}
 
 	@FXML
 	protected void next(ActionEvent event) {
-		if (current < last) {
-			current++;
+		if (current > 1) {
+			current--;
 			loadEpisodes(current);
 		}
 	}
@@ -278,31 +279,31 @@ public class MainFXMLController implements DownloadObserver {
 
 	@Override
 	public void paused(DownloadInfo download) {
-		 tableView.refresh();
+		tableView.refresh();
 
 	}
 
 	@Override
 	public void finished(DownloadInfo download) {
-		 tableView.refresh();
+		tableView.refresh();
 
 	}
 
 	@Override
 	public void error(DownloadInfo download) {
-		 tableView.refresh();
+		tableView.refresh();
 
 	}
 
 	@Override
 	public void resumed(DownloadInfo download) {
-		 tableView.refresh();
+		tableView.refresh();
 
 	}
 
 	@Override
 	public void cancelled(DownloadInfo download) {
-		 tableView.refresh();
+		tableView.refresh();
 
 	}
 
@@ -314,7 +315,7 @@ public class MainFXMLController implements DownloadObserver {
 
 	@Override
 	public void downloading(DownloadInfo download, double progress) {
-		 tableView.refresh();
+		tableView.refresh();
 	}
 
 }
