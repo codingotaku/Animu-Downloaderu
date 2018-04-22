@@ -33,6 +33,7 @@ public class DownloadInfo implements Runnable {
 			} else observer.downloading(info, getDownloaded());
 		}
 	};
+	private String animeName;
 
 	// For tracking download progress
 	private synchronized void addDownloaded(int count) {
@@ -48,6 +49,7 @@ public class DownloadInfo implements Runnable {
 			observer.error(this);
 			e.printStackTrace();
 		}
+		animeName = tmpUrl.substring(tmpUrl.lastIndexOf("/") + 1, tmpUrl.indexOf("episode") - 1);
 		fileName = "";
 		size = -1;
 		downloaded = 0;
@@ -235,7 +237,10 @@ public class DownloadInfo implements Runnable {
 
 		fileName = url.getFile();
 		fileName = fileName.substring(fileName.lastIndexOf('/') + 1, fileName.indexOf('?'));
-		fileName = "C:\\Users\\rahul\\Downloads\\files\\" + fileName;
+		String home = System.getProperty("user.home");
+		String folder = home + "/Downloads/" + animeName;
+		new File(folder).mkdir();
+		fileName = folder + "/" + fileName;
 	}
 
 	// Merge all downloaded segments
