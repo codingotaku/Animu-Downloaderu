@@ -1,4 +1,4 @@
-package com.dakusuta.tools.anime.downloader;
+package com.dakusuta.tools.anime.custom;
 
 import org.jsoup.nodes.Element;
 

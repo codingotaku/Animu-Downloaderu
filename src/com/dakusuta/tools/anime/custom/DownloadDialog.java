@@ -1,6 +1,9 @@
-package com.dakusuta.tools.anime.downloader;
+package com.dakusuta.tools.anime.custom;
 
 import java.util.List;
+
+import com.dakusuta.tools.anime.Main;
+import com.dakusuta.tools.anime.util.Utils;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -13,7 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.util.Pair;
 
 public class DownloadDialog extends Dialog<Pair<Integer, Integer>> {
-	DownloadDialog(List<CustomLabel> episodes) {
+	public DownloadDialog(List<CustomLabel> episodes) {
 		setTitle("Select episodes to download");
 
 		ButtonType buttonType = new ButtonType("OK", ButtonData.OK_DONE);

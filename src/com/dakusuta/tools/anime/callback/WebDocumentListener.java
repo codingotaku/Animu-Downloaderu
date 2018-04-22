@@ -1,4 +1,4 @@
-package com.dakusuta.tools.anime.downloader;
+package com.dakusuta.tools.anime.callback;
 
 import java.lang.reflect.Field;
 
@@ -10,6 +10,11 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.web.WebEngine;
 
+/**
+ * @author Rahul S<br>
+ *         Just a UI hack for WebView (Used for displaying anime summary) to add
+ *         dark theme
+ */
 public class WebDocumentListener implements ChangeListener<Document> {
 
 	private final WebEngine webEngine;
