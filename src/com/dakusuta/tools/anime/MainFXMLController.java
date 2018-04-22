@@ -295,7 +295,7 @@ public class MainFXMLController implements DownloadObserver {
 	}
 
 	@Override
-	public void resume(DownloadInfo download) {
+	public void resumed(DownloadInfo download) {
 		 tableView.refresh();
 
 	}

@@ -66,8 +66,8 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	@Override
-	public void resume(DownloadInfo downloadInfo) {
-		observer.resume(downloadInfo);
+	public void resumed(DownloadInfo downloadInfo) {
+		observer.resumed(downloadInfo);
 	}
 
 	@Override
@@ -83,6 +83,8 @@ public class DownloadManager implements DownloadObserver {
 
 	@Override
 	public void error(DownloadInfo downloadInfo) {
+		downloads.remove(downloadInfo);
+		queue.add(downloadInfo);
 		startNextDownload();
 		observer.error(downloadInfo);
 	}
@@ -94,37 +96,72 @@ public class DownloadManager implements DownloadObserver {
 
 	@Override
 	public void finished(DownloadInfo downloadInfo) {
+		downloads.remove(downloadInfo);
 		startNextDownload();
 		observer.finished(downloadInfo);
 	}
 
 	public void cancelAll() {
 		globalStop = true;
-		downloads.forEach(download -> download.cancel());
-		queue.forEach(download -> download.cancel());
+		for (int i = downloads.size() - 1; i > -1; i--) {
+			DownloadInfo info = downloads.get(i);
+			if (info.getStatus() == Status.DOWNLOADING) {
+				info.cancel();
+				downloads.remove(info);
+			}
+		}
 	}
 
 	public void pauseAll() {
 		globalStop = true;
-		downloads.forEach(download -> download.pause());
-		queue.forEach(download -> download.pause());
+		for (int i = downloads.size() - 1; i > -1; i--) {
+			DownloadInfo info = downloads.get(i);
+			if (info.getStatus() == Status.DOWNLOADING) {
+				info.pause();
+				downloads.remove(info);
+				queue.add(0, info);
+			}
+		}
 	}
 
 	public void resumeAll() {
 		globalStop = false;
-		downloads.forEach(download -> download.resume());
+		int last = queue.size() > 3 ? 3 : queue.size();
+		for (int i = last; i > -1; i--) {
+			DownloadInfo info = queue.get(i);
+			if (downloads.size() < 4 && queue.contains(info) && info.getStatus() == Status.PAUSED) {
+				info.resume();
+				queue.remove(info);
+				downloads.add(info);
+			}
+		}
+
 		startNextDownload();
 	}
 
 	public void retryAll() {
 		globalStop = false;
-		downloads.forEach(download -> download.retry());
+		for (int i = queue.size() - 1; i > -1; i--) {
+			DownloadInfo info = queue.get(i);
+			if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
+				if (!downloads.contains(info)) downloads.add(info);
+				if (queue.contains(info)) queue.remove(info);
+				info.retry();
+			}
+		}
 		startNextDownload();
 	}
 
 	public void restartAll() {
 		globalStop = false;
-		downloads.forEach(download -> download.restart());
+		for (int i = queue.size() - 1; i > -1; i--) {
+			DownloadInfo info = queue.get(i);
+			if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
+				if (!downloads.contains(info)) downloads.add(info);
+				if (queue.contains(info)) queue.remove(info);
+				info.restart();
+			}
+		}
 		startNextDownload();
 	}
 
@@ -133,15 +170,17 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	private void startDownload(DownloadInfo downloadInfo) {
-		String url = getDownload(downloadInfo);
-		if (url != null) {
-			URL verifiedUrl = verifyUrl(url);
-			if (verifiedUrl != null) {
-				downloadInfo.setUrl(verifiedUrl);
-				downloadInfo.startDownload();
-				addDownload(downloadInfo);
+		if (downloadInfo.getSize() == -1) {
+			String url = getDownload(downloadInfo);
+			if (url != null) {
+				URL verifiedUrl = verifyUrl(url);
+				if (verifiedUrl != null) {
+					downloadInfo.setUrl(verifiedUrl);
+				}
 			}
 		}
+		downloadInfo.startDownload();
+		addDownload(downloadInfo);
 	}
 
 	private URL verifyUrl(String url) {
@@ -164,14 +203,18 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	private void startNextDownload() {
+		if (globalStop) return;
+		for (int i = downloads.size() - 1; i >= 0; i--) {
+			DownloadInfo download = downloads.get(i);
+			if (download.getStatus() != Status.DOWNLOADING) downloads.remove(i);
+		}
+
 		if (downloads.size() > 3) {
 			for (int i = downloads.size() - 1; i >= 3; i--) {
-				downloads.get(i).pause();
-				queue.add(downloads.get(i));
-				downloads.remove(i);
+				pause(downloads.get(i));
 			}
 		}
-		if (!globalStop && !queue.isEmpty() && downloads.size() < 3) {
+		if (!queue.isEmpty() && downloads.size() < 3) {
 			startDownload(queue.get(0));
 			queue.remove(0);
 		}
@@ -196,4 +239,41 @@ public class DownloadManager implements DownloadObserver {
 		return null;
 	}
 
+	public void pause(DownloadInfo info) {
+		if (info.getStatus() == Status.DOWNLOADING) {
+			info.pause();
+			queue.add(0, info);
+			downloads.remove(info);
+		}
+	}
+
+	public void resume(DownloadInfo info) {
+		if (downloads.size() < 4 && queue.contains(info) && info.getStatus() == Status.PAUSED) {
+			info.resume();
+			queue.remove(info);
+		}
+	}
+
+	public void cancel(DownloadInfo info) {
+		if (info.getStatus() == Status.DOWNLOADING) {
+			info.cancel();
+			downloads.remove(info);
+		}
+	}
+
+	public void retry(DownloadInfo info) {
+		if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
+			if (!downloads.contains(info)) downloads.add(info);
+			if (queue.contains(info)) queue.remove(info);
+			info.retry();
+		}
+	}
+
+	public void restart(DownloadInfo info) {
+		if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
+			if (!downloads.contains(info)) downloads.add(info);
+			if (queue.contains(info)) queue.remove(info);
+			info.restart();
+		}
+	}
 }

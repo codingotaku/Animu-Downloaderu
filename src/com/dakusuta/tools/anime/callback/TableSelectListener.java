@@ -51,13 +51,13 @@ public class TableSelectListener implements Callback<TableView<DownloadInfo>, Ta
 	private void initListeners(TableView<DownloadInfo> view, DownloadInfo info) {
 		// Add for selected row (add nothing if the row is empty)
 		if (info != null) {
-			pause.setOnAction(e -> info.pause());
-			resume.setOnAction(e -> info.resume());
-			cancel.setOnAction(e -> info.cancel());
-			retry.setOnAction(e -> info.retry());
-			restart.setOnAction(e -> info.restart());
+			pause.setOnAction(e -> manager.pause(info));
+			resume.setOnAction(e -> manager.resume(info));
+			cancel.setOnAction(e -> manager.cancel(info));
+			retry.setOnAction(e -> manager.retry(info));
+			restart.setOnAction(e -> manager.restart(info));
 			delete.setOnAction(e -> {
-				info.cancel();
+				manager.cancel(info);
 				view.getItems().remove(info);
 			});
 		}

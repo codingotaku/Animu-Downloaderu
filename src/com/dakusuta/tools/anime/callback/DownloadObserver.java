@@ -14,7 +14,7 @@ public interface DownloadObserver {
 
 	public void error(DownloadInfo download);
 
-	public void resume(DownloadInfo download);
+	public void resumed(DownloadInfo download);
 
 	public void cancelled(DownloadInfo download);
 

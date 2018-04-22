@@ -102,7 +102,7 @@ public class DownloadInfo implements Runnable {
 			return;
 		}
 		status = Status.DOWNLOADING;
-		observer.resume(this);
+		observer.resumed(this);
 		download();
 	}
 
