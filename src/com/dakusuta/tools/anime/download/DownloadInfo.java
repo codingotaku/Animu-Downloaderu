@@ -11,6 +11,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 
 // This class downloads a file from a URL.
@@ -34,6 +39,7 @@ public class DownloadInfo implements Runnable {
 		}
 	};
 	private String animeName;
+	private String pageUrl;
 
 	// For tracking download progress
 	private synchronized void addDownloaded(int count) {
@@ -41,15 +47,16 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Constructor for Download.
-	public DownloadInfo(String tmpUrl, DownloadObserver observer) {
+	public DownloadInfo(String pageUrl, DownloadObserver observer) {
 		this.observer = observer;
 		try {
-			this.url = new URL(tmpUrl);
+			this.pageUrl = pageUrl;
+			this.url = new URL(pageUrl);
 		} catch (MalformedURLException e) {
 			observer.error(this);
 			e.printStackTrace();
 		}
-		animeName = tmpUrl.substring(tmpUrl.lastIndexOf("/") + 1, tmpUrl.indexOf("episode") - 1);
+		animeName = pageUrl.substring(pageUrl.lastIndexOf("/") + 1, pageUrl.indexOf("episode") - 1);
 		fileName = "";
 		size = -1;
 		downloaded = 0;
@@ -59,8 +66,38 @@ public class DownloadInfo implements Runnable {
 
 	// Begin the download.
 	public void startDownload() {
+		if (size == -1) {
+			String url = generateDownloadUrl();
+			URL verifiedUrl = verifyUrl(url);
+			if (verifiedUrl != null) {
+				setUrl(verifiedUrl);
+			} else {
+				error();
+				return;
+			}
+		}
 		status = Status.DOWNLOADING;
 		download();
+	}
+
+	private URL verifyUrl(String url) {
+		if (url == null) return null;
+		// Only allow HTTP URLs.
+		if (!url.toLowerCase().startsWith("http://")) return null;
+
+		// Verify format of URL.
+		URL verifiedUrl = null;
+		try {
+			verifiedUrl = new URL(url);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		// Make sure URL specifies a file.
+		if (verifiedUrl.getFile().length() < 2) return null;
+
+		return verifiedUrl;
 	}
 
 	// Get this download's URL.
@@ -109,7 +146,8 @@ public class DownloadInfo implements Runnable {
 	// Cancel this download.
 	public void cancel() {
 		status = Status.CANCELLED;
-		segments.clear(); // So that download will start from the beginning next time
+		segments.clear();
+		// So that download will start from the beginning next time
 		// Delete all segment files
 
 		for (int i = 0; i < MAX_THREAD; i++) {
@@ -155,7 +193,6 @@ public class DownloadInfo implements Runnable {
 		}
 
 		if (!segments.isEmpty()) return size - downloaded;
-
 		int partLen = size / MAX_THREAD;
 		int start = 0;
 		int end = partLen;
@@ -174,9 +211,9 @@ public class DownloadInfo implements Runnable {
 		if (tmp.exists()) tmp.delete();
 		return size;
 	}
-	
+
 	void setStatus(Status status) {
-		this.status=status;
+		this.status = status;
 	}
 
 	// Download file.
@@ -273,7 +310,7 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Set download URL
-	public void setUrl(URL url) {
+	private void setUrl(URL url) {
 		this.url = url;
 	}
 
@@ -283,11 +320,42 @@ public class DownloadInfo implements Runnable {
 	}
 
 	public void retry() {
-		if (status == Status.ERROR) startDownload();
+		if (status == Status.ERROR) {
+			String url = generateDownloadUrl();
+			if (url != null) {
+				URL verifiedUrl = verifyUrl(url);
+				if (verifiedUrl != null) {
+					setUrl(verifiedUrl);
+				}
+			}
+			status = Status.DOWNLOADING;
+			download();
+		}
 	}
 
 	public void restart() {
 		cancel();
+		downloaded = 0;
+
 		startDownload();
+	}
+
+	private String generateDownloadUrl() {
+		try {
+			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
+			Elements iframes = doc.select("iframe[src^=http://]");
+			for (Element iframe : iframes) {
+				Document source;
+				source = Jsoup.parse(new URL(iframe.attr("src")), 60000);
+				String lines[] = source.data().split("\\r?\\n");
+				for (String line : lines) {
+					if (line.contains("file: \"http://gateway"))
+						return line.replace("file: \"", "").replace("\",", "").trim();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

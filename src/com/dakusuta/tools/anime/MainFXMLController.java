@@ -34,7 +34,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -91,7 +90,7 @@ public class MainFXMLController implements DownloadObserver {
 		} else {
 			webEngine.loadContent("<body style=\"background-color:#424242;\"");
 			showEpisodes.setDisable(true);
-			search(null);
+			search(search.getText());
 			showEpisodes.setText("Show Episodes");
 		}
 	}
@@ -100,30 +99,35 @@ public class MainFXMLController implements DownloadObserver {
 		episodes.clear();
 		list.getChildren().clear();
 
-		Elements div = selectedDoc.select("div.postlist");
-		Elements elements = div.select("a");
-
-		elements.forEach(element -> episodes.add(new CustomLabel(element)));
 		current = last = 1;
 
 		Elements navBar = selectedDoc.select("a.last");
+		String tmp;
 		if (navBar.size() == 0) {
-			list.getChildren().addAll(episodes);
-			return;
-		}
+			navBar = selectedDoc.select("a.page");
+			if (navBar.size() == 0) {
+				Elements div = selectedDoc.select("div.postlist");
+				Elements elements = div.select("a");
+				elements.forEach(element -> episodes.add(new CustomLabel(element)));
+				list.getChildren().addAll(episodes);
+				return;
+			}
+			last = getPageNum(navBar.last().attr("href"));
+			tmp = navBar.last().attr("href");
+		} else tmp = navBar.first().attr("href");
 
-		String tmp = navBar.first().attr("href");
 		String url = tmp.substring(0, tmp.lastIndexOf('/'));
-		tmp = tmp.substring(tmp.lastIndexOf('/') + 1);
-
-		last = Integer.parseInt(tmp);
+		last = getPageNum(tmp);
 		epUrl = url + "/";
-		if (last > 1) {
-			previous.setDisable(false);
-			next.setDisable(false);
-		}
 		current = last;
+
+		next.setDisable(false);
 		loadEpisodes(last);
+	}
+
+	private int getPageNum(String path) {
+		path = path.substring(path.lastIndexOf('/') + 1);
+		return Integer.parseInt(path);
 	}
 
 	private void loadEpisodes(int page) {
@@ -153,7 +157,9 @@ public class MainFXMLController implements DownloadObserver {
 	protected void previous(ActionEvent event) {
 		if (current < last) {
 			current++;
+			if (current == last) previous.setDisable(true);
 			loadEpisodes(current);
+			next.setDisable(false);
 		}
 	}
 
@@ -162,6 +168,8 @@ public class MainFXMLController implements DownloadObserver {
 		if (current > 1) {
 			current--;
 			loadEpisodes(current);
+			if (current == 1) next.setDisable(true);
+			previous.setDisable(false);
 		}
 	}
 
@@ -246,16 +254,16 @@ public class MainFXMLController implements DownloadObserver {
 		status.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Status>("status"));
 
 		tableView.setRowFactory(new TableSelectListener());
-
 		loadAnime();
 
+		search.textProperty().addListener((observable, oldValue, newValue) -> {
+			search(newValue);
+		});
 	}
 
-	@FXML
-	protected void search(KeyEvent e) {
+	private void search(String text) {
 		showEpisodes.setDisable(true);
 		download.setDisable(true);
-		String text = search.getText();
 		previous.setDisable(true);
 		next.setDisable(true);
 		if (!(animeList.isEmpty())) {

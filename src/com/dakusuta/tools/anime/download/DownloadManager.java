@@ -3,14 +3,7 @@
  */
 package com.dakusuta.tools.anime.download;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 
@@ -62,7 +55,6 @@ public class DownloadManager implements DownloadObserver {
 	@Override
 	public void paused(DownloadInfo info) {
 		observer.paused(info);
-		startNextDownload();
 	}
 
 	@Override
@@ -184,36 +176,8 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	private void startDownload(DownloadInfo downloadInfo) {
-		if (downloadInfo.getSize() == -1) {
-			String url = getDownload(downloadInfo);
-			if (url != null) {
-				URL verifiedUrl = verifyUrl(url);
-				if (verifiedUrl != null) {
-					downloadInfo.setUrl(verifiedUrl);
-				}
-			}
-		}
 		downloadInfo.startDownload();
 		addDownload(downloadInfo);
-	}
-
-	private URL verifyUrl(String url) {
-		// Only allow HTTP URLs.
-		if (!url.toLowerCase().startsWith("http://")) return null;
-
-		// Verify format of URL.
-		URL verifiedUrl = null;
-		try {
-			verifiedUrl = new URL(url);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-
-		// Make sure URL specifies a file.
-		if (verifiedUrl.getFile().length() < 2) return null;
-
-		return verifiedUrl;
 	}
 
 	private void startNextDownload() {
@@ -246,36 +210,17 @@ public class DownloadManager implements DownloadObserver {
 		}
 	}
 
-	private String getDownload(DownloadInfo downloadInfo) {
-		try {
-			Document doc = Jsoup.parse(new URL(downloadInfo.getUrl()), 60000);
-			Elements iframes = doc.select("iframe[src^=http://]");
-			for (Element iframe : iframes) {
-				Document source;
-				source = Jsoup.parse(new URL(iframe.attr("src")), 60000);
-				String lines[] = source.data().split("\\r?\\n");
-				for (String line : lines) {
-					if (line.contains("file: \"http://gateway"))
-						return line.replace("file: \"", "").replace("\",", "").trim();
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	public void pause(DownloadInfo info) {
 		if (info.getStatus() == Status.DOWNLOADING) {
 			queue.add(info);
 			downloads.remove(info);
 			info.pause();
-
 		}
+		startNextDownload();
 	}
 
 	public void resume(DownloadInfo info) {
-		if (downloads.size() < 3) {
+		if (downloads.size() < 4) {
 			if (queue.contains(info) && info.getStatus() == Status.PAUSED) {
 				info.resume();
 				queue.remove(info);
@@ -296,7 +241,7 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	public void retry(DownloadInfo info) {
-		if (downloads.size() < 3) {
+		if (downloads.size() < 4) {
 			if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
 				if (!downloads.contains(info)) downloads.add(info);
 				if (queue.contains(info)) queue.remove(info);
@@ -309,7 +254,7 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	public void restart(DownloadInfo info) {
-		if (downloads.size() < 3) {
+		if (downloads.size() < 4) {
 			if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
 				if (!downloads.contains(info)) downloads.add(info);
 				if (queue.contains(info)) queue.remove(info);

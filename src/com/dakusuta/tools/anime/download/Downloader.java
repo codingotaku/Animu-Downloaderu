@@ -47,7 +47,7 @@ public class Downloader implements Runnable {
 				httpURLConnection.setRequestProperty("Range", "bytes=" + segment.start + "-" + segment.end);
 
 				httpURLConnection.connect();
-				file.seek(0);
+				file.seek(segment.start);
 
 				InputStream is = httpURLConnection.getInputStream();
 

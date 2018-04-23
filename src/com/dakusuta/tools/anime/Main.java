@@ -12,9 +12,9 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-	private static final int WIDTH = 1000;
-	private static final int HEIGHT = 700;
-
+	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
+	private static final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.75;
+	
 	@Override
 	public void start(Stage primaryStage) {
 		try {

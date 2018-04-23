@@ -13,6 +13,7 @@
 <?import javafx.scene.web.WebView?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
+<?import com.dakusuta.tools.anime.custom.CustomTableColumn?>
 
 <AnchorPane
 	fx:controller="com.dakusuta.tools.anime.MainFXMLController"
@@ -45,8 +46,9 @@
 	</ScrollPane>
 
 	<WebView fx:id="webView" AnchorPane.topAnchor="35.0"
+		
 		AnchorPane.leftAnchor="320.0" AnchorPane.rightAnchor="10.0"
-		AnchorPane.bottomAnchor="400.0" />
+		AnchorPane.bottomAnchor="250.0" />
 
 	<Button fx:id="showEpisodes" text="Show Episodes" disable="true"
 		onAction="#showEpisodes" AnchorPane.topAnchor="300.0"
@@ -61,12 +63,12 @@
 		</placeholder>
 
 		<columns>
-			<TableColumn editable="false" prefWidth="100" fx:id="fileName"  text="File Name" />
-			<TableColumn editable="false" prefWidth="150" fx:id="url" text="Url"  />
-			<TableColumn editable="false" prefWidth="100" fx:id="size" text="Size (bytes)" />
-			<TableColumn editable="false" prefWidth="150" fx:id="downloaded" text="Downloaded (bytes)" />
-			<TableColumn editable="false" prefWidth="150" fx:id="progress" text="Progess"/>
-			<TableColumn editable="false" prefWidth="100" fx:id="status" text="Status"/>
+			<CustomTableColumn editable="false" widthPercentage="0.15" sortable="true" fx:id="fileName"  text="File Name" />
+			<CustomTableColumn editable="false" widthPercentage="0.20" sortable="false" fx:id="url" text="Url"  />
+			<CustomTableColumn editable="false" widthPercentage="0.10" sortable="true" fx:id="size" text="Size" />
+			<CustomTableColumn editable="false" widthPercentage="0.15" sortable="false" fx:id="downloaded" text="Downloaded" />
+			<CustomTableColumn editable="false" widthPercentage="0.30" sortable="false" fx:id="progress" text="Progess"/>
+			<CustomTableColumn editable="false" widthPercentage="0.10" sortable="true" fx:id="status" text="Status"/>
 		</columns>
 	</TableView>
 </AnchorPane>
