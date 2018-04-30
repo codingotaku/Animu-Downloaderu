@@ -48,7 +48,7 @@
 	<WebView fx:id="webView" AnchorPane.topAnchor="35.0"
 
 		AnchorPane.leftAnchor="320.0" AnchorPane.rightAnchor="10.0"
-		AnchorPane.bottomAnchor="250.0" />
+		AnchorPane.bottomAnchor="250.0"/>
 
 	<Button fx:id="showEpisodes" text="Show Episodes" disable="true"
 		onAction="#showEpisodes" AnchorPane.topAnchor="300.0"

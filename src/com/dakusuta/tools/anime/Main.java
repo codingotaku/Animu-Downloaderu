@@ -18,11 +18,11 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"));
+			Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
 			Scene scene = new Scene(root, WIDTH, HEIGHT);
 			primaryStage.setMinWidth(WIDTH);
 			primaryStage.setMinHeight(HEIGHT);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
 			primaryStage.setTitle("Animu Downloaderu");
 			primaryStage.setScene(scene);
 			primaryStage.setOnCloseRequest(e->DownloadManager.getInstance().pauseAll());

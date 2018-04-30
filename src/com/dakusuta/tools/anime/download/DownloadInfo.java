@@ -21,13 +21,17 @@ import com.dakusuta.tools.anime.callback.DownloadObserver;
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
 	private static final int MAX_THREAD = 8; // Maximum threads allowed for each download
-	DownloadObserver observer = null; // Callback for download status
-
-	ArrayList<Segment> segments = new ArrayList<>(); // Download segments
-	private String fileName; // Download file name
-	private URL url; // Download URL
 	private int size; // Size of download in bytes
 	private int downloaded; // Number of bytes downloaded
+	
+	private ArrayList<Segment> segments = new ArrayList<>(); // Download segments
+	
+	private DownloadObserver observer = null; // Callback for download status
+	private String fileName; // Download file name
+	private String animeName;
+	private String pageUrl;
+	
+	private URL url; // Download URL
 	private Status status; // Current status of download
 	private Callback callBack = new Callback(this) {
 		@Override
@@ -38,8 +42,7 @@ public class DownloadInfo implements Runnable {
 			} else observer.downloading(info, getDownloaded());
 		}
 	};
-	private String animeName;
-	private String pageUrl;
+	
 
 	// For tracking download progress
 	private synchronized void addDownloaded(int count) {
@@ -66,15 +69,13 @@ public class DownloadInfo implements Runnable {
 
 	// Begin the download.
 	public void startDownload() {
-		if (size == -1) {
-			String url = generateDownloadUrl();
-			URL verifiedUrl = verifyUrl(url);
-			if (verifiedUrl != null) {
-				setUrl(verifiedUrl);
-			} else {
-				error();
-				return;
-			}
+		String url = generateDownloadUrl();
+		URL verifiedUrl = verifyUrl(url);
+		if (verifiedUrl != null) {
+			setUrl(verifiedUrl);
+		} else {
+			error();
+			return;
 		}
 		status = Status.DOWNLOADING;
 		download();
@@ -165,7 +166,7 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Start or resume downloading.
-	public void download() {
+	private void download() {
 		Thread thread = new Thread(this);
 		thread.start();
 	}

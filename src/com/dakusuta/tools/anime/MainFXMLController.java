@@ -15,7 +15,6 @@ import org.jsoup.select.Elements;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 import com.dakusuta.tools.anime.callback.TableSelectListener;
-import com.dakusuta.tools.anime.callback.WebDocumentListener;
 import com.dakusuta.tools.anime.custom.CustomLabel;
 import com.dakusuta.tools.anime.custom.DownloadDialog;
 import com.dakusuta.tools.anime.custom.LoadDialog;
@@ -88,7 +87,7 @@ public class MainFXMLController implements DownloadObserver {
 			download.setDisable(false);
 			showEpisodes.setText("Back to Anime list");
 		} else {
-			webEngine.loadContent("<body style=\"background-color:#424242;\"");
+			webEngine.loadContent("<body bgcolor='#323232'>");
 			showEpisodes.setDisable(true);
 			search(search.getText());
 			showEpisodes.setText("Show Episodes");
@@ -227,9 +226,10 @@ public class MainFXMLController implements DownloadObserver {
 			Document doc = Jsoup.parse(new URL(label.getValue()), 60000);
 			selectedDoc = doc;
 			Element description = doc.select("div.catdescription").first();
-			String content = "<font color=\"red\"><b><u><center>" + label.getText() + "</center></u></b><br><br>";
+			String content = "<body bgcolor='#323232'><font color=\"red\"><b><u><center>" + label.getText()
+					+ "</center></u></b><br><br>";
 			content += description.text().replace("Plot Summary:", "<b>Plot Summary:</b></font><font color=\"white\">");
-			webEngine.loadContent(content + "</font>");
+			webEngine.loadContent(content + "</font></body>");
 			showEpisodes.setText("Show Episodes");
 			showEpisodes.setDisable(false);
 		} catch (IOException e) {
@@ -240,8 +240,7 @@ public class MainFXMLController implements DownloadObserver {
 	@FXML
 	public void initialize() {
 		webEngine = webView.getEngine();
-		webEngine.documentProperty().addListener(new WebDocumentListener(webEngine));
-		webEngine.loadContent("<body style=\"background-color:#424242;\"");
+		webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 		list = (VBox) scrollPane.getContent().lookup("#list");
 		manager.setController(this);
 
@@ -276,9 +275,19 @@ public class MainFXMLController implements DownloadObserver {
 	}
 
 	private void download(int start, int end) {
-		new Thread(() -> {
+		int s, e; // To avoid the annoying "requires final" variable error
+
+		if (end > start) { // This way it doesn't matter if user selected episodes in reverse order
+			s = end;
+			e = start;
+		} else {
+			s = start;
+			e = end;
+		}
+
+		new Thread(() -> { // because it will take a hell lot of time to execute my spaghetti code
 			List<CustomLabel> toDownload = Utils.copyList(episodes);
-			for (int i = start; i >= end; i--) {
+			for (int i = s; i >= e; i--) {
 				CustomLabel episode = toDownload.get(i);
 				manager.addDownloadURL(episode.getValue());
 			}

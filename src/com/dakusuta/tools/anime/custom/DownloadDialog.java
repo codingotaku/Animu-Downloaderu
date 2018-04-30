@@ -39,7 +39,7 @@ public class DownloadDialog extends Dialog<Pair<Integer, Integer>> {
 		gridPane.add(from, 1, 0);
 		gridPane.add(new Label("To:"), 2, 0);
 		gridPane.add(to, 3, 0);
-		getDialogPane().getStylesheets().add(Main.class.getResource("combo.css").toExternalForm());
+		getDialogPane().getStylesheets().add(Main.class.getResource("/css/combo.css").toExternalForm());
 
 		getDialogPane().setContent(gridPane);
 
