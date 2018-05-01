@@ -197,7 +197,7 @@ public class DownloadManager implements DownloadObserver {
 		if (tmp >= MAX_DOWNLOAD) return;
 
 		if (!queue.isEmpty()) {
-			int last = 3 - tmp;
+			int last = MAX_DOWNLOAD - tmp;
 			if (last > queue.size()) {
 				last = queue.size();
 			}
@@ -206,13 +206,21 @@ public class DownloadManager implements DownloadObserver {
 				addDownload(info);
 
 				if (info.getSize() > -1) {
-					if (info.getStatus() == Status.PENDING) info.restart();
-					else if (info.getStatus() == Status.PAUSED) info.resume();
-					else info.retry();
+					switch (info.getStatus()) {
+					case PENDING:
+						info.restart();
+						break;
+					case PAUSED:
+						info.resume();
+						break;
+					default:
+						info.retry();
+						break;
+					}
 				} else startDownload(info);
 			}
 
-			for (int i = last - 1; i < -1; i--) {
+			for (int i = last - 1; i > -1; i--) {
 				queue.remove(i);
 			}
 		}
