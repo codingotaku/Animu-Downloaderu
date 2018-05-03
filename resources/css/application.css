@@ -23,8 +23,10 @@ CustomLabel {
 	-fx-font-size: 1.0em;	
 }
 
-LoadDialog{
+DialogPane{
 	-fx-background-color: #525252;
+	-fx-border-color: white;
+	-fx-border-style: solid;
 }
 #selected {
 	-fx-background-color: red;

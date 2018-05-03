@@ -13,7 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.dakusuta.tools.anime.callback.DownloadObserver;
+import com.dakusuta.tools.anime.callback.TableObserver;
 import com.dakusuta.tools.anime.callback.TableSelectListener;
 import com.dakusuta.tools.anime.custom.CustomLabel;
 import com.dakusuta.tools.anime.custom.DownloadDialog;
@@ -40,7 +40,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Pair;
 
-public class MainFXMLController implements DownloadObserver {
+public class MainFXMLController implements TableObserver {
 	// To search for specific anime
 	@FXML private TextField search;
 
@@ -295,43 +295,12 @@ public class MainFXMLController implements DownloadObserver {
 	}
 
 	@Override
-	public void paused(DownloadInfo download) {
-		tableView.refresh();
-
-	}
-
-	@Override
-	public void finished(DownloadInfo download) {
-		tableView.refresh();
-
-	}
-
-	@Override
-	public void error(DownloadInfo download) {
-		tableView.refresh();
-
-	}
-
-	@Override
-	public void resumed(DownloadInfo download) {
-		tableView.refresh();
-
-	}
-
-	@Override
-	public void cancelled(DownloadInfo download) {
-		tableView.refresh();
-
-	}
-
-	@Override
-	public void pending(DownloadInfo download) {
+	public void added(DownloadInfo download) {
 		tableView.getItems().add(download);
-
 	}
 
 	@Override
-	public void downloading(DownloadInfo download, double progress) {
+	public void updated(DownloadInfo download) {
 		tableView.refresh();
 	}
 

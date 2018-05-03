@@ -1,5 +1,6 @@
 package com.dakusuta.tools.anime.download;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -24,12 +25,20 @@ public class Downloader implements Runnable {
 	private Status status; // Current segment status (Downloading, error, pause etc.)
 
 	// Downloader constructor
-	public Downloader(URL downloadURL, Segment part, RandomAccessFile file, Status status, Callback callBack) {
+	public Downloader(URL downloadURL, Segment part, Status status, Callback callBack) {
 		this.downloadURL = downloadURL;
 		this.segment = part;
-		this.file = file;
+
 		this.status = status;
 		this.callBack = callBack;
+
+		try {
+			this.file = new RandomAccessFile(segment.fileName, "rw");
+		} catch (FileNotFoundException e) {
+			status = Status.ERROR;
+			callBack.add(0, status);
+			e.printStackTrace();
+		}
 	}
 
 	// Running download in a different thread

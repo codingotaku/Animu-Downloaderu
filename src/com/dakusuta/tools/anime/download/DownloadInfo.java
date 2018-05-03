@@ -23,14 +23,14 @@ public class DownloadInfo implements Runnable {
 	private static final int MAX_THREAD = 8; // Maximum threads allowed for each download
 	private int size; // Size of download in bytes
 	private int downloaded; // Number of bytes downloaded
-	
+
 	private ArrayList<Segment> segments = new ArrayList<>(); // Download segments
-	
+
 	private DownloadObserver observer = null; // Callback for download status
 	private String fileName; // Download file name
 	private String animeName;
 	private String pageUrl;
-	
+
 	private URL url; // Download URL
 	private Status status; // Current status of download
 	private Callback callBack = new Callback(this) {
@@ -39,10 +39,9 @@ public class DownloadInfo implements Runnable {
 			addDownloaded(progress);
 			if (status == Status.ERROR) {
 				error();
-			} else observer.downloading(info, getDownloaded());
+			} else observer.downloading(info);
 		}
 	};
-	
 
 	// For tracking download progress
 	private synchronized void addDownloaded(int count) {
@@ -57,7 +56,7 @@ public class DownloadInfo implements Runnable {
 			this.url = new URL(pageUrl);
 		} catch (MalformedURLException e) {
 			observer.error(this);
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 		animeName = pageUrl.substring(pageUrl.lastIndexOf("/") + 1, pageUrl.indexOf("episode") - 1);
 		fileName = "";
@@ -91,7 +90,7 @@ public class DownloadInfo implements Runnable {
 		try {
 			verifiedUrl = new URL(url);
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 			return null;
 		}
 
@@ -147,14 +146,15 @@ public class DownloadInfo implements Runnable {
 	// Cancel this download.
 	public void cancel() {
 		status = Status.CANCELLED;
-		segments.clear();
+
 		// So that download will start from the beginning next time
 		// Delete all segment files
-
-		for (int i = 0; i < MAX_THREAD; i++) {
-			File f = new File(fileName + ".part" + (i + 1));
+		segments.forEach(segment -> {
+			File f = new File(segment.fileName);
 			if (f.exists()) f.delete();
-		}
+		});
+
+		segments.clear();
 
 		observer.cancelled(this);
 	}
@@ -181,30 +181,25 @@ public class DownloadInfo implements Runnable {
 			getContentSize();
 		} catch (IOException e) {
 			error();
-			e.printStackTrace();
+			System.err.println(e.getMessage());
+			return -1;
 		}
-
-		if (status == Status.ERROR) return -1;
 
 		// Clear out finished download segments if any
-		for (int i = segments.size() - 1; i > -1; i--) {
-			if (segments.get(i).isFinished()) {
-				segments.remove(i);
-			}
-		}
+		segments.removeIf(segment -> segment.isFinished());
 
 		if (!segments.isEmpty()) return size - downloaded;
 		int partLen = size / MAX_THREAD;
 		int start = 0;
 		int end = partLen;
 		for (int i = 0; i < MAX_THREAD - 1; i++) {
-			segments.add(new Segment(start, end));
+			segments.add(new Segment(start, end, fileName + ".part" + (i + 1)));
 			start = end + 1;
 			end += partLen;
 		}
 
 		// Just to make sure no bit is missed out in previous calculation
-		segments.add(new Segment(start, end + (size % MAX_THREAD)));
+		segments.add(new Segment(start, end + (size % MAX_THREAD), fileName + ".part" + segments.size()));
 
 		// Delete previously downloaded file if it exists
 		String fName = fileName;
@@ -225,13 +220,13 @@ public class DownloadInfo implements Runnable {
 
 			ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
 			File files[] = new File[MAX_THREAD];
+
 			for (int i = 0; i < segments.size(); i++) {
-				String fName = fileName + ".part" + (i + 1);
-				RandomAccessFile file = new RandomAccessFile(fName, "rw");
-				files[i] = new File(fName);
+				Segment segment = segments.get(i);
+				files[i] = new File(segment.fileName);
 				files[i].createNewFile();
 
-				threadPool.submit(new Downloader(url, segments.get(i), file, status, callBack));
+				threadPool.submit(new Downloader(url, segment, status, callBack));
 			}
 			threadPool.shutdown();
 
@@ -248,12 +243,12 @@ public class DownloadInfo implements Runnable {
 				}
 			} catch (InterruptedException e) {
 				error();
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
 
 		} catch (IOException e) {
 			error();
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 	}
 
@@ -289,25 +284,37 @@ public class DownloadInfo implements Runnable {
 	public void mergeSegments(File[] files, File mergedFile) {
 		int readNum = 0;
 
+		RandomAccessFile outfile = null;
 		try {
-			RandomAccessFile outfile = new RandomAccessFile(mergedFile, "rw");
+			outfile = new RandomAccessFile(mergedFile, "rw");
 			outfile.seek(0);
-			for (File file : files) {
-				byte[] data = new byte[8192];
-				RandomAccessFile infile = new RandomAccessFile(file, "r");
+		} catch (IOException e) {
+			error();
+			System.err.println(e.getMessage());
+			return;
+		}
 
+		for (File file : files) {
+			byte[] data = new byte[8192];
+
+			try (RandomAccessFile infile = new RandomAccessFile(file, "r")) {
 				while ((readNum = infile.read(data)) != -1) {
 					outfile.write(data, 0, readNum);
 				}
-
-				infile.close();
-				file.delete();
+			} catch (IOException e) {
+				error();
+				System.err.println(e.getMessage());
 			}
-
-			outfile.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+			file.delete();
 		}
+
+		try {
+			outfile.close();
+		} catch (IOException e) {
+			error();
+			System.err.println(e.getMessage());
+		}
+
 	}
 
 	// Set download URL
@@ -322,15 +329,16 @@ public class DownloadInfo implements Runnable {
 
 	public void retry() {
 		if (status == Status.ERROR) {
-			String url = generateDownloadUrl();
-			if (url != null) {
-				URL verifiedUrl = verifyUrl(url);
-				if (verifiedUrl != null) {
-					setUrl(verifiedUrl);
-				}
-			}
 			status = Status.DOWNLOADING;
-			download();
+			String url = generateDownloadUrl();
+
+			URL verifiedUrl = verifyUrl(url);
+			if (verifiedUrl != null) {
+				setUrl(verifiedUrl);
+				download();
+			} else {
+				error();
+			}
 		}
 	}
 
@@ -355,7 +363,8 @@ public class DownloadInfo implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			error();
+			System.err.println(e.getMessage());
 		}
 		return null;
 	}

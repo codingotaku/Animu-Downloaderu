@@ -18,7 +18,7 @@ public interface DownloadObserver {
 
 	public void cancelled(DownloadInfo download);
 
-	public void downloading(DownloadInfo download, double progress);
+	public void downloading(DownloadInfo download);
 
 	public void pending(DownloadInfo download);
 
