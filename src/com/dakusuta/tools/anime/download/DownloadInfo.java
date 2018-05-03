@@ -56,7 +56,7 @@ public class DownloadInfo implements Runnable {
 			this.url = new URL(pageUrl);
 		} catch (MalformedURLException e) {
 			observer.error(this);
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 		animeName = pageUrl.substring(pageUrl.lastIndexOf("/") + 1, pageUrl.indexOf("episode") - 1);
 		fileName = "";
@@ -90,7 +90,7 @@ public class DownloadInfo implements Runnable {
 		try {
 			verifiedUrl = new URL(url);
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 			return null;
 		}
 
@@ -181,7 +181,7 @@ public class DownloadInfo implements Runnable {
 			getContentSize();
 		} catch (IOException e) {
 			error();
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 			return -1;
 		}
 
@@ -199,7 +199,7 @@ public class DownloadInfo implements Runnable {
 		}
 
 		// Just to make sure no bit is missed out in previous calculation
-		segments.add(new Segment(start, end + (size % MAX_THREAD), fileName + ".part" + segments.size()));
+		segments.add(new Segment(start, end + (size % MAX_THREAD), fileName + ".part" + MAX_THREAD));
 
 		// Delete previously downloaded file if it exists
 		String fName = fileName;
@@ -214,41 +214,41 @@ public class DownloadInfo implements Runnable {
 
 	// Download file.
 	public void run() {
-		try {
-			int downloadSize = setDownloadSize();
-			if (downloadSize < 0) return;
+		int downloadSize = setDownloadSize();
+		if (downloadSize < 0) return;
 
-			ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
-			File files[] = new File[MAX_THREAD];
+		ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
+		ArrayList<File> files = new ArrayList<>(MAX_THREAD);
 
-			for (int i = 0; i < segments.size(); i++) {
-				Segment segment = segments.get(i);
-				files[i] = new File(segment.fileName);
-				files[i].createNewFile();
-
-				threadPool.submit(new Downloader(url, segment, status, callBack));
-			}
-			threadPool.shutdown();
-
+		segments.forEach(segment -> {
+			File file = new File(segment.fileName);
 			try {
-				threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-				if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() < size) {
-					error();
-					return;
-				}
-				if (getDownloaded() >= size) {
-					status = Status.FINISHED;
-					observer.finished(this);
-					mergeSegments(files, new File(fileName));
-				}
-			} catch (InterruptedException e) {
+				file.createNewFile();
+			} catch (IOException e) {
 				error();
-				System.err.println(e.getMessage());
+				e.printStackTrace();
 			}
+			files.add(file);
+			threadPool.submit(new Downloader(url, segment, status, callBack));
+		});
 
-		} catch (IOException e) {
+		threadPool.shutdown();
+
+		try {
+			threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() < size) {
+				error();
+				return;
+			}
+			if (getDownloaded() >= size) {
+				status = Status.FINISHED;
+				observer.finished(this);
+				Thread.sleep(5000); // Dirty delay for closing all files
+				mergeSegments(files, new File(fileName));
+			}
+		} catch (InterruptedException e) {
 			error();
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
@@ -281,38 +281,37 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Merge all downloaded segments
-	public void mergeSegments(File[] files, File mergedFile) {
-		int readNum = 0;
+	public void mergeSegments(ArrayList<File> files, File mergedFile) {
 
-		RandomAccessFile outfile = null;
+		RandomAccessFile outfile;
 		try {
 			outfile = new RandomAccessFile(mergedFile, "rw");
 			outfile.seek(0);
 		} catch (IOException e) {
 			error();
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 			return;
 		}
 
-		for (File file : files) {
+		files.forEach(file -> {
 			byte[] data = new byte[8192];
-
+			int readNum = 0;
 			try (RandomAccessFile infile = new RandomAccessFile(file, "r")) {
 				while ((readNum = infile.read(data)) != -1) {
 					outfile.write(data, 0, readNum);
 				}
 			} catch (IOException e) {
 				error();
-				System.err.println(e.getMessage());
+				e.printStackTrace();
 			}
 			file.delete();
-		}
+		});
 
 		try {
 			outfile.close();
 		} catch (IOException e) {
 			error();
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 
 	}
@@ -364,7 +363,7 @@ public class DownloadInfo implements Runnable {
 			}
 		} catch (IOException e) {
 			error();
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 		return null;
 	}
