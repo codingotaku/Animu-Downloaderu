@@ -39,8 +39,8 @@ public class DownloadManager implements DownloadObserver {
 
 	}
 
-	public void addDownloadURL(String pageUrl) {
-		DownloadInfo downloadInfo = new DownloadInfo(pageUrl, this);
+	public void addDownloadURL(String fileName, String pageUrl) {
+		DownloadInfo downloadInfo = new DownloadInfo(fileName, pageUrl, this);
 		queue.add(downloadInfo);
 
 		if (downloads.size() < MAX_DOWNLOAD) {

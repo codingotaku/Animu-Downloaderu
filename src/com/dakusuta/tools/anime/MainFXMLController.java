@@ -289,7 +289,7 @@ public class MainFXMLController implements TableObserver {
 			List<CustomLabel> toDownload = Utils.copyList(episodes);
 			for (int i = s; i >= e; i--) {
 				CustomLabel episode = toDownload.get(i);
-				manager.addDownloadURL(episode.getValue());
+				manager.addDownloadURL(episode.getText().replaceAll("\\s", "-"), episode.getValue());
 			}
 		}).start();
 	}

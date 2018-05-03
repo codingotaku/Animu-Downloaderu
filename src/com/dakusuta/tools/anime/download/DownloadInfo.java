@@ -49,7 +49,7 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Constructor for Download.
-	public DownloadInfo(String pageUrl, DownloadObserver observer) {
+	public DownloadInfo(String fileName, String pageUrl, DownloadObserver observer) {
 		this.observer = observer;
 		try {
 			this.pageUrl = pageUrl;
@@ -59,7 +59,11 @@ public class DownloadInfo implements Runnable {
 			e.printStackTrace();
 		}
 		animeName = pageUrl.substring(pageUrl.lastIndexOf("/") + 1, pageUrl.indexOf("episode") - 1);
-		fileName = "";
+
+		String home = System.getProperty("user.home");
+		String folder = home + "\\Downloads\\" + animeName;
+		new File(folder).mkdir();
+		this.fileName = folder + "\\" + fileName;
 		size = -1;
 		downloaded = 0;
 		status = Status.PENDING;
@@ -271,13 +275,6 @@ public class DownloadInfo implements Runnable {
 			error();
 		}
 		size = contentLength;
-
-		fileName = url.getFile();
-		fileName = fileName.substring(fileName.lastIndexOf('/') + 1, fileName.indexOf('?'));
-		String home = System.getProperty("user.home");
-		String folder = home + "/Downloads/" + animeName;
-		new File(folder).mkdir();
-		fileName = folder + "/" + fileName;
 	}
 
 	// Merge all downloaded segments
