@@ -33,7 +33,7 @@ public class Downloader implements Runnable {
 		this.callBack = callBack;
 
 		try {
-			this.file = new RandomAccessFile(segment.fileName, "rw");
+			this.file = new RandomAccessFile(segment.file, "rw");
 		} catch (FileNotFoundException e) {
 			status = Status.ERROR;
 			callBack.add(0, status);
@@ -56,7 +56,7 @@ public class Downloader implements Runnable {
 				httpURLConnection.setRequestProperty("Range", "bytes=" + segment.start + "-" + segment.end);
 
 				httpURLConnection.connect();
-				file.seek(0);
+				file.seek(segment.downloaded);
 
 				InputStream is = httpURLConnection.getInputStream();
 
@@ -69,6 +69,7 @@ public class Downloader implements Runnable {
 					// Write buffer to file.
 					file.write(data, 0, readNum);
 					segment.start += readNum;
+					segment.downloaded += readNum;
 					callBack.add(readNum, Status.DOWNLOADING);
 				}
 				file.close();

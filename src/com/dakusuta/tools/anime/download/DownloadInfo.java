@@ -150,7 +150,7 @@ public class DownloadInfo implements Runnable {
 		// So that download will start from the beginning next time
 		// Delete all segment files
 		segments.forEach(segment -> {
-			File f = new File(segment.fileName);
+			File f = new File(segment.file);
 			if (f.exists()) f.delete();
 		});
 
@@ -221,7 +221,7 @@ public class DownloadInfo implements Runnable {
 		ArrayList<File> files = new ArrayList<>(MAX_THREAD);
 
 		segments.forEach(segment -> {
-			File file = new File(segment.fileName);
+			File file = new File(segment.file);
 			try {
 				file.createNewFile();
 			} catch (IOException e) {

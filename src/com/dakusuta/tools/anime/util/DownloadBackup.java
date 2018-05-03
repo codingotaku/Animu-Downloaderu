@@ -3,11 +3,10 @@ package com.dakusuta.tools.anime.util;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.dakusuta.tools.anime.download.DownloadInfo;
 import com.dakusuta.tools.anime.download.Segment;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * @author Rahul S<br>
@@ -26,28 +25,30 @@ public class DownloadBackup {
 	public void takeBackup() {
 		try {
 			// Create a new JSONObject
-			JSONObject jsonObject = new JSONObject();
+			JsonObject jsonObject = new JsonObject();
 			ArrayList<Segment> segments = info.getSegments();
 
-			jsonObject.put("fileName", info.getFileName()) // Add the download information to the jsonObject
-					.put("status", info.getStatus().toString())
-					.put("size", info.getSize())
-					.put("downloaded", info.getDownloaded())
-					.put("progress", info.getProgress())
-					.put("url", info.getUrl());
+			jsonObject.addProperty("fileName", info.getFileName()); // Add the download information to the jsonObject
+			jsonObject.addProperty("status", info.getStatus().toString());
+			jsonObject.addProperty("size", info.getSize());
+			jsonObject.addProperty("downloaded", info.getDownloaded());
+			jsonObject.addProperty("progress", info.getProgress());
+			jsonObject.addProperty("url", info.getUrl());
 
 			// Create a new JSONArray object
-			JSONArray jsonArray = new JSONArray();
+			JsonArray jsonArray = new JsonArray();
 
 			// Add download segment details to the jsonArray
 			segments.forEach(segment -> {
-				JSONObject downloadSegment = new JSONObject();
-				downloadSegment.put("start", segment.start).put("end", segment.end);
-				jsonArray.put(downloadSegment);
+				JsonObject downloadSegment = new JsonObject();
+				downloadSegment.addProperty("start", segment.start);
+				downloadSegment.addProperty("end", segment.end);
+				downloadSegment.addProperty("downloaded", segment.downloaded);
+				jsonArray.add(downloadSegment);
 			});
 
 			// Add the jsoArray to jsonObject
-			jsonObject.put("parts", jsonArray);
+			jsonObject.add("parts", jsonArray);
 
 			// Create a new FileWriter object
 			FileWriter fileWriter = new FileWriter(jSonPath);
@@ -61,6 +62,5 @@ public class DownloadBackup {
 	}
 
 	public void restore() {
-
 	}
 }
