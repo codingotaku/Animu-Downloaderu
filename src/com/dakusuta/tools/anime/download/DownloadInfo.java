@@ -137,11 +137,8 @@ public class DownloadInfo implements Runnable {
 
 	// Resume this download.
 	public void resume() {
-		if (status == Status.CANCELLED) downloaded = 0;
-		if (size == -1) { // Do not allow resuming downloads from queue
-			status = Status.PENDING;
-			return;
-		}
+		 // Do not allow resuming downloads if it is not paused
+		if (status != Status.PAUSED) return;
 		status = Status.DOWNLOADING;
 		observer.resumed(this);
 		download();
@@ -153,12 +150,18 @@ public class DownloadInfo implements Runnable {
 
 		// So that download will start from the beginning next time
 		// Delete all segment files
-		segments.forEach(segment -> {
-			File f = new File(segment.file);
-			if (f.exists()) f.delete();
-		});
-
-		segments.clear();
+		new Thread(() -> {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+			segments.forEach(segment -> {
+				File f = new File(segment.file);
+				if (f.exists()) f.delete();
+			});
+			segments.clear();
+		}).start();
+		
 
 		observer.cancelled(this);
 	}
@@ -206,8 +209,7 @@ public class DownloadInfo implements Runnable {
 		segments.add(new Segment(start, end + (size % MAX_THREAD), fileName + ".part" + MAX_THREAD));
 
 		// Delete previously downloaded file if it exists
-		String fName = fileName;
-		File tmp = new File(fName);
+		File tmp = new File(fileName);
 		if (tmp.exists()) tmp.delete();
 		return size;
 	}
@@ -219,7 +221,7 @@ public class DownloadInfo implements Runnable {
 	// Download file.
 	public void run() {
 		int downloadSize = setDownloadSize();
-		if (downloadSize < 0) return;
+		if (downloadSize <= 0) return;
 
 		ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
 		ArrayList<File> files = new ArrayList<>(MAX_THREAD);
@@ -274,6 +276,13 @@ public class DownloadInfo implements Runnable {
 			System.out.println("Content length " + contentLength);
 			error();
 		}
+
+		if (!fileName.contains(".")) { // if file type not provided
+			String ext = url.getFile();
+			ext = ext.substring(ext.lastIndexOf('.'), ext.indexOf('?'));
+			fileName += ext;
+		}
+
 		size = contentLength;
 	}
 

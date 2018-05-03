@@ -26,6 +26,11 @@ public class Segment {
 
 	// Returns whether the download is finished or not
 	boolean isFinished() {
-		return start < end;
+		return start > end;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Start : %d end : %d downloaded : %d file : %s", start, end, downloaded, file);
 	}
 }

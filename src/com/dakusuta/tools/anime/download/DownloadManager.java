@@ -19,6 +19,11 @@ public class DownloadManager implements DownloadObserver {
 	private boolean globalStop = false;
 	private static final int MAX_DOWNLOAD = 3;
 
+	private ArrayList<DownloadInfo> queue = new ArrayList<>();
+	private ArrayList<DownloadInfo> downloads = new ArrayList<>();
+	private ArrayList<DownloadInfo> errQueue = new ArrayList<>();
+	private ArrayList<DownloadInfo> pauseQueue = new ArrayList<>();
+
 	/*
 	 * Return DownloadManager instance, this makes sure that there is only one
 	 * download manager per application
@@ -28,10 +33,6 @@ public class DownloadManager implements DownloadObserver {
 
 		return instance;
 	}
-
-	private ArrayList<DownloadInfo> queue = new ArrayList<>();
-	private ArrayList<DownloadInfo> downloads = new ArrayList<>();
-	private ArrayList<DownloadInfo> errQueue = new ArrayList<>();
 
 	private TableObserver observer;
 
@@ -126,7 +127,7 @@ public class DownloadManager implements DownloadObserver {
 			DownloadInfo info = downloads.get(i);
 			if (info.getStatus() == Status.DOWNLOADING) {
 				toRemove.add(info);
-				queue.add(0, info);
+				pauseQueue.add(info);
 				info.pause();
 			}
 		}
@@ -139,17 +140,21 @@ public class DownloadManager implements DownloadObserver {
 
 		int i = 0;
 		ArrayList<DownloadInfo> toRemove = new ArrayList<>();
-		while (downloads.size() < MAX_DOWNLOAD) {
-			DownloadInfo info = queue.get(i);
+
+		while (i < pauseQueue.size()) {
+			DownloadInfo info = pauseQueue.get(i);
 			toRemove.add(info);
+
 			if (info.getStatus() == Status.PAUSED) {
-				downloads.add(info);
-				info.resume();
+				if (downloads.size() < MAX_DOWNLOAD) {
+					downloads.add(info);
+					info.resume();
+				} else queue.add(0, info);
 			}
 			i++;
 		}
 
-		toRemove.forEach(queue::remove);
+		toRemove.forEach(pauseQueue::remove);
 
 		startNextDownload();
 	}
@@ -241,7 +246,7 @@ public class DownloadManager implements DownloadObserver {
 
 	public void pause(DownloadInfo info) {
 		if (info.getStatus() == Status.DOWNLOADING) {
-			queue.add(info);
+			pauseQueue.add(info);
 			downloads.remove(info);
 			info.pause();
 		}
@@ -251,10 +256,10 @@ public class DownloadManager implements DownloadObserver {
 	public void resume(DownloadInfo info) {
 		if (info.getStatus() == Status.PAUSED) {
 			if (downloads.size() < MAX_DOWNLOAD) {
-				queue.remove(info);
+				pauseQueue.remove(info);
 				info.resume();
 			} else {
-				queue.remove(info);
+				pauseQueue.remove(info);
 				queue.add(0, info);
 			}
 		}

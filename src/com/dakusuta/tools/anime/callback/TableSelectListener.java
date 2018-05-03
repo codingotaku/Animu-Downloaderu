@@ -30,7 +30,6 @@ public class TableSelectListener implements Callback<TableView<DownloadInfo>, Ta
 	private final MenuItem cancelA;
 	private final MenuItem retryA;
 	private final MenuItem restartA;
-	final ContextMenu tableMenu = new ContextMenu();
 	final ContextMenu rowMenu = new ContextMenu();
 
 	public TableSelectListener() {
@@ -51,7 +50,6 @@ public class TableSelectListener implements Callback<TableView<DownloadInfo>, Ta
 		Menu all = new Menu("All");
 		all.getItems().addAll(clearA, pauseA, resumeA, cancelA, retryA, restartA);
 		rowMenu.getItems().addAll(pause, resume, cancel, retry, restart, delete, all);
-		tableMenu.getItems().addAll(clearA, pauseA, resumeA, cancelA, retryA, restartA);
 	}
 
 	private void initListeners(TableView<DownloadInfo> view, DownloadInfo info) {
@@ -85,10 +83,11 @@ public class TableSelectListener implements Callback<TableView<DownloadInfo>, Ta
 		initListeners(view, info);
 		row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty()))
 				.then(rowMenu)
-				.otherwise(tableMenu));
+				.otherwise((ContextMenu) null));
 
 		row.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
 			final int index = row.getIndex();
+			if (!event.isPrimaryButtonDown()) return; // no action if it is not primary button
 			if (index >= view.getItems().size() || view.getSelectionModel().isSelected(index)) {
 				view.getSelectionModel().clearSelection();
 				event.consume();
