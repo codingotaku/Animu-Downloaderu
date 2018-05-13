@@ -137,7 +137,7 @@ public class DownloadInfo implements Runnable {
 
 	// Resume this download.
 	public void resume() {
-		 // Do not allow resuming downloads if it is not paused
+		// Do not allow resuming downloads if it is not paused
 		if (status != Status.PAUSED) return;
 		status = Status.DOWNLOADING;
 		observer.resumed(this);
@@ -161,7 +161,6 @@ public class DownloadInfo implements Runnable {
 			});
 			segments.clear();
 		}).start();
-		
 
 		observer.cancelled(this);
 	}
@@ -238,9 +237,8 @@ public class DownloadInfo implements Runnable {
 			threadPool.submit(new Downloader(url, segment, status, callBack));
 		});
 
-		threadPool.shutdown();
-
 		try {
+			threadPool.shutdown();
 			threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 			if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() < size) {
 				error();
@@ -285,14 +283,14 @@ public class DownloadInfo implements Runnable {
 
 		size = contentLength;
 	}
-
+	
 	// Merge all downloaded segments
 	public void mergeSegments(ArrayList<File> files, File mergedFile) {
 
-		RandomAccessFile outfile;
+		RandomAccessFile out;
 		try {
-			outfile = new RandomAccessFile(mergedFile, "rw");
-			outfile.seek(0);
+			out = new RandomAccessFile(mergedFile, "rw");
+			out.seek(0);
 		} catch (IOException e) {
 			error();
 			e.printStackTrace();
@@ -301,20 +299,29 @@ public class DownloadInfo implements Runnable {
 
 		files.forEach(file -> {
 			byte[] data = new byte[8192];
-			int readNum = 0;
-			try (RandomAccessFile infile = new RandomAccessFile(file, "r")) {
-				while ((readNum = infile.read(data)) != -1) {
-					outfile.write(data, 0, readNum);
-				}
+			int c = 0;
+			RandomAccessFile in = null;
+			try {
+				in = new RandomAccessFile(file, "r");
+				while ((c = in.read(data)) != -1)
+					out.write(data, 0, c);
 			} catch (IOException e) {
 				error();
 				e.printStackTrace();
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				file.delete();
 			}
-			file.delete();
 		});
 
 		try {
-			outfile.close();
+			out.close();
 		} catch (IOException e) {
 			error();
 			e.printStackTrace();

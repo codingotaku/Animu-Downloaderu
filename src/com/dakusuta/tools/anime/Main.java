@@ -28,7 +28,7 @@ public class Main extends Application {
 			primaryStage.setOnCloseRequest(e->DownloadManager.getInstance().pauseAll());
 			primaryStage.show();
 			LoadDialog.showDialog(primaryStage, "Please wait", "Loading anime..");
-		} catch (IOException e) {
+		} catch (IOException e) {	
 			e.printStackTrace();
 		}
 	}
