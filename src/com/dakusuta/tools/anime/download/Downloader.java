@@ -43,7 +43,7 @@ public class Downloader implements Runnable {
 	// Start downloading segment
 	private void download() {
 		int retry = 0;
-		while (callBack.getStaus() == Status.DOWNLOADING) {
+		while (callBack.getStaus() == Status.DOWNLOADING && (segment.start < segment.end)) {
 			try {
 				this.httpURLConnection = (HttpURLConnection) downloadURL.openConnection();
 				httpURLConnection.setRequestProperty("Range", "bytes=" + segment.start + "-" + segment.end);
@@ -52,9 +52,10 @@ public class Downloader implements Runnable {
 				try {
 					this.file = new RandomAccessFile(segment.file, "rw");
 				} catch (FileNotFoundException e) {
-					status = Status.ERROR;
-					callBack.add(0, status);
+					error();
+					closeSession();
 					e.printStackTrace();
+					break;
 				}
 
 				file.seek(segment.downloaded);
@@ -66,24 +67,19 @@ public class Downloader implements Runnable {
 
 				data = new byte[MAX_BUFFER_SIZE];
 				while (callBack.getStaus() == Status.DOWNLOADING
-						&& ((readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1)) {
+						&& ((readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1)
+						&& (segment.start < segment.end)) { // Redundant
 					// Write buffer to file.
 					file.write(data, 0, readNum);
 					segment.start += readNum;
 					segment.downloaded += readNum;
 					callBack.add(readNum, Status.DOWNLOADING);
 				}
-				try {
-					if (file != null) file.close();
-					if (httpURLConnection != null) httpURLConnection.disconnect();
-				} catch (IOException e1) {
-				}
+				closeSession();
 				break;
 			} catch (IOException e) {
 				if (retry == MAX_RETRY) {
-					status = Status.ERROR;
-					callBack.add(0, status);
-					e.printStackTrace();
+					error();
 				} else {
 					try {
 						Thread.sleep(DELAY_BETWEEN_RETRY);
@@ -92,14 +88,24 @@ public class Downloader implements Runnable {
 					}
 					retry++;
 				}
+				e.printStackTrace();
 			} finally {
-				try {
-					if (file != null) file.close();
-					if (httpURLConnection != null) httpURLConnection.disconnect();
-				} catch (IOException e1) {
-				}
+				closeSession();
 				if (retry == MAX_RETRY) break;
 			}
+		}
+	}
+
+	private void error() {
+		status = Status.ERROR;
+		callBack.add(0, status);
+	}
+	private void closeSession() {
+		try {
+			if (file != null) file.close();
+			if (httpURLConnection != null) httpURLConnection.disconnect();
+		} catch (IOException e) {
+			error();
 		}
 	}
 }

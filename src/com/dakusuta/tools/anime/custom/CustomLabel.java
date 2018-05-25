@@ -5,28 +5,38 @@ import org.jsoup.nodes.Element;
 import javafx.scene.control.Label;
 
 public class CustomLabel extends Label {
-	private String value = "";
-
-	private CustomLabel(String val, String text) {
-		super(text);
-		value = val;
+	private String url = "";
+	private String anime = "";
+	private CustomLabel(String anime,String url, String text) {
+		super(text.replaceAll("\\s", "-"));
+		this.anime=anime;
+		this.url = url;
 	}
 
 	public CustomLabel(Element element) {
 		super(element.text());
-		value = element.attr("href");
+		url = element.attr("href");
+	}
+	public CustomLabel(String anime,Element element) {
+		super(element.text());
+		this.anime=anime;
+		url = element.attr("href");
 	}
 
 	public boolean hasValue(String value) {
 		return getText().toLowerCase().contains(value.toLowerCase());
 	}
 
-	public String getValue() {
-		return value;
+	public String getUrl() {
+		return url;
+	}
+
+	public String getAnime() {
+		return anime;
 	}
 
 	public CustomLabel copy() {
-		return new CustomLabel(value, getText());
+		return new CustomLabel(anime, url, getText());
 	}
 
 	public String toString() {

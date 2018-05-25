@@ -31,7 +31,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -64,7 +63,7 @@ public class MainFXMLController implements TableObserver {
 	@FXML private TableColumn<DownloadInfo, String> url;
 	@FXML private TableColumn<DownloadInfo, Double> size;
 	@FXML private TableColumn<DownloadInfo, Double> downloaded;
-	@FXML private TableColumn<DownloadInfo, Double> progress;
+	@FXML private TableColumn<DownloadInfo, String> progress;
 	@FXML private TableColumn<DownloadInfo, Status> status;
 
 	private VBox list;
@@ -94,6 +93,10 @@ public class MainFXMLController implements TableObserver {
 		}
 	}
 
+	private String getTitle(String title) {
+		return title.substring(0, title.indexOf("|")).trim();
+	}
+
 	private void loadEpisodes() {
 		episodes.clear();
 		list.getChildren().clear();
@@ -107,7 +110,10 @@ public class MainFXMLController implements TableObserver {
 			if (navBar.size() == 0) {
 				Elements div = selectedDoc.select("div.postlist");
 				Elements elements = div.select("a");
-				elements.forEach(element -> episodes.add(new CustomLabel(element)));
+				elements.forEach(element -> {
+					CustomLabel label = new CustomLabel(getTitle(selectedDoc.title()), element);
+					episodes.add(label);
+				});
 				list.getChildren().addAll(episodes);
 				return;
 			}
@@ -116,7 +122,9 @@ public class MainFXMLController implements TableObserver {
 		} else tmp = navBar.first().attr("href");
 
 		String url = tmp.substring(0, tmp.lastIndexOf('/'));
-		last = getPageNum(tmp);
+		last =
+
+				getPageNum(tmp);
 		epUrl = url + "/";
 		current = last;
 
@@ -136,7 +144,10 @@ public class MainFXMLController implements TableObserver {
 			Document doc = Jsoup.parse(new URL(epUrl + page), 60000);
 			Elements div = doc.select("div.postlist");
 			Elements elements = div.select("a");
-			elements.forEach(element -> episodes.add(new CustomLabel(element)));
+			elements.forEach(element -> {
+				CustomLabel label = new CustomLabel(getTitle(selectedDoc.title()), element);
+				episodes.add(label);
+			});
 			list.getChildren().addAll(episodes);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -223,7 +234,7 @@ public class MainFXMLController implements TableObserver {
 		label.setId("selected");
 		prLbl = label;
 		try {
-			Document doc = Jsoup.parse(new URL(label.getValue()), 60000);
+			Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
 			selectedDoc = doc;
 			Element description = doc.select("div.catdescription").first();
 			String content = "<body bgcolor='#323232'><font color=\"red\"><b><u><center>" + label.getText()
@@ -248,8 +259,7 @@ public class MainFXMLController implements TableObserver {
 		url.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("url"));
 		size.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("size"));
 		downloaded.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("downloaded"));
-		progress.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("progress"));
-		progress.setCellFactory(ProgressBarTableCell.<DownloadInfo>forTableColumn());
+		progress.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("progress"));
 		status.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Status>("status"));
 
 		tableView.setRowFactory(new TableSelectListener());
@@ -289,7 +299,7 @@ public class MainFXMLController implements TableObserver {
 			List<CustomLabel> toDownload = Utils.copyList(episodes);
 			for (int i = s; i >= e; i--) {
 				CustomLabel episode = toDownload.get(i);
-				manager.addDownloadURL(episode.getText().replaceAll("\\s", "-"), episode.getValue());
+				manager.addDownloadURL(episode);
 			}
 		}).start();
 	}
@@ -301,7 +311,8 @@ public class MainFXMLController implements TableObserver {
 
 	@Override
 	public void updated(DownloadInfo download) {
-		tableView.refresh();
+		
+//		tableView.refresh();
 	}
 
 }

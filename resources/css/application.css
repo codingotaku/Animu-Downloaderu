@@ -2,7 +2,6 @@
 -fx-background-color: #323232;	
 }
 
-
 ScrollPane > .corner {
 -fx-background-color: #525252;	
 } 
@@ -10,7 +9,10 @@ ScrollPane > .corner {
 VBox{
 	-fx-background-color: #525252;	
 }
-
+.progress-indicator .percentage {
+	
+	
+}
 Label {
 	-fx-font-size: 1.0em;
     -fx-font-weight: bold;
@@ -70,7 +72,7 @@ DialogPane{
 }
 
 .table-row-cell:selected {
-    -fx-background-color: #005797;
+    -fx-background-color: #ff8000;
     -fx-background-insets: 0.0;
     -fx-background-radius: 1.0;
 }
@@ -92,3 +94,17 @@ DialogPane{
 .table-view > .virtual-flow > .scroll-bar > .decrement-button {
     -fx-opacity: 0.0;
 }
+
+.button{
+   -fx-background-color:#ff9010;
+   -fx-text-fill:white;
+   -fx-wrap-text: true;
+   -fx-cursor:hand;
+   -fx-font-weight:bold;
+ }
+
+.button:hover{     
+  -fx-background-color:white;
+  -fx-text-fill:black;
+  -fx-font-weight:bold;
+ }

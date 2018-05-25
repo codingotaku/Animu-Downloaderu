@@ -3,7 +3,6 @@ package com.dakusuta.tools.anime.custom;
 import java.util.List;
 
 import com.dakusuta.tools.anime.Main;
-import com.dakusuta.tools.anime.util.Utils;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -25,15 +24,17 @@ public class DownloadDialog extends Dialog<Pair<Integer, Integer>> {
 		GridPane gridPane = new GridPane();
 		gridPane.setHgap(10);
 		gridPane.setVgap(10);
-		gridPane.setPadding(new Insets(20, 150, 10, 10));
-		List<CustomLabel> copy = Utils.copyList(episodes);
-		ComboBox<CustomLabel> from = new ComboBox<>();
-		from.getItems().addAll(episodes);
-		ComboBox<CustomLabel> to = new ComboBox<>();
-		to.getItems().addAll(copy);
+		gridPane.setPadding(new Insets(20, 20, 10, 20));
 
-		from.setPromptText("From");
-		to.setPromptText("To");
+		ComboBox<String> from = new ComboBox<>();
+		ComboBox<String> to = new ComboBox<>();
+		episodes.forEach(label->{
+			from.getItems().add(label.getText());	
+			to.getItems().add(label.getText());
+		});
+
+		from.setPromptText("Select episode");
+		to.setPromptText("Select episode");
 
 		gridPane.add(new Label("From:"), 0, 0);
 		gridPane.add(from, 1, 0);

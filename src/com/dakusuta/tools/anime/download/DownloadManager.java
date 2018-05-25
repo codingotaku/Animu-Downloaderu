@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 import com.dakusuta.tools.anime.callback.TableObserver;
+import com.dakusuta.tools.anime.custom.CustomLabel;
 
 /**
  * @author Rahul Sivananda <br>
@@ -40,8 +41,8 @@ public class DownloadManager implements DownloadObserver {
 
 	}
 
-	public void addDownloadURL(String fileName, String pageUrl) {
-		DownloadInfo downloadInfo = new DownloadInfo(fileName, pageUrl, this);
+	public void addDownloadURL(CustomLabel episode) {
+		DownloadInfo downloadInfo = new DownloadInfo(episode, this);
 		queue.add(downloadInfo);
 
 		if (downloads.size() < MAX_DOWNLOAD) {
@@ -99,6 +100,10 @@ public class DownloadManager implements DownloadObserver {
 		observer.added(downloadInfo);
 	}
 
+	@Override
+	public void mergingFiles(DownloadInfo downloadInfo) {
+		observer.updated(downloadInfo);
+	}
 	@Override
 	public void finished(DownloadInfo downloadInfo) {
 		downloads.remove(downloadInfo);

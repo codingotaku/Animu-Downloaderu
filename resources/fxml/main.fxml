@@ -56,7 +56,8 @@
 
 	<TableView fx:id="tableView" AnchorPane.topAnchor="330.0"
 		AnchorPane.leftAnchor="320.0" AnchorPane.rightAnchor="10.0"
-		AnchorPane.bottomAnchor="5.0" layoutX="6.0" layoutY="52.0">
+		AnchorPane.bottomAnchor="5.0" layoutX="6.0" layoutY="52.0"
+		maxWidth="1024">
 
 		<placeholder>
 			<Label text="No downloads in the list" />
@@ -64,17 +65,17 @@
 
 		<columns>
 			<CustomTableColumn editable="false"
-				widthPercentage="0.15" sortable="true" fx:id="fileName"
+				widthPercentage="0.25" sortable="true" fx:id="fileName"
 				text="File Name" />
 			<CustomTableColumn editable="false"
-				widthPercentage="0.20" sortable="false" fx:id="url" text="Url" />
+				widthPercentage="0.25" sortable="false" fx:id="url" text="Url" />
 			<CustomTableColumn editable="false"
-				widthPercentage="0.10" sortable="true" fx:id="size" text="Size" />
+				widthPercentage="0.15" sortable="true" fx:id="size" text="Size" />
 			<CustomTableColumn editable="false"
 				widthPercentage="0.15" sortable="false" fx:id="downloaded"
 				text="Downloaded" />
 			<CustomTableColumn editable="false"
-				widthPercentage="0.30" sortable="false" fx:id="progress"
+				widthPercentage="0.10" sortable="false" fx:id="progress"
 				text="Progess" />
 			<CustomTableColumn editable="false"
 				widthPercentage="0.10" sortable="true" fx:id="status" text="Status" />

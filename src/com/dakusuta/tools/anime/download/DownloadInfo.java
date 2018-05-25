@@ -1,4 +1,4 @@
-package com.dakusuta.tools.anime.download;
+package com.dakusuta.	tools.anime.download;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +17,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
+import com.dakusuta.tools.anime.custom.CustomLabel;
 
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
@@ -28,7 +29,7 @@ public class DownloadInfo implements Runnable {
 
 	private DownloadObserver observer = null; // Callback for download status
 	private String fileName; // Download file name
-	private String animeName;
+	private String anime;
 	private String pageUrl;
 
 	private URL url; // Download URL
@@ -49,21 +50,21 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Constructor for Download.
-	public DownloadInfo(String fileName, String pageUrl, DownloadObserver observer) {
+	public DownloadInfo(CustomLabel episode, DownloadObserver observer) {
 		this.observer = observer;
 		try {
-			this.pageUrl = pageUrl;
+			this.pageUrl = episode.getUrl();
 			this.url = new URL(pageUrl);
 		} catch (MalformedURLException e) {
 			observer.error(this);
 			e.printStackTrace();
 		}
-		animeName = pageUrl.substring(pageUrl.lastIndexOf("/") + 1, pageUrl.indexOf("episode") - 1);
-
+		this.anime = episode.getAnime();
+		
 		String home = System.getProperty("user.home");
-		String folder = home + "\\Downloads\\" + animeName;
+		String folder = home + "\\Downloads\\" + anime;
 		new File(folder).mkdir();
-		this.fileName = folder + "\\" + fileName;
+		this.fileName = folder + "\\" + episode.getText();
 		size = -1;
 		downloaded = 0;
 		status = Status.PENDING;
@@ -120,8 +121,8 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Get this download's progress.
-	public double getProgress() {
-		return downloaded / (double) size;
+	public String getProgress() {
+		return String.format("%.2f%%", (downloaded / (float) size) * 100);
 	}
 
 	// Get this download's status.
@@ -154,6 +155,7 @@ public class DownloadInfo implements Runnable {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 			segments.forEach(segment -> {
 				File f = new File(segment.file);
@@ -245,10 +247,9 @@ public class DownloadInfo implements Runnable {
 				return;
 			}
 			if (getDownloaded() >= size) {
-				status = Status.FINISHED;
-				observer.finished(this);
 				Thread.sleep(5000); // Dirty delay for closing all files
 				mergeSegments(files, new File(fileName));
+
 			}
 		} catch (InterruptedException e) {
 			error();
@@ -283,10 +284,9 @@ public class DownloadInfo implements Runnable {
 
 		size = contentLength;
 	}
-	
+
 	// Merge all downloaded segments
 	public void mergeSegments(ArrayList<File> files, File mergedFile) {
-
 		RandomAccessFile out;
 		try {
 			out = new RandomAccessFile(mergedFile, "rw");
@@ -297,14 +297,20 @@ public class DownloadInfo implements Runnable {
 			return;
 		}
 
-		files.forEach(file -> {
+		for (File file : files) {
+			if (!file.exists()) {
+				System.err.println("File not found : " + file.getName());
+				error();
+				break;
+			}
 			byte[] data = new byte[8192];
 			int c = 0;
 			RandomAccessFile in = null;
 			try {
 				in = new RandomAccessFile(file, "r");
-				while ((c = in.read(data)) != -1)
+				while ((c = in.read(data)) != -1) {
 					out.write(data, 0, c);
+				}
 			} catch (IOException e) {
 				error();
 				e.printStackTrace();
@@ -316,15 +322,20 @@ public class DownloadInfo implements Runnable {
 						e.printStackTrace();
 					}
 				}
-				file.delete();
 			}
-		});
+			file.delete();
+		}
 
 		try {
 			out.close();
 		} catch (IOException e) {
 			error();
 			e.printStackTrace();
+		}
+
+		if (status != Status.ERROR) {
+			status = Status.FINISHED;
+			observer.finished(this);
 		}
 
 	}
