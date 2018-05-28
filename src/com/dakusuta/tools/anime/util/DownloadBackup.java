@@ -33,7 +33,6 @@ public class DownloadBackup {
 			jsonObject.addProperty("size", info.getSize());
 			jsonObject.addProperty("downloaded", info.getDownloaded());
 			jsonObject.addProperty("progress", info.getProgress());
-			jsonObject.addProperty("url", info.getUrl());
 
 			// Create a new JSONArray object
 			JsonArray jsonArray = new JsonArray();

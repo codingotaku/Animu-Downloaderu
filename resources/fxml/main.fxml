@@ -14,16 +14,15 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
 <?import com.dakusuta.tools.anime.custom.CustomTableColumn?>
+<?import javafx.scene.layout.HBox?>
 
-<AnchorPane
-	fx:controller="com.dakusuta.tools.anime.MainFXMLController"
-	xmlns:fx="http://javafx.com/fxml">
+<VBox fx:controller="com.dakusuta.tools.anime.MainFXMLController"
+	xmlns:fx="http://javafx.com/fxml" spacing="10">
 	<padding>
 		<Insets top="10" right="10" bottom="10" left="10" />
 	</padding>
 
-	<HBox spacing="10" AnchorPane.topAnchor="0.0"
-		AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
+	<HBox spacing="10">
 
 		<Button fx:id="previous" text="Previous" disable="true"
 			onAction="#previous" prefWidth="80" />
@@ -38,47 +37,45 @@
 			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
 	</HBox>
 
-	<ScrollPane fx:id="scrollPane" styleClass="edge-to-edge"
-		fitToHeight="true" fitToWidth="true" AnchorPane.topAnchor="35.0"
-		AnchorPane.leftAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+	<HBox spacing="10">
+		<ScrollPane fx:id="scrollPane" styleClass="edge-to-edge"
+			fitToHeight="true" fitToWidth="true">
+			<VBox id="list" prefWidth="300" />
+		</ScrollPane>
 
-		<VBox id="list" prefWidth="300" />
-	</ScrollPane>
+		<VBox spacing="10" HBox.hgrow="ALWAYS">
 
-	<WebView fx:id="webView" AnchorPane.topAnchor="35.0"
+			<WebView fx:id="webView" prefHeight="300" />
 
-		AnchorPane.leftAnchor="320.0" AnchorPane.rightAnchor="10.0"
-		AnchorPane.bottomAnchor="250.0"/>
+			<HBox spacing="10">
+				<padding>
+					<Insets top="0" right="10" bottom="0" left="10" />
+				</padding>
+				<Button fx:id="showEpisodes" text="Show Episodes"
+					disable="true" onAction="#showEpisodes" />
+			</HBox>
+			<TableView fx:id="tableView" VBox.vgrow="ALWAYS">
+				<placeholder>
+					<Label text="No downloads in the list" />
+				</placeholder>
 
-	<Button fx:id="showEpisodes" text="Show Episodes" disable="true"
-		onAction="#showEpisodes" AnchorPane.topAnchor="300.0"
-		AnchorPane.leftAnchor="320.0" />
-
-	<TableView fx:id="tableView" AnchorPane.topAnchor="330.0"
-		AnchorPane.leftAnchor="320.0" AnchorPane.rightAnchor="10.0"
-		AnchorPane.bottomAnchor="5.0" layoutX="6.0" layoutY="52.0"
-		maxWidth="1024">
-
-		<placeholder>
-			<Label text="No downloads in the list" />
-		</placeholder>
-
-		<columns>
-			<CustomTableColumn editable="false"
-				widthPercentage="0.25" sortable="true" fx:id="fileName"
-				text="File Name" />
-			<CustomTableColumn editable="false"
-				widthPercentage="0.25" sortable="false" fx:id="url" text="Url" />
-			<CustomTableColumn editable="false"
-				widthPercentage="0.15" sortable="true" fx:id="size" text="Size" />
-			<CustomTableColumn editable="false"
-				widthPercentage="0.15" sortable="false" fx:id="downloaded"
-				text="Downloaded" />
-			<CustomTableColumn editable="false"
-				widthPercentage="0.10" sortable="false" fx:id="progress"
-				text="Progess" />
-			<CustomTableColumn editable="false"
-				widthPercentage="0.10" sortable="true" fx:id="status" text="Status" />
-		</columns>
-	</TableView>
-</AnchorPane>
+				<columns>
+					<CustomTableColumn editable="false"
+						widthPercentage="0.40" sortable="true" fx:id="fileName"
+						text="File Name" />
+					<CustomTableColumn editable="false"
+						widthPercentage="0.15" sortable="true" fx:id="size" text="Size" />
+					<CustomTableColumn editable="false"
+						widthPercentage="0.15" sortable="false" fx:id="downloaded"
+						text="Downloaded" />
+					<CustomTableColumn editable="false"
+						widthPercentage="0.10" sortable="false" fx:id="progress"
+						text="Progess" />
+					<CustomTableColumn editable="false"
+						widthPercentage="0.15" sortable="true" fx:id="status"
+						text="Status" />
+				</columns>
+			</TableView>
+		</VBox>
+	</HBox>
+</VBox>

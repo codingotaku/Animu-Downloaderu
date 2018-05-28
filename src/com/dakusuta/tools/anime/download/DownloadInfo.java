@@ -1,4 +1,4 @@
-package com.dakusuta.	tools.anime.download;
+package com.dakusuta.tools.anime.download;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class DownloadInfo implements Runnable {
 			e.printStackTrace();
 		}
 		this.anime = episode.getAnime();
-		
+
 		String home = System.getProperty("user.home");
 		String folder = home + "\\Downloads\\" + anime;
 		new File(folder).mkdir();
@@ -105,11 +105,6 @@ public class DownloadInfo implements Runnable {
 		return verifiedUrl;
 	}
 
-	// Get this download's URL.
-	public String getUrl() {
-		return url.toString();
-	}
-
 	// Returns total downloaded size
 	public int getDownloaded() {
 		return downloaded;
@@ -147,24 +142,9 @@ public class DownloadInfo implements Runnable {
 
 	// Cancel this download.
 	public void cancel() {
-		status = Status.CANCELLED;
-
-		// So that download will start from the beginning next time
-		// Delete all segment files
-		new Thread(() -> {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			segments.forEach(segment -> {
-				File f = new File(segment.file);
-				if (f.exists()) f.delete();
-			});
-			segments.clear();
-		}).start();
-
-		observer.cancelled(this);
+		if (status != Status.DOWNLOADING) return;
+		status = Status.CANCELLING;
+		observer.cancelling(this);
 	}
 
 	// Mark this download as having an error.
@@ -234,6 +214,7 @@ public class DownloadInfo implements Runnable {
 			} catch (IOException e) {
 				error();
 				e.printStackTrace();
+				return;
 			}
 			files.add(file);
 			threadPool.submit(new Downloader(url, segment, status, callBack));
@@ -242,15 +223,27 @@ public class DownloadInfo implements Runnable {
 		try {
 			threadPool.shutdown();
 			threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-			if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() < size) {
+			if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() != size) {
 				error();
 				return;
 			}
-			if (getDownloaded() >= size) {
-				Thread.sleep(5000); // Dirty delay for closing all files
-				mergeSegments(files, new File(fileName));
 
+			if (status == Status.CANCELLING) {
+				// delete every segments
+				segments.forEach(segment -> {
+					File f = new File(segment.file);
+					if (f.exists()) f.delete();
+				});
+				segments.clear();
+				status = Status.CANCELLED;
+				observer.cancelled(this);
+				return;
 			}
+
+			this.status = Status.MERGING_FILES;
+			observer.mergingFiles(this);
+			Thread.sleep(5000); // Dirty delay for closing all files
+			mergeSegments(files, new File(fileName));
 		} catch (InterruptedException e) {
 			error();
 			e.printStackTrace();
@@ -267,6 +260,7 @@ public class DownloadInfo implements Runnable {
 		if (connection.getResponseCode() / 100 != 2) {
 			System.out.println("Response code" + connection.getResponseCode());
 			error();
+			return;
 		}
 
 		// Check for valid content length.
@@ -274,6 +268,7 @@ public class DownloadInfo implements Runnable {
 		if (contentLength < 1) {
 			System.out.println("Content length " + contentLength);
 			error();
+			return;
 		}
 
 		if (!fileName.contains(".")) { // if file type not provided
@@ -303,9 +298,11 @@ public class DownloadInfo implements Runnable {
 				error();
 				break;
 			}
+
 			byte[] data = new byte[8192];
 			int c = 0;
 			RandomAccessFile in = null;
+
 			try {
 				in = new RandomAccessFile(file, "r");
 				while ((c = in.read(data)) != -1) {
@@ -319,12 +316,14 @@ public class DownloadInfo implements Runnable {
 					try {
 						in.close();
 					} catch (IOException e) {
+						error();
 						e.printStackTrace();
 					}
 				}
 			}
-			file.delete();
 		}
+
+		files.forEach(file -> file.delete());
 
 		try {
 			out.close();
@@ -337,7 +336,6 @@ public class DownloadInfo implements Runnable {
 			status = Status.FINISHED;
 			observer.finished(this);
 		}
-
 	}
 
 	// Set download URL
@@ -351,21 +349,26 @@ public class DownloadInfo implements Runnable {
 	}
 
 	public void retry() {
+		if (status == Status.DOWNLOADING) return;
+
 		if (status == Status.ERROR) {
 			status = Status.DOWNLOADING;
 			String url = generateDownloadUrl();
 
 			URL verifiedUrl = verifyUrl(url);
-			if (verifiedUrl != null) {
-				setUrl(verifiedUrl);
-				download();
-			} else {
+			if (verifiedUrl == null) {
 				error();
+				return;
 			}
+
+			setUrl(verifiedUrl);
+			download();
 		}
 	}
 
 	public void restart() {
+		if (status == Status.DOWNLOADING) return;
+
 		cancel();
 		downloaded = 0;
 
@@ -381,8 +384,8 @@ public class DownloadInfo implements Runnable {
 				source = Jsoup.parse(new URL(iframe.attr("src")), 60000);
 				String lines[] = source.data().split("\\r?\\n");
 				for (String line : lines) {
-					if (line.contains("file: \"http://gateway"))
-						return line.replace("file: \"", "").replace("\",", "").trim();
+					if (line.contains("file: \"http://gateway")) { return line.replace("file: \"", "")
+							.replace("\",", "").trim(); }
 				}
 			}
 		} catch (IOException e) {

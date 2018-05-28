@@ -13,9 +13,12 @@ public interface DownloadObserver {
 	public void finished(DownloadInfo download);
 
 	public void mergingFiles(DownloadInfo download);
+	
 	public void error(DownloadInfo download);
 
 	public void resumed(DownloadInfo download);
+
+	public void cancelling(DownloadInfo download);
 
 	public void cancelled(DownloadInfo download);
 

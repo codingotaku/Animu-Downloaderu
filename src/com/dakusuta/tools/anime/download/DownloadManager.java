@@ -37,16 +37,11 @@ public class DownloadManager implements DownloadObserver {
 
 	private TableObserver observer;
 
-	private DownloadManager() {
-
-	}
-
 	public void addDownloadURL(CustomLabel episode) {
 		DownloadInfo downloadInfo = new DownloadInfo(episode, this);
 		queue.add(downloadInfo);
 
 		if (downloads.size() < MAX_DOWNLOAD) {
-
 			ArrayList<DownloadInfo> toRemove = new ArrayList<>();
 			int end = queue.size() > MAX_DOWNLOAD ? MAX_DOWNLOAD : queue.size();
 			for (int i = 0; i < end; i++) {
@@ -55,7 +50,6 @@ public class DownloadManager implements DownloadObserver {
 				addDownload(info);
 				startDownload(info);
 			}
-
 			toRemove.forEach(queue::remove);
 		}
 	}
@@ -75,15 +69,18 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	@Override
-	public void cancelled(DownloadInfo downloadInfo) {
+	public void downloading(DownloadInfo downloadInfo) {
 		observer.updated(downloadInfo);
-		downloads.remove(downloadInfo);
-		errQueue.add(downloadInfo);
-		startNextDownload();
 	}
 
 	@Override
-	public void downloading(DownloadInfo downloadInfo) {
+	public void cancelling(DownloadInfo downloadInfo) {
+		observer.updated(downloadInfo);
+	}
+
+	@Override
+	public void cancelled(DownloadInfo downloadInfo) {
+		errQueue.add(downloadInfo);
 		observer.updated(downloadInfo);
 	}
 
@@ -104,6 +101,7 @@ public class DownloadManager implements DownloadObserver {
 	public void mergingFiles(DownloadInfo downloadInfo) {
 		observer.updated(downloadInfo);
 	}
+
 	@Override
 	public void finished(DownloadInfo downloadInfo) {
 		downloads.remove(downloadInfo);
@@ -113,31 +111,31 @@ public class DownloadManager implements DownloadObserver {
 
 	public void cancelAll() {
 		globalStop = true;
+		ArrayList<DownloadInfo> toCancel = new ArrayList<>();
+
 		for (int i = downloads.size() - 1; i > -1; i--) {
 			DownloadInfo info = downloads.get(i);
-			if (info.getStatus() == Status.DOWNLOADING) {
-				downloads.remove(info);
-				info.cancel();
-				errQueue.add(info);
-			}
+			toCancel.add(info);
+			downloads.remove(info);
 		}
+
+		toCancel.forEach(info -> info.cancel());
 	}
 
 	public void pauseAll() {
 		globalStop = true;
 
-		ArrayList<DownloadInfo> toRemove = new ArrayList<>();
+		ArrayList<DownloadInfo> toPause = new ArrayList<>();
 
 		for (int i = downloads.size() - 1; i > -1; i--) {
 			DownloadInfo info = downloads.get(i);
 			if (info.getStatus() == Status.DOWNLOADING) {
-				toRemove.add(info);
-				pauseQueue.add(info);
-				info.pause();
+				downloads.remove(info);
+				toPause.add(info);
 			}
 		}
 
-		toRemove.forEach(downloads::remove);
+		toPause.forEach(info -> info.pause());
 	}
 
 	public void resumeAll() {
@@ -150,12 +148,10 @@ public class DownloadManager implements DownloadObserver {
 			DownloadInfo info = pauseQueue.get(i);
 			toRemove.add(info);
 
-			if (info.getStatus() == Status.PAUSED) {
-				if (downloads.size() < MAX_DOWNLOAD) {
-					downloads.add(info);
-					info.resume();
-				} else queue.add(0, info);
-			}
+			if (downloads.size() < MAX_DOWNLOAD) {
+				downloads.add(info);
+				info.resume();
+			} else queue.add(0, info);
 			i++;
 		}
 
@@ -192,7 +188,7 @@ public class DownloadManager implements DownloadObserver {
 			toRemove.add(info);
 
 			if (downloads.size() < MAX_DOWNLOAD) {
-				if (!downloads.contains(info)) downloads.add(info);
+				downloads.add(info);
 				info.restart();
 			} else {
 				queue.add(0, info);
@@ -218,34 +214,20 @@ public class DownloadManager implements DownloadObserver {
 		if (globalStop) return;
 
 		int tmp = downloads.size();
-		if (tmp >= MAX_DOWNLOAD) return;
+		if (tmp >= MAX_DOWNLOAD || queue.isEmpty()) return;
 
-		if (!queue.isEmpty()) {
+		int last = MAX_DOWNLOAD - tmp;
+		if (last > queue.size()) last = queue.size();
 
-			ArrayList<DownloadInfo> toRemove = new ArrayList<>();
-			int last = MAX_DOWNLOAD - tmp;
-			if (last > queue.size()) last = queue.size();
-
-			for (int i = 0; i < last; i++) {
-				DownloadInfo info = queue.get(i);
-				addDownload(info);
-				toRemove.add(info);
-				if (info.getSize() > -1) {
-					switch (info.getStatus()) {
-					case PENDING:
-						info.restart();
-						break;
-					case PAUSED:
-						info.resume();
-						break;
-					default:
-						info.retry();
-						break;
-					}
-				} else startDownload(info);
-			}
-
-			toRemove.forEach(queue::remove);
+		for (int i = 0; i < last; i++) {
+			DownloadInfo info = queue.get(i);
+			addDownload(info);
+			queue.remove(info);
+			if (info.getSize() > -1) {
+				if (info.getStatus() == Status.PENDING) info.restart();
+				else if (info.getStatus() == Status.PAUSED) info.resume();
+				else info.retry();
+			} else startDownload(info);
 		}
 	}
 
@@ -272,16 +254,17 @@ public class DownloadManager implements DownloadObserver {
 
 	public void cancel(DownloadInfo info) {
 		if (info.getStatus() == Status.DOWNLOADING) info.cancel();
+		downloads.remove(info);
+		startNextDownload();
 	}
 
 	public void retry(DownloadInfo info) {
 		if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
+			errQueue.remove(info);
 			if (downloads.size() < MAX_DOWNLOAD) {
-				if (!downloads.contains(info)) downloads.add(info);
-				if (queue.contains(info)) queue.remove(info);
+				downloads.add(info);
 				info.retry();
 			} else {
-				if (queue.contains(info)) queue.remove(info);
 				queue.add(0, info);
 			}
 		}
@@ -289,13 +272,11 @@ public class DownloadManager implements DownloadObserver {
 
 	public void restart(DownloadInfo info) {
 		if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
+			errQueue.remove(info);
 			if (downloads.size() < MAX_DOWNLOAD) {
-				if (!downloads.contains(info)) downloads.add(info);
-				if (queue.contains(info)) queue.remove(info);
+				downloads.add(info);
 				info.restart();
-
 			} else {
-				if (queue.contains(info)) queue.remove(info);
 				info.cancel();
 				info.setStatus(Status.PENDING);
 				queue.add(0, info);

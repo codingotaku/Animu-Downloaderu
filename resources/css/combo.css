@@ -25,26 +25,26 @@ GridPane{
  }
 
 Label{
-	-fx-text-fill:orange;
+	-fx-text-fill:firebrick;
 	-fx-font-weight: bold;
 }
 .combo-box {
-    -fx-background-color: #ff8510;
+    -fx-background-color: firebrick;
     -fx-background-radius: 0;
     -fx-focus-color: transparent;
     -fx-background-insets: -1, -1, -1, -1;
 }
 
 .combo-box-popup .list-view {
-    -fx-background-color: #ff8510;
+    -fx-background-color: #aa0000;
 }
 
 .combo-box-popup .list-view .list-cell:filled {
-    -fx-background-color: #ff8510;
+    -fx-background-color: #aa1010;
 }
 
 .combo-box-popup .list-view .list-cell:filled:hover {
-    -fx-background-color: #ff5000;
+    -fx-background-color: #aa5050;
 }
 
 .combo-box .list-cell {

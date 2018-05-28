@@ -5,5 +5,5 @@ package com.dakusuta.tools.anime.download;
  *         Contains download status
  */
 public enum Status {
-	PENDING, PAUSED, FINISHED, ERROR, RESUME, CANCELLED, DOWNLOADING, MERGING_FILES;
+	PENDING, PAUSED, FINISHED, ERROR, RESUME, CANCELLED, DOWNLOADING, MERGING_FILES, CANCELLING;
 }

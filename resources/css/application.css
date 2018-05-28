@@ -9,10 +9,7 @@ ScrollPane > .corner {
 VBox{
 	-fx-background-color: #525252;	
 }
-.progress-indicator .percentage {
-	
-	
-}
+
 Label {
 	-fx-font-size: 1.0em;
     -fx-font-weight: bold;
@@ -35,46 +32,53 @@ DialogPane{
 }
 
 .table-view{
-   -fx-background-color: #424242;
+	-fx-background-color: #424242;
 }
-
-.table-view:focused{
-    -fx-background-color: #424242;
-}
+.table-view .column-header {
+     -fx-background-color: transparent;
+     -fx-border-color:transparent white transparent transparent;
+     -fx-border-width:0.1;
+} 
 
 .table-view .column-header-background{
     -fx-background-color: linear-gradient(#131313 0.0%, #424141 100.0%);
 }
 
 .table-view .column-header-background .label{
-    -fx-background-color: transparent;
+    -fx-background-color: transparent; 
+    -fx-font-weight:bold;
     -fx-text-fill: white;
 }
 
-.table-view .column-header {
-    -fx-background-color: transparent;
+.table-view .table-column{
+    -fx-alignment:center;
 }
 
-.table-view .table-cell{
-    -fx-text-fill: white;
+
+/* .table-row-cell */
+.table-row-cell .text{
+    -fx-font-weight:bold;
+    -fx-fill: white ;
+} 
+
+.table-row-cell:selected .text{
+     -fx-fill: white ;    
 }
+
+.table-row-cell:selected .text,.table-row-cell:selected .text{
+    -fx-fill:rgb(173.0,255.0,10.0);
+}
+
+.table-row-cell:selected{
+     -fx-background-color:firebrick;
+}
+
 
 .table-row-cell{
-    -fx-background-color: -fx-table-cell-border-color, #616161;
-    -fx-background-insets: 0.0, 0.0 0.0 1.0 0.0;
-    -fx-padding: 0.0em; /* 0 */
-}
-
-.table-row-cell:odd{
-    -fx-background-color: -fx-table-cell-border-color, #424242;
-    -fx-background-insets: 0.0, 0.0 0.0 1.0 0.0;
-    -fx-padding: 0.0em; /* 0 */  
-}
-
-.table-row-cell:selected {
-    -fx-background-color: #ff8000;
-    -fx-background-insets: 0.0;
-    -fx-background-radius: 1.0;
+    -fx-background-color: #202020;
+    -fx-background-insets: 0.0, 0.0 0.0 0.0 0.0;
+    -fx-padding: 0.0em;
+    -fx-border-color: transparent;
 }
 
 .table-view > .virtual-flow > .scroll-bar:vertical,
@@ -96,7 +100,7 @@ DialogPane{
 }
 
 .button{
-   -fx-background-color:#ff9010;
+   -fx-background-color:firebrick;
    -fx-text-fill:white;
    -fx-wrap-text: true;
    -fx-cursor:hand;

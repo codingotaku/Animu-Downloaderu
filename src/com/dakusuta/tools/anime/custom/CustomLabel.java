@@ -8,7 +8,8 @@ public class CustomLabel extends Label {
 	private String url = "";
 	private String anime = "";
 	private CustomLabel(String anime,String url, String text) {
-		super(text.replaceAll("\\s", "-"));
+		super(text.replaceAll("[\\\\/:*?\"<>|]", "_"));
+		anime = anime.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
 		this.anime=anime;
 		this.url = url;
 	}

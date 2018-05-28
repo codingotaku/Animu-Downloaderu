@@ -60,7 +60,6 @@ public class MainFXMLController implements TableObserver {
 	@FXML private ScrollPane scrollPane;
 	@FXML private TableView<DownloadInfo> tableView;
 	@FXML private TableColumn<DownloadInfo, String> fileName;
-	@FXML private TableColumn<DownloadInfo, String> url;
 	@FXML private TableColumn<DownloadInfo, Double> size;
 	@FXML private TableColumn<DownloadInfo, Double> downloaded;
 	@FXML private TableColumn<DownloadInfo, String> progress;
@@ -238,9 +237,23 @@ public class MainFXMLController implements TableObserver {
 			selectedDoc = doc;
 			Element description = doc.select("div.catdescription").first();
 			String content = "<body bgcolor='#323232'><font color=\"red\"><b><u><center>" + label.getText()
-					+ "</center></u></b><br><br>";
-			content += description.text().replace("Plot Summary:", "<b>Plot Summary:</b></font><font color=\"white\">");
-			webEngine.loadContent(content + "</font></body>");
+					+ "</center></u></b><br>";
+			content += "</font><font color=\"white\">";
+			String html = description.html();
+			int start = 0;
+			int end = 0;
+			
+			//some times there are no image tags
+			if ((start = html.indexOf("<")) > -1
+					&& (end = html.indexOf(">")) > -1) {
+				html = html.substring(start, end + 1);
+				html = html.replaceFirst("(<img.*src=\")",
+						"<img width=\"100\" height=\"150\" style=\"float:left;position:absolute;top:0;\" src=\"http://www.gogoanime.to");
+			}
+			html += "<div style=\"margin-left:10em;\">";
+			content += html;
+			content += description.text().replace("Plot Summary:", "<b>Plot Summary:</b>");
+			webEngine.loadContent(content + "</div></font></div></body>");
 			showEpisodes.setText("Show Episodes");
 			showEpisodes.setDisable(false);
 		} catch (IOException e) {
@@ -256,7 +269,6 @@ public class MainFXMLController implements TableObserver {
 		manager.setController(this);
 
 		fileName.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("fileName"));
-		url.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("url"));
 		size.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("size"));
 		downloaded.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("downloaded"));
 		progress.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("progress"));
@@ -295,7 +307,7 @@ public class MainFXMLController implements TableObserver {
 			e = end;
 		}
 
-		new Thread(() -> { // because it will take a hell lot of time to execute my spaghetti code
+		new Thread(() -> {// because it will take a hell lot of time to execute my spaghetti code
 			List<CustomLabel> toDownload = Utils.copyList(episodes);
 			for (int i = s; i >= e; i--) {
 				CustomLabel episode = toDownload.get(i);
@@ -311,8 +323,6 @@ public class MainFXMLController implements TableObserver {
 
 	@Override
 	public void updated(DownloadInfo download) {
-		
-//		tableView.refresh();
+		tableView.refresh();
 	}
-
 }
