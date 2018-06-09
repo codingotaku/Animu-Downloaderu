@@ -1,9 +1,12 @@
 package com.dakusuta.tools.anime;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +35,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -49,10 +54,7 @@ public class MainFXMLController implements TableObserver {
 	// Display episodes of selected anime
 	@FXML private Button showEpisodes;
 
-	// For navigating through anime episodes
-	@FXML private Button previous;
-	@FXML private Button next;
-
+	@FXML ImageView poster;
 	// For Anime summary
 	@FXML private WebView webView;
 
@@ -71,10 +73,6 @@ public class MainFXMLController implements TableObserver {
 	private Document selectedDoc = null;
 	private ArrayList<CustomLabel> animeList = new ArrayList<>();
 	private List<CustomLabel> episodes = new ArrayList<>();
-	private int current;
-	private int last;
-	private String epUrl;
-
 	DownloadManager manager = DownloadManager.getInstance();
 
 	@FXML
@@ -92,114 +90,49 @@ public class MainFXMLController implements TableObserver {
 		}
 	}
 
-	private String getTitle(String title) {
-		return title.substring(0, title.indexOf("|")).trim();
-	}
-
 	private void loadEpisodes() {
 		episodes.clear();
 		list.getChildren().clear();
 
-		current = last = 1;
+		String title = selectedDoc.select("h1.blue-main-title").get(0).text();
+		Elements nav = selectedDoc.select("div.left-left > ul.anime-list");
+		Elements elements = nav.select("li >a");
 
-		Elements navBar = selectedDoc.select("a.last");
-		String tmp;
-		if (navBar.size() == 0) {
-			navBar = selectedDoc.select("a.page");
-			if (navBar.size() == 0) {
-				Elements div = selectedDoc.select("div.postlist");
-				Elements elements = div.select("a");
-				elements.forEach(element -> {
-					CustomLabel label = new CustomLabel(getTitle(selectedDoc.title()), element);
-					episodes.add(label);
-				});
-				list.getChildren().addAll(episodes);
-				return;
-			}
-			last = getPageNum(navBar.last().attr("href"));
-			tmp = navBar.last().attr("href");
-		} else tmp = navBar.first().attr("href");
+		elements.forEach(element -> episodes.add(new CustomLabel(title, element)));
 
-		String url = tmp.substring(0, tmp.lastIndexOf('/'));
-		last =
-
-				getPageNum(tmp);
-		epUrl = url + "/";
-		current = last;
-
-		next.setDisable(false);
-		loadEpisodes(last);
-	}
-
-	private int getPageNum(String path) {
-		path = path.substring(path.lastIndexOf('/') + 1);
-		return Integer.parseInt(path);
-	}
-
-	private void loadEpisodes(int page) {
-		list.getChildren().clear();
-		episodes.clear();
-		try {
-			Document doc = Jsoup.parse(new URL(epUrl + page), 60000);
-			Elements div = doc.select("div.postlist");
-			Elements elements = div.select("a");
-			elements.forEach(element -> {
-				CustomLabel label = new CustomLabel(getTitle(selectedDoc.title()), element);
-				episodes.add(label);
-			});
-			list.getChildren().addAll(episodes);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Collections.reverse(episodes);
+		list.getChildren().addAll(episodes);
 	}
 
 	@FXML
 	protected void download(ActionEvent event) {
 		List<CustomLabel> ep = Utils.copyList(episodes);
 		Optional<Pair<Integer, Integer>> result = new DownloadDialog(ep).showAndWait();
-		result.ifPresent(pair -> {
-			download(pair.getKey(), pair.getValue());
-		});
-	}
-
-	@FXML
-	protected void previous(ActionEvent event) {
-		if (current < last) {
-			current++;
-			if (current == last) previous.setDisable(true);
-			loadEpisodes(current);
-			next.setDisable(false);
-		}
-	}
-
-	@FXML
-	protected void next(ActionEvent event) {
-		if (current > 1) {
-			current--;
-			loadEpisodes(current);
-			if (current == 1) next.setDisable(true);
-			previous.setDisable(false);
-		}
+		result.ifPresent(pair -> download(pair.getKey(), pair.getValue()));
 	}
 
 	private void loadAnime() {
 		if (animeList.isEmpty()) {
 			new Thread(() -> {
 				LoadDialog.setMessage("Fetching website");
+				String animeListPath = "http://www.anime1.com/content/list/";
 				try {
-					Document doc = Jsoup.parse(new URL("http://www.gogoanime.to/watch-anime-list"), 60000);
+					Document doc = Jsoup.parse(new URL(animeListPath), 60000);
 					LoadDialog.setMessage("Finding anime collection");
-					Elements elements = doc.select("li.cat-item > a");
+					Elements elements = doc.select("div.alph-list-box > h4 > a[name]");
 					LoadDialog.setMessage("Loading List");
 					elements.forEach(element -> {
-						CustomLabel label = new CustomLabel(element);
-						label.setOnMouseClicked(this::getSynopsys);
-						Platform.runLater(() -> {
-							LoadDialog.setMessage("Found " + label.getText());
-							animeList.add(label);
+						List<Element> nodes = element.parent().nextElementSibling().children();
+						nodes.forEach(node -> {
+							CustomLabel label = new CustomLabel(node.child(0));
+							Platform.runLater(() -> {
+								LoadDialog.setMessage("Found " + label.getText());
+								animeList.add(label);
+							});
+
+							label.setOnMouseClicked(this::getSynopsys);
 						});
 					});
-					LoadDialog.setMessage("Finished loading");
 				} catch (UnknownHostException e) {
 					Platform.runLater(() -> {
 						LoadDialog.setMessage("Unable to connect please try again later");
@@ -215,6 +148,7 @@ public class MainFXMLController implements TableObserver {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+
 				LoadDialog.stopDialog();
 				Platform.runLater(() -> {
 					list.getChildren().addAll(animeList);
@@ -235,25 +169,20 @@ public class MainFXMLController implements TableObserver {
 		try {
 			Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
 			selectedDoc = doc;
-			Element description = doc.select("div.catdescription").first();
-			String content = "<body bgcolor='#323232'><font color=\"red\"><b><u><center>" + label.getText()
-					+ "</center></u></b><br>";
-			content += "</font><font color=\"white\">";
+			Element description = doc.select("div.detail-left").first();
 			String html = description.html();
-			int start = 0;
-			int end = 0;
-			
-			//some times there are no image tags
-			if ((start = html.indexOf("<")) > -1
-					&& (end = html.indexOf(">")) > -1) {
-				html = html.substring(start, end + 1);
-				html = html.replaceFirst("(<img.*src=\")",
-						"<img width=\"100\" height=\"150\" style=\"float:left;position:absolute;top:0;\" src=\"http://www.gogoanime.to");
-			}
-			html += "<div style=\"margin-left:10em;\">";
-			content += html;
-			content += description.text().replace("Plot Summary:", "<b>Plot Summary:</b>");
-			webEngine.loadContent(content + "</div></font></div></body>");
+
+
+			Platform.runLater(() -> {
+					poster.setImage(getPoster(doc.select("div.detail-cover >a >img").attr("src")));
+			});
+			// A brute force way to replace all unnecessary links and scripts
+
+			html = html.replaceAll("<a[^>]*>([^<]+)</a>", "$1")
+					.replaceAll("</span>", "</span><br><br>")
+					.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
+
+			webEngine.loadContent("<body bgcolor=\"#424242\"><font color=\"white\">" + html + "</font></body>");
 			showEpisodes.setText("Show Episodes");
 			showEpisodes.setDisable(false);
 		} catch (IOException e) {
@@ -282,11 +211,27 @@ public class MainFXMLController implements TableObserver {
 		});
 	}
 
+	private Image getPoster(String imgUrl) {
+		try {
+			URL url = new URL(imgUrl);
+
+			final HttpURLConnection connection = (HttpURLConnection) url
+					.openConnection();
+			connection.setRequestProperty(
+					"User-Agent",
+					"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0");
+			return new Image(connection.getInputStream());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	private void search(String text) {
 		showEpisodes.setDisable(true);
 		download.setDisable(true);
-		previous.setDisable(true);
-		next.setDisable(true);
 		if (!(animeList.isEmpty())) {
 			list.getChildren().clear();
 			List<CustomLabel> anime = animeList.stream().filter(label -> label.hasValue(text))

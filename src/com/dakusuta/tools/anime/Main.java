@@ -14,7 +14,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
 	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
 	private static final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.75;
-	
+
 	@Override
 	public void start(Stage primaryStage) {
 		try {
@@ -25,10 +25,13 @@ public class Main extends Application {
 			scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
 			primaryStage.setTitle("Animu Downloaderu");
 			primaryStage.setScene(scene);
-			primaryStage.setOnCloseRequest(e->DownloadManager.getInstance().pauseAll());
+			primaryStage.setOnCloseRequest(e -> {
+				DownloadManager.getInstance().pauseAll();
+				System.exit(0);// I shouldn't do this but for now I'll force close the app
+			});
 			primaryStage.show();
 			LoadDialog.showDialog(primaryStage, "Please wait", "Loading anime..");
-		} catch (IOException e) {	
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

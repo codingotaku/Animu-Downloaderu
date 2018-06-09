@@ -15,6 +15,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import com.dakusuta.tools.anime.custom.CustomTableColumn?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.image.ImageView?>
 
 <VBox fx:controller="com.dakusuta.tools.anime.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10">
@@ -23,16 +24,8 @@
 	</padding>
 
 	<HBox spacing="10">
-
-		<Button fx:id="previous" text="Previous" disable="true"
-			onAction="#previous" prefWidth="80" />
-
-		<Button fx:id="next" text="Next" disable="true"
-			onAction="#next" prefWidth="80" />
-
 		<Button fx:id="download" text="Download" disable="true"
 			onAction="#download" prefWidth="150" HBox.hgrow="ALWAYS" />
-
 		<TextField fx:id="search" promptText="Enter Anime to search"
 			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
 	</HBox>
@@ -40,13 +33,16 @@
 	<HBox spacing="10">
 		<ScrollPane fx:id="scrollPane" styleClass="edge-to-edge"
 			fitToHeight="true" fitToWidth="true">
-			<VBox id="list" prefWidth="300" />
+			<VBox id="list" prefWidth="400" />
 		</ScrollPane>
 
 		<VBox spacing="10" HBox.hgrow="ALWAYS">
-
-			<WebView fx:id="webView" prefHeight="300" />
-
+			<HBox>
+				<ImageView fx:id="poster" fitHeight="300" fitWidth="200"
+					pickOnBounds="true" preserveRatio="true" />
+				<WebView fx:id="webView" prefHeight="300"
+					maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+			</HBox>
 			<HBox spacing="10">
 				<padding>
 					<Insets top="0" right="10" bottom="0" left="10" />

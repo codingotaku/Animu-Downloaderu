@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 import com.dakusuta.tools.anime.custom.CustomLabel;
@@ -378,15 +378,11 @@ public class DownloadInfo implements Runnable {
 	private String generateDownloadUrl() {
 		try {
 			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
-			Elements iframes = doc.select("iframe[src^=http://]");
-			for (Element iframe : iframes) {
-				Document source;
-				source = Jsoup.parse(new URL(iframe.attr("src")), 60000);
-				String lines[] = source.data().split("\\r?\\n");
-				for (String line : lines) {
-					if (line.contains("file: \"http://gateway")) { return line.replace("file: \"", "")
-							.replace("\",", "").trim(); }
-				}
+			Pattern pattern = Pattern.compile("(http://.*(.mp4\\?)[^\"]*)");
+			Matcher matcher = pattern.matcher(doc.data());
+			
+			if (matcher.find()){
+			    return matcher.group(0);
 			}
 		} catch (IOException e) {
 			error();
