@@ -14,3 +14,5 @@ A helpful tool to download your favorite anime as a batch
 7. Enjoy
 
 **It is still under development and the code is a bit spaghettified so feel free to contribute :)**
+
+Download the latest Jar form [Releases](https://github.com/CodingOtaku/Animu-Downloaderu/releases)
