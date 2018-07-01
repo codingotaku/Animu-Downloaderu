@@ -1,21 +1,11 @@
 package com.dakusuta.tools.anime;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
+import com.dakusuta.tools.anime.callback.Crawler;
 import com.dakusuta.tools.anime.callback.TableObserver;
 import com.dakusuta.tools.anime.callback.TableSelectListener;
 import com.dakusuta.tools.anime.custom.CustomLabel;
@@ -24,12 +14,15 @@ import com.dakusuta.tools.anime.custom.LoadDialog;
 import com.dakusuta.tools.anime.download.DownloadInfo;
 import com.dakusuta.tools.anime.download.DownloadManager;
 import com.dakusuta.tools.anime.download.Status;
+import com.dakusuta.tools.anime.source.Source;
+import com.dakusuta.tools.anime.source.Sources;
 import com.dakusuta.tools.anime.util.Utils;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -37,14 +30,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Window;
 import javafx.util.Pair;
 
-public class MainFXMLController implements TableObserver {
+public class MainFXMLController implements TableObserver, Crawler {
+	@FXML private VBox root;
 	// To search for specific anime
 	@FXML private TextField search;
 
@@ -58,6 +51,8 @@ public class MainFXMLController implements TableObserver {
 	// For Anime summary
 	@FXML private WebView webView;
 
+	@FXML private ComboBox<String> servers;
+
 	// For displaying downloads
 	@FXML private ScrollPane scrollPane;
 	@FXML private TableView<DownloadInfo> tableView;
@@ -68,12 +63,12 @@ public class MainFXMLController implements TableObserver {
 	@FXML private TableColumn<DownloadInfo, Status> status;
 
 	private VBox list;
-	private CustomLabel prLbl;
 	private WebEngine webEngine;
-	private Document selectedDoc = null;
-	private ArrayList<CustomLabel> animeList = new ArrayList<>();
+	private List<CustomLabel> animeList = new ArrayList<>();
 	private List<CustomLabel> episodes = new ArrayList<>();
 	DownloadManager manager = DownloadManager.getInstance();
+	private Window window;
+	private Sources sources;
 
 	@FXML
 	protected void showEpisodes(ActionEvent event) {
@@ -86,6 +81,7 @@ public class MainFXMLController implements TableObserver {
 			webEngine.loadContent("<body bgcolor='#323232'>");
 			showEpisodes.setDisable(true);
 			search(search.getText());
+			poster.setImage(null);
 			showEpisodes.setText("Show Episodes");
 		}
 	}
@@ -93,14 +89,7 @@ public class MainFXMLController implements TableObserver {
 	private void loadEpisodes() {
 		episodes.clear();
 		list.getChildren().clear();
-
-		String title = selectedDoc.select("h1.blue-main-title").get(0).text();
-		Elements nav = selectedDoc.select("div.left-left > ul.anime-list");
-		Elements elements = nav.select("li >a");
-
-		elements.forEach(element -> episodes.add(new CustomLabel(title, element)));
-
-		Collections.reverse(episodes);
+		episodes.addAll(sources.loadEpisodes());
 		list.getChildren().addAll(episodes);
 	}
 
@@ -111,83 +100,22 @@ public class MainFXMLController implements TableObserver {
 		result.ifPresent(pair -> download(pair.getKey(), pair.getValue()));
 	}
 
-	private void loadAnime() {
-		if (animeList.isEmpty()) {
-			new Thread(() -> {
-				LoadDialog.setMessage("Fetching website");
-				String animeListPath = "http://www.anime1.com/content/list/";
-				try {
-					Document doc = Jsoup.parse(new URL(animeListPath), 60000);
-					LoadDialog.setMessage("Finding anime collection");
-					Elements elements = doc.select("div.alph-list-box > h4 > a[name]");
-					LoadDialog.setMessage("Loading List");
-					elements.forEach(element -> {
-						List<Element> nodes = element.parent().nextElementSibling().children();
-						nodes.forEach(node -> {
-							CustomLabel label = new CustomLabel(node.child(0));
-							Platform.runLater(() -> {
-								LoadDialog.setMessage("Found " + label.getText());
-								animeList.add(label);
-							});
-
-							label.setOnMouseClicked(this::getSynopsys);
-						});
-					});
-				} catch (UnknownHostException e) {
-					Platform.runLater(() -> {
-						LoadDialog.setMessage("Unable to connect please try again later");
-					});
-					try {
-						Thread.sleep(5000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
-					LoadDialog.stopDialog();
-					e.printStackTrace();
-					return;
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				LoadDialog.stopDialog();
-				Platform.runLater(() -> {
-					list.getChildren().addAll(animeList);
-				});
-			}).start();
-		} else {
-			list.getChildren().addAll(animeList);
-		}
-	}
-
-	private void getSynopsys(MouseEvent ev) {
-		if (!ev.getButton().equals(MouseButton.PRIMARY)) return;
-		if (prLbl != null) prLbl.setId("");
-
-		CustomLabel label = (CustomLabel) ev.getSource();
-		label.setId("selected");
-		prLbl = label;
-		try {
-			Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
-			selectedDoc = doc;
-			Element description = doc.select("div.detail-left").first();
-			String html = description.html();
-
-
+	void loadAnime(Window window) {
+		if (this.window == null) this.window = window;
+		sources.setSource(Source.values()[servers.getSelectionModel().getSelectedIndex()]);
+		list.getChildren().clear();
+		LoadDialog.showDialog(window, "Please wait", "Loading anime..");
+		LoadDialog.setMessage("Fetching website");
+		new Thread(() -> {
+			animeList = sources.loadAnime(window);
 			Platform.runLater(() -> {
-					poster.setImage(getPoster(doc.select("div.detail-cover >a >img").attr("src")));
+				list.getChildren().addAll(animeList);
 			});
-			// A brute force way to replace all unnecessary links and scripts
+			LoadDialog.stopDialog();
+			Platform.runLater(() -> search(search.getText()));
 
-			html = html.replaceAll("<a[^>]*>([^<]+)</a>", "$1")
-					.replaceAll("</span>", "</span><br><br>")
-					.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
+		}).start();
 
-			webEngine.loadContent("<body bgcolor=\"#424242\"><font color=\"white\">" + html + "</font></body>");
-			showEpisodes.setText("Show Episodes");
-			showEpisodes.setDisable(false);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@FXML
@@ -195,7 +123,6 @@ public class MainFXMLController implements TableObserver {
 		webEngine = webView.getEngine();
 		webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 		list = (VBox) scrollPane.getContent().lookup("#list");
-		manager.setController(this);
 
 		fileName.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("fileName"));
 		size.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("size"));
@@ -204,29 +131,18 @@ public class MainFXMLController implements TableObserver {
 		status.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Status>("status"));
 
 		tableView.setRowFactory(new TableSelectListener());
-		loadAnime();
-
 		search.textProperty().addListener((observable, oldValue, newValue) -> {
 			search(newValue);
 		});
-	}
+		sources = Sources.getInstance(this);
+		manager.setController(this);
+		servers.getSelectionModel().select(0);
+		servers.valueProperty().addListener((e) -> {
+			loadAnime(window);
+			poster.setImage(null);
+			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
+		});
 
-	private Image getPoster(String imgUrl) {
-		try {
-			URL url = new URL(imgUrl);
-
-			final HttpURLConnection connection = (HttpURLConnection) url
-					.openConnection();
-			connection.setRequestProperty(
-					"User-Agent",
-					"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0");
-			return new Image(connection.getInputStream());
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	private void search(String text) {
@@ -269,5 +185,28 @@ public class MainFXMLController implements TableObserver {
 	@Override
 	public void updated(DownloadInfo download) {
 		tableView.refresh();
+	}
+
+	@Override
+	public void loading() {
+		LoadDialog.showDialog(window, "Please wait", "Fetching anime details");
+	}
+
+	@Override
+	public void loaded(String content) {
+		Platform.runLater(() -> {
+			webEngine.loadContent(content);
+			LoadDialog.stopDialog();
+			showEpisodes.setDisable(false);
+			showEpisodes.setText("Show Episodes");
+		});
+	}
+
+	@Override
+	public void poster(Image image) {
+		Platform.runLater(() -> {
+			poster.setImage(image);
+		});
+
 	}
 }

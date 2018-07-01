@@ -223,6 +223,9 @@ public class DownloadInfo implements Runnable {
 		try {
 			threadPool.shutdown();
 			threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+			if (status == Status.PAUSED) return;
+
 			if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() != size) {
 				error();
 				return;
@@ -252,6 +255,7 @@ public class DownloadInfo implements Runnable {
 
 	// Finds and sets total size of file from URL, this also sets file name
 	private void getContentSize() throws IOException {
+		System.out.println(url.toString());
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		// Connect to server.
 		connection.connect();
@@ -378,11 +382,18 @@ public class DownloadInfo implements Runnable {
 	private String generateDownloadUrl() {
 		try {
 			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
-			Pattern pattern = Pattern.compile("(http://.*(.mp4\\?)[^\"]*)");
+			Pattern pattern = Pattern.compile("(http://.*(.mp4\\?)[^\"\']*)");
 			Matcher matcher = pattern.matcher(doc.data());
 			
-			if (matcher.find()){
-			    return matcher.group(0);
+
+			if (matcher.find()) {
+				return matcher.group(0);
+			} else {
+				System.out.println("not found");
+				if (pageUrl.contains("animexd")) {
+					pageUrl = doc.select("div.sd-nav > a:contains(English Subbed)").last().attr("href");
+					return generateAltDownloadUrl();
+				}
 			}
 		} catch (IOException e) {
 			error();
@@ -390,4 +401,19 @@ public class DownloadInfo implements Runnable {
 		}
 		return null;
 	}
+
+	private String generateAltDownloadUrl() {
+		try {
+			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
+			Pattern pattern = Pattern.compile("(http://.*(.mp4\\?)[^\"\']*)");
+			Matcher matcher = pattern.matcher(doc.data());
+
+			if (matcher.find()) { return matcher.group(0); }
+		} catch (IOException e) {
+			error();
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 }

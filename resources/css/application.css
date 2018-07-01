@@ -112,3 +112,36 @@ DialogPane{
   -fx-text-fill:black;
   -fx-font-weight:bold;
  }
+ .combo-box {
+    -fx-background-color: firebrick;
+    -fx-background-radius: 0;
+    -fx-focus-color: transparent;
+    -fx-background-insets: -1, -1, -1, -1;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #aa0000;
+}
+
+.combo-box-popup .list-view .list-cell:filled {
+    -fx-background-color: #aa1010;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background-color: #aa5050;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: white;
+	-fx-font-weight: bold;
+}
+
+.combo-box-base .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box-base .arrow {
+    -fx-shape: "M8.124,13.625l4.125-3.375v2.889l-4.125,3.86L4,13.139V10.25L8.124,13.625z";
+    -fx-background-color: white;
+}
+ 

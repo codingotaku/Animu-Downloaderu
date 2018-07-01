@@ -2,7 +2,6 @@ package com.dakusuta.tools.anime;
 
 import java.io.IOException;
 
-import com.dakusuta.tools.anime.custom.LoadDialog;
 import com.dakusuta.tools.anime.download.DownloadManager;
 
 import javafx.application.Application;
@@ -18,7 +17,8 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+			Parent root = loader.load();
 			Scene scene = new Scene(root, WIDTH, HEIGHT);
 			primaryStage.setMinWidth(WIDTH);
 			primaryStage.setMinHeight(HEIGHT);
@@ -30,7 +30,8 @@ public class Main extends Application {
 				System.exit(0);// I shouldn't do this but for now I'll force close the app
 			});
 			primaryStage.show();
-			LoadDialog.showDialog(primaryStage, "Please wait", "Loading anime..");
+			MainFXMLController controller=(MainFXMLController)loader.getController();
+			controller.loadAnime(primaryStage);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
