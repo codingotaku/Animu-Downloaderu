@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +35,7 @@ public class Sources {
 	private Source source = Source.SERVER_1;
 	private Crawler webCrawler;
 
-	private Map<Source, ISource> sourceMap = new HashMap<>();
+	private Map<Source, IServer> serverMap = new HashMap<>();
 
 	public void setSource(Source source) {
 		this.source = source;
@@ -44,11 +43,8 @@ public class Sources {
 
 	private Sources(Crawler crawler) {
 		webCrawler = crawler;
-		sourceMap.put(Source.SERVER_1, new Anime1());
-		sourceMap.put(Source.SERVER_2, new AnimeXD());
-		sourceMap.put(Source.SERVER_3, new ChinaAnime());
-		sourceMap.put(Source.SERVER_4, new AnimeFreak());
-
+		serverMap.put(Source.SERVER_1, new Anime1());
+		serverMap.put(Source.SERVER_2, new AnimeXD());
 	}
 
 	public static Sources getInstance(Crawler crawler) {
@@ -56,55 +52,41 @@ public class Sources {
 		return instance;
 	}
 
-	public class Anime1 extends ISource {
+	private class Anime1 extends IServer {
+		private Anime1() {
+			path = "http://www.anime1.com/content/list/";
+		}
+
 		private final Background focusBackground = new Background(
 				new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY));
 		private final Background unfocusBackground = null;
 
 		@Override
-		public List<CustomLabel> loadAnime(Window window) {
+		public List<CustomLabel> loadAnime(Document doc) {
 			if (!animeList.isEmpty()) return animeList;
-			String animeListPath = "http://www.anime1.com/content/list/";
-			try {
-				Document doc = Jsoup.parse(new URL(animeListPath), 60000);
-				LoadDialog.setMessage("Finding anime collection");
-				Elements elements = doc.select("div.alph-list-box > h4 > a[name]");
-				LoadDialog.setMessage("Loading List");
-				elements.forEach(element -> {
-					List<Element> nodes = element.parent().nextElementSibling().children();
-					nodes.forEach(node -> {
-						CustomLabel label = new CustomLabel(node.child(0));
 
-						label.backgroundProperty().bind(Bindings
-								.when(label.focusedProperty())
-								.then(focusBackground)
-								.otherwise(unfocusBackground));
-						Platform.runLater(() -> {
-							LoadDialog.setMessage("Found " + label.getText());
-							animeList.add(label);
-						});
+			Elements elements = doc.select("div.alph-list-box > h4 > a[name]");
+			elements.forEach(element -> {
+				List<Element> nodes = element.parent().nextElementSibling().children();
+				nodes.forEach(node -> {
+					CustomLabel label = new CustomLabel(node.child(0));
 
-						label.setOnMouseClicked(e -> {
-							label.requestFocus();
-							this.getSynopsys(e);
-						});
+					label.backgroundProperty().bind(Bindings
+							.when(label.focusedProperty())
+							.then(focusBackground)
+							.otherwise(unfocusBackground));
+					Platform.runLater(() -> {
+						LoadDialog.setMessage("Found " + label.getText());
+						animeList.add(label);
+					});
+
+					label.setOnMouseClicked(e -> {
+						label.requestFocus();
+						this.getSynopsys(e);
 					});
 				});
-			} catch (UnknownHostException e) {
-				Platform.runLater(() -> {
-					LoadDialog.setMessage("Unable to connect please try again later");
-				});
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
+			});
 
-				e.printStackTrace();
-				return null;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 			return animeList;
 		}
 
@@ -171,10 +153,10 @@ public class Sources {
 
 	}
 
-	public class AnimeXD extends ISource {
-		// http://www.animexd.me/home/anime-list
+	private class AnimeXD extends IServer {
+		//
 		private AnimeXD() {
-
+			path = "http://www.animexd.me/home/anime-list";
 		}
 
 		private final Background focusBackground = new Background(
@@ -182,49 +164,29 @@ public class Sources {
 		private final Background unfocusBackground = null;
 
 		@Override
-		public List<CustomLabel> loadAnime(Window window) {
+		public List<CustomLabel> loadAnime(Document doc) {
 			if (!animeList.isEmpty()) return animeList;
-			String animeListPath = "http://www.animexd.me/home/anime-list";
-			try {
-				Document doc = Jsoup.parse(new URL(animeListPath), 60000);
-				LoadDialog.setMessage("Finding anime collection");
-				Elements elements = doc.select("div.container-left > div.container-item > div.ci-title");
-				LoadDialog.setMessage("Loading List");
-				elements.forEach(element -> {
-					List<Element> nodes = element.nextElementSibling().children();
-					nodes.forEach(node -> {
-						CustomLabel label = new CustomLabel(node.child(0));
+			Elements elements = doc.select("div.container-left > div.container-item > div.ci-title");
+			elements.forEach(element -> {
+				List<Element> nodes = element.nextElementSibling().children();
+				nodes.forEach(node -> {
+					CustomLabel label = new CustomLabel(node.child(0));
 
-						label.backgroundProperty().bind(Bindings
-								.when(label.focusedProperty())
-								.then(focusBackground)
-								.otherwise(unfocusBackground));
-						Platform.runLater(() -> {
-							LoadDialog.setMessage("Found " + label.getText());
-							animeList.add(label);
-						});
+					label.backgroundProperty().bind(Bindings
+							.when(label.focusedProperty())
+							.then(focusBackground)
+							.otherwise(unfocusBackground));
+					Platform.runLater(() -> {
+						LoadDialog.setMessage("Found " + label.getText());
+						animeList.add(label);
+					});
 
-						label.setOnMouseClicked(e -> {
-							label.requestFocus();
-							this.getSynopsys(e);
-						});
+					label.setOnMouseClicked(e -> {
+						label.requestFocus();
+						this.getSynopsys(e);
 					});
 				});
-			} catch (UnknownHostException e) {
-				Platform.runLater(() -> {
-					LoadDialog.setMessage("Unable to connect please try again later");
-				});
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-
-				e.printStackTrace();
-				return null;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			});
 			return animeList;
 		}
 
@@ -256,9 +218,7 @@ public class Sources {
 		public List<CustomLabel> loadEpisodes() {
 			episodes.clear();
 			String title = selectedDoc.select("div.anime-title").get(0).text();
-			Elements nav = selectedDoc.select("div.ci-contents:nth-child(2)");
-			Elements elements = nav.select("li >a");
-
+			Elements elements = selectedDoc.select("div.ci-contents > div.tnContent:nth-child(2) > ul > li > a");
 			elements.forEach(element -> episodes.add(new CustomLabel(title, element)));
 			return episodes;
 		}
@@ -281,230 +241,33 @@ public class Sources {
 			}
 			return null;
 		}
-	}
-
-	public class AnimeFreak extends ISource {
-		// http://animefreak.tv/book
-		private final Background focusBackground = new Background(
-				new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY));
-		private final Background unfocusBackground = null;
-
-		@Override
-		public List<CustomLabel> loadAnime(Window window) {
-			if (!animeList.isEmpty()) return animeList;
-			String animeListPath = "http://animefreak.tv/book";
-			try {
-				Document doc = Jsoup.parse(new URL(animeListPath), 60000);
-				LoadDialog.setMessage("Finding anime collection");
-				Elements elements = doc.select("div.item-list > ul");
-				LoadDialog.setMessage("Loading List");
-				elements.forEach(element -> {
-					List<Element> nodes = element.children();
-					nodes.forEach(node -> {
-						Element n = node.child(0);
-						n.attr("href", "http://animefreak.tv" + n.attr("href"));
-						CustomLabel label = new CustomLabel(n);
-
-						label.backgroundProperty().bind(Bindings
-								.when(label.focusedProperty())
-								.then(focusBackground)
-								.otherwise(unfocusBackground));
-						Platform.runLater(() -> {
-							LoadDialog.setMessage("Found " + label.getText());
-							animeList.add(label);
-						});
-
-						label.setOnMouseClicked(e -> {
-							label.requestFocus();
-							this.getSynopsys(e);
-						});
-					});
-				});
-			} catch (UnknownHostException e) {
-				Platform.runLater(() -> {
-					LoadDialog.setMessage("Unable to connect please try again later");
-				});
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-
-				e.printStackTrace();
-				return null;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return animeList;
-		}
-
-		@Override
-		public void getSynopsys(MouseEvent ev) {
-			if (!ev.getButton().equals(MouseButton.PRIMARY)) return;
-			webCrawler.loading();
-			new Thread(() -> {
-				CustomLabel label = (CustomLabel) ev.getSource();
-				try {
-					Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
-					selectedDoc = doc;
-					Element name = doc.select("h1").first();
-					Element description = doc.select("h2 ~ blockquote > p").first();
-					String html = "<h3>" + name.html() + "</h3>" + description.html();
-
-					webCrawler.poster(getPoster(doc.select("div.content > p > img").attr("src")));
-					webCrawler.loaded("<body bgcolor=\"#424242\"><font color=\"white\">" + html + "</font></body>");
-				} catch (IOException e) {
-					e.printStackTrace();
-					webCrawler.loaded("<body bgcolor=\"#424242\"><font color=\"white\"> Error :"
-							+ e.getMessage() + "</font></body>");
-				}
-			}).start();
-		}
-
-		@Override
-		public List<CustomLabel> loadEpisodes() {
-			episodes.clear();
-			String title = selectedDoc.select("h1").get(0).text();
-			Elements nav = selectedDoc.select("div.book-navigation > ul.menu");
-			Elements elements = nav.select("li.leaf >a");
-
-			elements.forEach(element -> {
-				element.attr("href", "http://animefreak.tv" + element.attr("href"));
-				episodes.add(new CustomLabel(title, element));
-
-			});
-			return episodes;
-		}
-
-		@Override
-		Image getPoster(String imgUrl) {
-			try {
-				URL url = new URL(imgUrl);
-
-				final HttpURLConnection connection = (HttpURLConnection) url
-						.openConnection();
-				connection.setRequestProperty(
-						"User-Agent",
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0");
-				return new Image(connection.getInputStream());
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-	}
-
-	private class ChinaAnime extends ISource {
-		private final Background focusBackground = new Background(
-				new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY));
-		private final Background unfocusBackground = null;
-
-		// http://ww2.chia-anime.tv/index/
-		public List<CustomLabel> loadAnime(Window window) {
-			if (!animeList.isEmpty()) return animeList;
-			String animeListPath = "http://ww2.chia-anime.tv/index/";
-			try {
-				Document doc = Jsoup.parse(new URL(animeListPath), 60000);
-				LoadDialog.setMessage("Finding anime collection");
-				Elements elements = doc.select("ul > li[itemtype=http://schema.org/TVSeries]");
-				LoadDialog.setMessage("Loading List");
-				elements.forEach(element -> {
-					CustomLabel label = new CustomLabel(element.child(1));
-
-					label.backgroundProperty().bind(Bindings
-							.when(label.focusedProperty())
-							.then(focusBackground)
-							.otherwise(unfocusBackground));
-					Platform.runLater(() -> {
-						LoadDialog.setMessage("Found " + label.getText());
-						animeList.add(label);
-
-						label.setOnMouseClicked(e -> {
-							label.requestFocus();
-							this.getSynopsys(e);
-						});
-					});
-				});
-			} catch (UnknownHostException e) {
-				Platform.runLater(() -> {
-					LoadDialog.setMessage("Unable to connect please try again later");
-				});
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-
-				e.printStackTrace();
-				return null;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return animeList;
-		}
-
-		@Override
-		public void getSynopsys(MouseEvent ev) {
-			if (!ev.getButton().equals(MouseButton.PRIMARY)) return;
-			webCrawler.loading();
-			new Thread(() -> {
-				CustomLabel label = (CustomLabel) ev.getSource();
-				try {
-					Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
-					selectedDoc = doc;
-					Element name = doc.select("h1").first();
-					Element description = doc.select("p[itemprop=description]").first();
-					String html = "<h3>" + name.html() + "</h3>" + description.html();
-
-					webCrawler.poster(getPoster(
-							"http://ww2.chia-anime.tv/" + doc.select("img[itemprop=image]").first().attr("src")));
-					webCrawler.loaded("<body bgcolor=\"#424242\"><font color=\"white\">" + html + "</font></body>");
-				} catch (IOException e) {
-					e.printStackTrace();
-					webCrawler.loaded("<body bgcolor=\"#424242\"><font color=\"white\"> Error :"
-							+ e.getMessage() + "</font></body>");
-				}
-			}).start();
-		}
-
-		@Override
-		public List<CustomLabel> loadEpisodes() {
-			episodes.clear();
-			String title = selectedDoc.select("h1").get(0).text();
-			Elements elements = selectedDoc.select("div.post > h3[itemprop=episodeNumber] > a");
-			elements.forEach(element -> episodes.add(new CustomLabel(title, element)));
-			return episodes;
-		}
-
-		@Override
-		Image getPoster(String imgUrl) {
-			try {
-				URL url = new URL(imgUrl);
-
-				final HttpURLConnection connection = (HttpURLConnection) url
-						.openConnection();
-				connection.setRequestProperty(
-						"User-Agent",
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0");
-				return new Image(connection.getInputStream());
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
-
 	}
 
 	public List<CustomLabel> loadAnime(Window window) {
-		return sourceMap.get(source).loadAnime(window);
+		try {
+			IServer server = serverMap.get(source);
+			Document doc = Jsoup.parse(new URL(server.getPath()), 60000);
+
+			LoadDialog.setMessage("Finding anime collection");
+			return serverMap.get(source).loadAnime(doc);
+		} catch (IOException e) {
+			Platform.runLater(() -> {
+				LoadDialog.setMessage("Unable to connect please try again later");
+			});
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+
+			e.printStackTrace();
+			return null;
+		} finally {
+			LoadDialog.stopDialog();
+		}
 	}
 
 	public List<CustomLabel> loadEpisodes() {
-		return sourceMap.get(source).loadEpisodes();
+		return serverMap.get(source).loadEpisodes();
 	}
 }

@@ -110,10 +110,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 			animeList = sources.loadAnime(window);
 			Platform.runLater(() -> {
 				list.getChildren().addAll(animeList);
+				search(search.getText());
 			});
-			LoadDialog.stopDialog();
-			Platform.runLater(() -> search(search.getText()));
-
 		}).start();
 
 	}
