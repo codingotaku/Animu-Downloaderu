@@ -15,6 +15,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.dakusuta.tools.anime.callback.Crawler;
+import com.dakusuta.tools.anime.custom.AlertDialog;
 import com.dakusuta.tools.anime.custom.AnimeLabel;
 import com.dakusuta.tools.anime.custom.EpisodeLabel;
 import com.dakusuta.tools.anime.custom.LoadDialog;
@@ -246,22 +247,22 @@ public class Sources {
 
 	public List<AnimeLabel> loadAnime(Window window) {
 		try {
+			if (!serverMap.get(source).animeList.isEmpty()) return serverMap.get(source).animeList;
+			Platform.runLater(() -> {
+				LoadDialog.showDialog(window, "Please wait", "Fetching website...");
+			});
 			IServer server = serverMap.get(source);
 			Document doc = Jsoup.parse(new URL(server.getPath()), 60000);
-
 			LoadDialog.setMessage("Finding anime collection");
 			return serverMap.get(source).loadAnime(doc);
-		} catch (IOException e) {
+		} catch (Exception e) {
+			
+			
 			Platform.runLater(() -> {
-				LoadDialog.setMessage("Unable to connect please try again later");
+				LoadDialog.stopDialog();
+				AlertDialog dialog = new AlertDialog("Connection Error", "Unable to connect! Please try again later.");
+				dialog.showAndWait();
 			});
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
-
-			e.printStackTrace();
 			return null;
 		} finally {
 			LoadDialog.stopDialog();

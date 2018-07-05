@@ -13,20 +13,24 @@ ListView{
 	-fx-background-color: #525252;
 }
 
-ListView .list-cell:inactive {
-	-fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-background-color: red;
-	-fx-font-size: 1.0em;
+.list-cell{
+	-fx-background-color: #424242;
+	-fx-text-fill: white;
+}
+.list-cell:even{
+	-fx-background-color: #323232;
+	-fx-text-fill: white;
 }
 
-ListView .list-cell{
-	-fx-font-weight: bold;
-	-fx-background-color: #525252;
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: firebrick ;
     -fx-text-fill: white;
-	-fx-font-size: 1.0em;
 }
 
+.list-cell:hover {
+    -fx-background-color: #222222;
+    -fx-text-fill: white;
+}
 Label {
 	-fx-font-size: 1.0em;
     -fx-font-weight: bold;

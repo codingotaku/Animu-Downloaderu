@@ -6,6 +6,9 @@ GridPane{
   -fx-border-width:2.0px;
  }
 
+#head{
+	-fx-text-fill:white;
+}
 .dialog-pane > .button-bar > .container {
   -fx-background-color:#303030;
 }
@@ -25,7 +28,7 @@ GridPane{
  }
 
 Label{
-	-fx-text-fill:firebrick;
+	-fx-text-fill:yellow;
 	-fx-font-weight: bold;
 }
 .combo-box {

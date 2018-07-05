@@ -19,23 +19,23 @@ import com.dakusuta.tools.anime.source.Source;
 import com.dakusuta.tools.anime.source.Sources;
 
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -44,7 +44,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Window;
-import javafx.util.Callback;
 
 public class MainFXMLController implements TableObserver, Crawler {
 	@FXML private VBox root;
@@ -98,37 +97,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 		}
 	}
 
-	ChangeListener<Boolean> listener = new ChangeListener<Boolean>() {
-		@Override
-		public void changed(ObservableValue<? extends Boolean> paramObservableValue, Boolean paramT1,
-				Boolean selected) {
-			int count = 0;
-
-			for (EpisodeLabel episode : episodes)
-				if (episode.getSelected()) count++;
-
-			int max = episodes.size();
-			if (count == 0) {
-				cb.setIndeterminate(false);
-				cb.setSelected(false);
-			} else if (count != max) {
-				cb.setIndeterminate(true);
-			} else {
-				cb.setIndeterminate(false);
-				cb.setSelected(true);
-			}
-		}
-	};
-
-	private final Callback<EpisodeLabel, ObservableValue<Boolean>> getProperty = new Callback<EpisodeLabel, ObservableValue<Boolean>>() {
-		@Override
-		public BooleanProperty call(EpisodeLabel layer) {
-			return layer.selectedProperty();
-		}
-	};
-
-	private final Callback<ListView<EpisodeLabel>, ListCell<EpisodeLabel>> forListView = CheckBoxListCell
-			.forListView(getProperty);
+	ListView<EpisodeLabel> listView;
 
 	private void loadEpisodes() {
 		episodes.clear();
@@ -136,39 +105,54 @@ public class MainFXMLController implements TableObserver, Crawler {
 		cb.setSelected(false);
 		vBox.getChildren().clear();
 		episodes.addAll(sources.loadEpisodes());
-		episodes.forEach(episode -> episode.selectedProperty().addListener(listener));
-
-		final ListView<EpisodeLabel> listView = new ListView<EpisodeLabel>();
-		listView.setEditable(true);
+		listView = new ListView<EpisodeLabel>();
 		listView.setItems(episodes);
-		listView.setCellFactory(forListView);
+		listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		listView.setOnMouseClicked(new EventHandler<Event>() {
+
+			@Override
+			public void handle(Event event) {
+				int size = listView.getSelectionModel().getSelectedIndices().size();
+				if (size == 0) {
+					cb.setIndeterminate(false);
+					cb.setSelected(false);
+				}
+				if (size < episodes.size()) {
+					cb.setIndeterminate(true);
+				} else {
+					cb.setIndeterminate(false);
+					cb.setSelected(true);
+				}
+
+			}
+
+		});
 		VBox.setVgrow(listView, Priority.ALWAYS);
 		vBox.getChildren().add(listView);
 	}
 
 	@FXML
 	protected void download(ActionEvent event) {
-		int count = episodes.filtered(e -> e.getSelected()).size();
-		if (count > 0) {
-			Optional<Boolean> result = new ConfirmDialog(count == episodes.size(), count).showAndWait();
-			result.ifPresent(res -> {
-				if (res) downloadSelected();
-			});
-		}
+
+		int count = listView.getSelectionModel().getSelectedItems().size();
+		Optional<Boolean> result = new ConfirmDialog(count).showAndWait();
+		result.ifPresent(res -> {
+			if (res) downloadSelected();
+		});
 	}
 
 	void loadAnime(Window window) {
 		if (this.window == null) this.window = window;
 		sources.setSource(Source.values()[servers.getSelectionModel().getSelectedIndex()]);
 		vBox.getChildren().clear();
-		LoadDialog.showDialog(window, "Please wait", "Loading anime..");
-		LoadDialog.setMessage("Fetching website");
 		new Thread(() -> {
 			animeList = sources.loadAnime(window);
-			Platform.runLater(() -> {
-				vBox.getChildren().addAll(animeList);
-				search(search.getText());
-			});
+			if (animeList != null) {
+				Platform.runLater(() -> {
+					vBox.getChildren().addAll(animeList);
+					search(search.getText());
+				});
+			}
 		}).start();
 
 	}
@@ -200,7 +184,12 @@ public class MainFXMLController implements TableObserver, Crawler {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> paramObservableValue, Boolean old,
 					Boolean flag) {
-					episodes.forEach(e -> e.setSelected(flag));
+				if (listView == null) return;
+				if (flag) {
+					listView.getSelectionModel().selectAll();
+				} else {
+					listView.getSelectionModel().clearSelection();
+				}
 			}
 		});
 	}
@@ -219,7 +208,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	private void downloadSelected() {
 		new Thread(() -> {
-			episodes.filtered(episode -> episode.getSelected()).forEach(episode -> {
+			listView.getSelectionModel().getSelectedItems().forEach(episode -> {
 				manager.addDownloadURL(episode.copy());
 			});
 

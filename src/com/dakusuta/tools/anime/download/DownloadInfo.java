@@ -255,7 +255,6 @@ public class DownloadInfo implements Runnable {
 
 	// Finds and sets total size of file from URL, this also sets file name
 	private void getContentSize() throws IOException {
-		System.out.println(url.toString());
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		// Connect to server.
 		connection.connect();
@@ -389,7 +388,6 @@ public class DownloadInfo implements Runnable {
 			if (matcher.find()) {
 				return matcher.group(0);
 			} else {
-				System.out.println("not found");
 				if (pageUrl.contains("animexd")) {
 					pageUrl = doc.select("div.sd-nav > a:contains(English Subbed)").last().attr("href");
 					return generateAltDownloadUrl();

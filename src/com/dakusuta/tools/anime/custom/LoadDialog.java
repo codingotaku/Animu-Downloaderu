@@ -24,7 +24,6 @@ public class LoadDialog {
 	public static void stopDialog() {
 		if (alert != null && alert.isShowing()) {
 			Platform.runLater(() -> {
-//				alert.close();
 				DialogPane dialogPane = alert.getDialogPane();
 				dialogPane.getButtonTypes().add(ButtonType.CANCEL);
 				alert.close();

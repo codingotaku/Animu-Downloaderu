@@ -30,7 +30,7 @@ public class Main extends Application {
 				System.exit(0);// I shouldn't do this but for now I'll force close the app
 			});
 			primaryStage.show();
-			MainFXMLController controller=(MainFXMLController)loader.getController();
+			MainFXMLController controller = (MainFXMLController) loader.getController();
 			controller.loadAnime(primaryStage);
 		} catch (IOException e) {
 			e.printStackTrace();
