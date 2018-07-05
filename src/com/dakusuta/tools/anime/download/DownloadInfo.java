@@ -17,7 +17,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
-import com.dakusuta.tools.anime.custom.CustomLabel;
+import com.dakusuta.tools.anime.custom.EpisodeLabel;
 
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
@@ -50,7 +50,7 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Constructor for Download.
-	public DownloadInfo(CustomLabel episode, DownloadObserver observer) {
+	public DownloadInfo(EpisodeLabel episode, DownloadObserver observer) {
 		this.observer = observer;
 		try {
 			this.pageUrl = episode.getUrl();
@@ -64,7 +64,7 @@ public class DownloadInfo implements Runnable {
 		String home = System.getProperty("user.home");
 		String folder = home + "\\Downloads\\" + anime;
 		new File(folder).mkdir();
-		this.fileName = folder + "\\" + episode.getText();
+		this.fileName = folder + "\\" + episode.toString();
 		size = -1;
 		downloaded = 0;
 		status = Status.PENDING;

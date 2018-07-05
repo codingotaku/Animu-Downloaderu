@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 import com.dakusuta.tools.anime.callback.TableObserver;
-import com.dakusuta.tools.anime.custom.CustomLabel;
+import com.dakusuta.tools.anime.custom.EpisodeLabel;
 
 /**
  * @author Rahul Sivananda <br>
@@ -37,7 +37,7 @@ public class DownloadManager implements DownloadObserver {
 
 	private TableObserver observer;
 
-	public void addDownloadURL(CustomLabel episode) {
+	public void addDownloadURL(EpisodeLabel episode) {
 		DownloadInfo downloadInfo = new DownloadInfo(episode, this);
 		queue.add(downloadInfo);
 

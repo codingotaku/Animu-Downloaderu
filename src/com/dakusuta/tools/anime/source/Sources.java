@@ -15,7 +15,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.dakusuta.tools.anime.callback.Crawler;
-import com.dakusuta.tools.anime.custom.CustomLabel;
+import com.dakusuta.tools.anime.custom.AnimeLabel;
+import com.dakusuta.tools.anime.custom.EpisodeLabel;
 import com.dakusuta.tools.anime.custom.LoadDialog;
 
 import javafx.application.Platform;
@@ -62,14 +63,14 @@ public class Sources {
 		private final Background unfocusBackground = null;
 
 		@Override
-		public List<CustomLabel> loadAnime(Document doc) {
+		public List<AnimeLabel> loadAnime(Document doc) {
 			if (!animeList.isEmpty()) return animeList;
 
 			Elements elements = doc.select("div.alph-list-box > h4 > a[name]");
 			elements.forEach(element -> {
 				List<Element> nodes = element.parent().nextElementSibling().children();
 				nodes.forEach(node -> {
-					CustomLabel label = new CustomLabel(node.child(0));
+					AnimeLabel label = new AnimeLabel(node.child(0));
 
 					label.backgroundProperty().bind(Bindings
 							.when(label.focusedProperty())
@@ -95,7 +96,7 @@ public class Sources {
 			if (!ev.getButton().equals(MouseButton.PRIMARY)) return;
 			webCrawler.loading();
 			new Thread(() -> {
-				CustomLabel label = (CustomLabel) ev.getSource();
+				AnimeLabel label = (AnimeLabel) ev.getSource();
 				try {
 					Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
 					selectedDoc = doc;
@@ -120,13 +121,13 @@ public class Sources {
 		}
 
 		@Override
-		public List<CustomLabel> loadEpisodes() {
+		public List<EpisodeLabel> loadEpisodes() {
 			episodes.clear();
 			String title = selectedDoc.select("h1.blue-main-title").get(0).text();
 			Elements nav = selectedDoc.select("div.left-left > ul.anime-list");
 			Elements elements = nav.select("li >a");
 
-			elements.forEach(element -> episodes.add(new CustomLabel(title, element)));
+			elements.forEach(element -> episodes.add(new EpisodeLabel(title, element)));
 
 			Collections.reverse(episodes);
 			return episodes;
@@ -164,13 +165,13 @@ public class Sources {
 		private final Background unfocusBackground = null;
 
 		@Override
-		public List<CustomLabel> loadAnime(Document doc) {
+		public List<AnimeLabel> loadAnime(Document doc) {
 			if (!animeList.isEmpty()) return animeList;
 			Elements elements = doc.select("div.container-left > div.container-item > div.ci-title");
 			elements.forEach(element -> {
 				List<Element> nodes = element.nextElementSibling().children();
 				nodes.forEach(node -> {
-					CustomLabel label = new CustomLabel(node.child(0));
+					AnimeLabel label = new AnimeLabel(node.child(0));
 
 					label.backgroundProperty().bind(Bindings
 							.when(label.focusedProperty())
@@ -195,7 +196,7 @@ public class Sources {
 			if (!ev.getButton().equals(MouseButton.PRIMARY)) return;
 			webCrawler.loading();
 			new Thread(() -> {
-				CustomLabel label = (CustomLabel) ev.getSource();
+				AnimeLabel label = (AnimeLabel) ev.getSource();
 				try {
 					Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
 					selectedDoc = doc;
@@ -215,11 +216,11 @@ public class Sources {
 		}
 
 		@Override
-		public List<CustomLabel> loadEpisodes() {
+		public List<EpisodeLabel> loadEpisodes() {
 			episodes.clear();
 			String title = selectedDoc.select("div.anime-title").get(0).text();
 			Elements elements = selectedDoc.select("div.ci-contents > div.tnContent:nth-child(2) > ul > li > a");
-			elements.forEach(element -> episodes.add(new CustomLabel(title, element)));
+			elements.forEach(element -> episodes.add(new EpisodeLabel(title, element)));
 			return episodes;
 		}
 
@@ -243,7 +244,7 @@ public class Sources {
 		}
 	}
 
-	public List<CustomLabel> loadAnime(Window window) {
+	public List<AnimeLabel> loadAnime(Window window) {
 		try {
 			IServer server = serverMap.get(source);
 			Document doc = Jsoup.parse(new URL(server.getPath()), 60000);
@@ -267,7 +268,8 @@ public class Sources {
 		}
 	}
 
-	public List<CustomLabel> loadEpisodes() {
+	public List<EpisodeLabel> loadEpisodes() {
 		return serverMap.get(source).loadEpisodes();
 	}
+
 }

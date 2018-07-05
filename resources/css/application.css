@@ -9,6 +9,23 @@ ScrollPane > .corner {
 VBox{
 	-fx-background-color: #525252;	
 }
+ListView{
+	-fx-background-color: #525252;
+}
+
+ListView .list-cell:inactive {
+	-fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: red;
+	-fx-font-size: 1.0em;
+}
+
+ListView .list-cell{
+	-fx-font-weight: bold;
+	-fx-background-color: #525252;
+    -fx-text-fill: white;
+	-fx-font-size: 1.0em;
+}
 
 Label {
 	-fx-font-size: 1.0em;
@@ -16,7 +33,7 @@ Label {
     -fx-text-fill: white;
 }
 
-CustomLabel {
+AnimeLabel {
 	-fx-font-weight: bold;
     -fx-text-fill: white;
 	-fx-font-size: 1.0em;	
@@ -114,9 +131,9 @@ DialogPane{
  }
  .combo-box {
     -fx-background-color: firebrick;
-    -fx-background-radius: 0;
+    -fx-background-radius: 0.0;
     -fx-focus-color: transparent;
-    -fx-background-insets: -1, -1, -1, -1;
+    -fx-background-insets: -1.0, -1.0, -1.0, -1.0;
 }
 
 .combo-box-popup .list-view {

@@ -20,6 +20,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.CheckBox?>
 
 <VBox fx:controller="com.dakusuta.tools.anime.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
@@ -28,14 +29,17 @@
 	</padding>
 
 	<HBox spacing="10">
+		<CheckBox fx:id="cb"></CheckBox>
+
 		<ComboBox fx:id="servers" prefWidth="100">
 			<items>
 				<FXCollections fx:factory="observableArrayList">
-					<String fx:value="Server 1"/>
+					<String fx:value="Server 1" />
 					<String fx:value="Server 2" />
 				</FXCollections>
 			</items>
 		</ComboBox>
+
 		<Button fx:id="download" text="Download" disable="true"
 			onAction="#download" prefWidth="150" HBox.hgrow="ALWAYS" />
 		<TextField fx:id="search" promptText="Enter Anime to search"
