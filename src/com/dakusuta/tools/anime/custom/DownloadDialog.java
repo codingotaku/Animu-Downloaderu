@@ -12,8 +12,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.stage.StageStyle;
 
-public class ConfirmDialog extends Dialog<Boolean> {
-	public ConfirmDialog(int count) {
+public class DownloadDialog extends Dialog<Boolean> {
+	public DownloadDialog(int count) {
 		ButtonType buttonType = new ButtonType("Yes", ButtonData.YES);
 		DialogPane dialogPane = getDialogPane();
 		initStyle(StageStyle.UNDECORATED);

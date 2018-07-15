@@ -28,7 +28,7 @@ GridPane{
  }
 
 Label{
-	-fx-text-fill:yellow;
+	-fx-text-fill:gray;
 	-fx-font-weight: bold;
 }
 .combo-box {

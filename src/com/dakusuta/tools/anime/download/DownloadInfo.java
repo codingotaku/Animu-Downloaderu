@@ -18,6 +18,10 @@ import org.jsoup.nodes.Document;
 
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 import com.dakusuta.tools.anime.custom.EpisodeLabel;
+import com.dakusuta.tools.anime.util.Constants;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
@@ -27,14 +31,14 @@ public class DownloadInfo implements Runnable {
 
 	private ArrayList<Segment> segments = new ArrayList<>(); // Download segments
 
-	private DownloadObserver observer = null; // Callback for download status
+	private transient DownloadObserver observer = null; // Callback for download status
 	private String fileName; // Download file name
 	private String anime;
 	private String pageUrl;
 
 	private URL url; // Download URL
 	private Status status; // Current status of download
-	private Callback callBack = new Callback(this) {
+	private transient Callback callBack = new Callback(this) {
 		@Override
 		public void add(int progress, Status status) {
 			addDownloaded(progress);
@@ -59,10 +63,9 @@ public class DownloadInfo implements Runnable {
 			observer.error(this);
 			e.printStackTrace();
 		}
-		this.anime = episode.getAnime();
 
-		String home = System.getProperty("user.home");
-		String folder = home + "\\Downloads\\" + anime;
+		this.anime = episode.getAnime();
+		String folder = Constants.downloadFolder + "\\" + anime;
 		new File(folder).mkdir();
 		this.fileName = folder + "\\" + episode.toString();
 		size = -1;
@@ -383,7 +386,6 @@ public class DownloadInfo implements Runnable {
 			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
 			Pattern pattern = Pattern.compile("(http://.*(.mp4\\?)[^\"\']*)");
 			Matcher matcher = pattern.matcher(doc.data());
-			
 
 			if (matcher.find()) {
 				return matcher.group(0);
@@ -412,6 +414,26 @@ public class DownloadInfo implements Runnable {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public String getUrl() {
+		return url.toString();
+	}
+
+	public JsonObject getJson() {
+		JsonObject object = new JsonObject();
+		JsonParser parser = new JsonParser();
+		Gson gson = new Gson();
+		object.addProperty("size", size);
+		object.addProperty("fileName", fileName);
+		object.addProperty("anime", anime);
+		object.addProperty("pageUrl", pageUrl);
+		object.addProperty("url", url.toString());
+		object.addProperty("downloaded", downloaded);
+		object.add("observer", parser.parse(gson.toJson(observer)).getAsJsonObject());
+		object.add("callBack", parser.parse(gson.toJson(callBack)).getAsJsonObject());
+		object.addProperty("status", status.name());
+		return object;
 	}
 
 }

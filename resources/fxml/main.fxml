@@ -18,20 +18,47 @@
 <?import com.dakusuta.tools.anime.custom.CustomTableColumn?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.CheckBox?>
 
 <VBox fx:controller="com.dakusuta.tools.anime.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
-	<padding>
-		<Insets top="10" right="10" bottom="10" left="10" />
-	</padding>
+
+	<HBox fx:id="title" prefHeight="30"
+		onMousePressed="#titleSelected" onMouseDragged="#titleDragged"
+		onMouseReleased="#titleReleased">
+		<padding>
+			<Insets left="5" top="5" bottom="5" right="5" />
+		</padding>
+		<ImageView id="boxImage" fitWidth="20" fitHeight="20">
+			<image>
+				<Image url="/icons/icon.png"/>
+			</image>
+		</ImageView>
+		<HBox fx:id="title" prefHeight="30" HBox.hgrow="ALWAYS">
+			<padding>
+					<Insets left="5"/>
+				</padding>
+			<Label text="Animu Downloaderu" />
+		</HBox>
+		<Label text="_" prefWidth="30" alignment="CENTER"
+			fx:id="minimize" onMouseClicked="#minimize" />
+		<Label text="⬜" prefWidth="30" alignment="CENTER" fx:id="resize"
+			onMouseClicked="#resize" />
+		<Label text="X" prefWidth="30" alignment="CENTER" fx:id="close"
+			onMouseClicked="#close" />
+	</HBox>
 
 	<HBox spacing="10">
+		<padding>
+			<Insets right="10" bottom="10" left="10" />
+		</padding>
+
 		<CheckBox fx:id="cb"></CheckBox>
 
-		<ComboBox fx:id="servers" prefWidth="100">
+		<ComboBox fx:id="sources" prefWidth="100">
 			<items>
 				<FXCollections fx:factory="observableArrayList">
 					<String fx:value="Server 1" />
@@ -47,6 +74,9 @@
 	</HBox>
 
 	<HBox spacing="10">
+		<padding>
+			<Insets right="10" bottom="10" left="10" />
+		</padding>
 		<ScrollPane fx:id="scrollPane" styleClass="edge-to-edge"
 			fitToHeight="true" fitToWidth="true">
 			<VBox id="list" prefWidth="400" />
@@ -65,6 +95,8 @@
 				</padding>
 				<Button fx:id="showEpisodes" text="Show Episodes"
 					disable="true" onAction="#showEpisodes" />
+				<Button text="Select Download Folder"
+					onAction="#chooseFolder" />
 			</HBox>
 			<TableView fx:id="tableView" VBox.vgrow="ALWAYS">
 				<placeholder>

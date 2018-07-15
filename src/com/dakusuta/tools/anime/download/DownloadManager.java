@@ -26,13 +26,87 @@ public class DownloadManager implements DownloadObserver {
 	private ArrayList<DownloadInfo> pauseQueue = new ArrayList<>();
 
 	/*
+	 * 
 	 * Return DownloadManager instance, this makes sure that there is only one
 	 * download manager per application
 	 */
 	public static DownloadManager getInstance() {
 		if (instance == null) instance = new DownloadManager();
-
 		return instance;
+	}
+
+	public void restoreDownload(DownloadInfo info) {
+		switch (info.getStatus()) {
+		case CANCELLED:
+			errQueue.add(info);
+			break;
+		case CANCELLING:
+			info.setStatus(Status.CANCELLED);
+			errQueue.add(info);
+			break;
+		case DOWNLOADING:
+			downloads.add(info);
+			break;
+		case ERROR:
+			errQueue.add(info);
+			break;
+		case PAUSED:
+			pauseQueue.add(info);
+			break;
+		case PENDING:
+			queue.add(info);
+			break;
+		default:
+			break;
+
+		}
+	}
+
+	public ArrayList<DownloadInfo> getQueue(Status status) {
+		ArrayList<DownloadInfo> ret = new ArrayList<>();
+		switch (status) {
+		case PENDING:
+			ret = queue;
+			break;
+		case ERROR:
+			ret = errQueue;
+			break;
+		case PAUSED:
+			ret = pauseQueue;
+			break;
+		case DOWNLOADING:
+			ret = downloads;
+			break;
+		default:
+			break;
+		}
+		return ret;
+	}
+
+	public void addToQueue(DownloadInfo info) {
+		boolean added = true;
+		switch (info.getStatus()) {
+		case PENDING:
+			queue.add(info);
+			break;
+		case CANCELLED:
+			errQueue.add(info);
+			break;
+		case ERROR:
+			errQueue.add(info);
+			break;
+		case PAUSED:
+			pauseQueue.add(info);
+			break;
+		default:
+			added = false;
+			break;
+		}
+		if (added) observer.added(info);
+	}
+
+	private DownloadManager() {
+		// To make sure DownlodManager wont be reinitialized
 	}
 
 	private TableObserver observer;

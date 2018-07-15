@@ -18,7 +18,6 @@ public class LoadDialog {
 		alert.setContentText(message);
 		alert.initStyle(StageStyle.UNDECORATED);
 		alert.show();
-
 	}
 
 	public static void stopDialog() {

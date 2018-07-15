@@ -2,36 +2,40 @@ package com.dakusuta.tools.anime;
 
 import java.io.IOException;
 
-import com.dakusuta.tools.anime.download.DownloadManager;
+import com.dakusuta.tools.anime.util.Backup;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class Main extends Application {
 	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
 	private static final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.75;
 
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage stage) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
 			Parent root = loader.load();
 			Scene scene = new Scene(root, WIDTH, HEIGHT);
-			primaryStage.setMinWidth(WIDTH);
-			primaryStage.setMinHeight(HEIGHT);
+			stage.setMinWidth(WIDTH);
+			stage.setMinHeight(HEIGHT);
+			stage.initStyle(StageStyle.UNDECORATED);
+			Image icon = new Image(getClass().getResourceAsStream("/icons/icon.png"));
+			stage.getIcons().add(icon);
+			stage.centerOnScreen();
 			scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
-			primaryStage.setTitle("Animu Downloaderu");
-			primaryStage.setScene(scene);
-			primaryStage.setOnCloseRequest(e -> {
-				DownloadManager.getInstance().pauseAll();
-				System.exit(0);// I shouldn't do this but for now I'll force close the app
-			});
-			primaryStage.show();
+			stage.setTitle("Animu Downloaderu");
+			stage.setScene(scene);
+			stage.show();
 			MainFXMLController controller = (MainFXMLController) loader.getController();
-			controller.loadAnime(primaryStage);
+			controller.loadAnime(stage);
+			Backup.loadDownloadFolder();
+			// Backup.restore();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

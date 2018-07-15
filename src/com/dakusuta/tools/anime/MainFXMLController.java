@@ -1,35 +1,33 @@
 package com.dakusuta.tools.anime;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.dakusuta.tools.anime.callback.Crawler;
 import com.dakusuta.tools.anime.callback.TableObserver;
 import com.dakusuta.tools.anime.callback.TableSelectListener;
 import com.dakusuta.tools.anime.custom.AnimeLabel;
-import com.dakusuta.tools.anime.custom.ConfirmDialog;
+import com.dakusuta.tools.anime.custom.DownloadDialog;
 import com.dakusuta.tools.anime.custom.EpisodeLabel;
 import com.dakusuta.tools.anime.custom.LoadDialog;
 import com.dakusuta.tools.anime.download.DownloadInfo;
 import com.dakusuta.tools.anime.download.DownloadManager;
 import com.dakusuta.tools.anime.download.Status;
 import com.dakusuta.tools.anime.source.Source;
-import com.dakusuta.tools.anime.source.Sources;
+import com.dakusuta.tools.anime.source.Servers;
+import com.dakusuta.tools.anime.util.Backup;
+import com.dakusuta.tools.anime.util.Constants;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
@@ -39,30 +37,36 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 
 public class MainFXMLController implements TableObserver, Crawler {
-	@FXML private VBox root;
-	// To search for specific anime
+	@FXML private VBox root; // Root
+
+	// Title bar
+	@FXML private Label minimize;
+	@FXML private Label resize;
+	@FXML private Label close;
+	@FXML private HBox title;
+	@FXML private HBox center;
+
+	// Anime download and interactions
 	@FXML private TextField search;
-
 	@FXML private CheckBox cb;
-
-	// To download
+	@FXML private ComboBox<String> sources;
 	@FXML private Button download;
 
-	// Display episodes of selected anime
+	// Anime information
 	@FXML private Button showEpisodes;
-
-	@FXML ImageView poster;
-	// For Anime summary
+	@FXML private ImageView poster;
 	@FXML private WebView webView;
-
-	@FXML private ComboBox<String> servers;
 
 	// For displaying downloads
 	@FXML private ScrollPane scrollPane;
@@ -73,69 +77,90 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@FXML private TableColumn<DownloadInfo, String> progress;
 	@FXML private TableColumn<DownloadInfo, Status> status;
 
-	private VBox vBox;
+	private final ObservableList<EpisodeLabel> episodes = FXCollections.observableArrayList();
+	private final ObservableList<AnimeLabel> animes = FXCollections.observableArrayList();
+	private final DownloadManager manager = DownloadManager.getInstance();
+
+	private ListView<EpisodeLabel> episodeList;
+	private ListView<AnimeLabel> animeList;
+
+	private final Delta dragDelta = new Delta();// for title bar dragging
+
 	private WebEngine webEngine;
-	private List<AnimeLabel> animeList = new ArrayList<>();
-	final ObservableList<EpisodeLabel> episodes = FXCollections.observableArrayList();
-	DownloadManager manager = DownloadManager.getInstance();
+	private Servers servers;
 	private Window window;
-	private Sources sources;
+	private Stage stage;
+	private VBox vBox;
 
 	@FXML
-	protected void showEpisodes(ActionEvent event) {
+	private void showEpisodes(ActionEvent event) {
 		vBox.getChildren().clear();
 		if (showEpisodes.getText().equals("Show Episodes")) {
 			loadEpisodes();
 			download.setDisable(false);
 			showEpisodes.setText("Back to Anime list");
 		} else {
-			webEngine.loadContent("<body bgcolor='#323232'>");
+			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 			showEpisodes.setDisable(true);
-			search(search.getText());
+			loadAnime(window);
 			poster.setImage(null);
 			showEpisodes.setText("Show Episodes");
 		}
 	}
-
-	ListView<EpisodeLabel> listView;
 
 	private void loadEpisodes() {
 		episodes.clear();
 		cb.setIndeterminate(false);
 		cb.setSelected(false);
 		vBox.getChildren().clear();
-		episodes.addAll(sources.loadEpisodes());
-		listView = new ListView<EpisodeLabel>();
-		listView.setItems(episodes);
-		listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-		listView.setOnMouseClicked(new EventHandler<Event>() {
-
-			@Override
-			public void handle(Event event) {
-				int size = listView.getSelectionModel().getSelectedIndices().size();
-				if (size == 0) {
-					cb.setIndeterminate(false);
-					cb.setSelected(false);
-				}
-				if (size < episodes.size()) {
-					cb.setIndeterminate(true);
-				} else {
-					cb.setIndeterminate(false);
-					cb.setSelected(true);
-				}
-
+		episodes.addAll(servers.loadEpisodes());
+		episodeList = new ListView<EpisodeLabel>();
+		episodeList.setItems(episodes);
+		episodeList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		episodeList.setOnMouseClicked(event -> {
+			int size = episodeList.getSelectionModel().getSelectedIndices().size();
+			if (size == 0) {
+				cb.setIndeterminate(false);
+				cb.setSelected(false);
 			}
-
+			if (size < episodes.size()) {
+				cb.setIndeterminate(true);
+			} else {
+				cb.setIndeterminate(false);
+				cb.setSelected(true);
+			}
 		});
-		VBox.setVgrow(listView, Priority.ALWAYS);
-		vBox.getChildren().add(listView);
+		VBox.setVgrow(episodeList, Priority.ALWAYS);
+		vBox.getChildren().add(episodeList);
 	}
 
 	@FXML
-	protected void download(ActionEvent event) {
+	private void chooseFolder() {
+		if (window == null) window = showEpisodes.getScene().getWindow();
+		DirectoryChooser chooser = new DirectoryChooser();
+		chooser.setTitle("Select Download folder");
+		File defaultDirectory;
 
-		int count = listView.getSelectionModel().getSelectedItems().size();
-		Optional<Boolean> result = new ConfirmDialog(count).showAndWait();
+		defaultDirectory = new File(Constants.downloadFolder);
+		if (!defaultDirectory.exists()) {// If the path was external HD or it doesn't exist.
+			String defaultPath = System.getProperty("user.home") + "\\Downloads";
+			Constants.downloadFolder = defaultPath.replace("\\", "/");
+			defaultDirectory = new File(Constants.downloadFolder);
+		}
+
+		chooser.setInitialDirectory(defaultDirectory);
+		File selectedDir = chooser.showDialog(window);
+		if (selectedDir != null && selectedDir.exists()) {
+			Constants.downloadFolder = selectedDir.getAbsolutePath().replace("\\", "/");
+			Backup.saveDownloadFolder();
+		}
+	}
+
+	@FXML
+	private void download(ActionEvent event) {
+
+		int count = episodeList.getSelectionModel().getSelectedItems().size();
+		Optional<Boolean> result = new DownloadDialog(count).showAndWait();
 		result.ifPresent(res -> {
 			if (res) downloadSelected();
 		});
@@ -143,22 +168,25 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	void loadAnime(Window window) {
 		if (this.window == null) this.window = window;
-		sources.setSource(Source.values()[servers.getSelectionModel().getSelectedIndex()]);
+		servers.setSource(Source.values()[sources.getSelectionModel().getSelectedIndex()]);
+		animes.clear();
 		vBox.getChildren().clear();
+		animeList.getSelectionModel().clearSelection();
 		new Thread(() -> {
-			animeList = sources.loadAnime(window);
-			if (animeList != null) {
+			List<AnimeLabel> list = servers.loadAnime(window);
+			if (list != null) {
 				Platform.runLater(() -> {
-					vBox.getChildren().addAll(animeList);
-					search(search.getText());
+					animes.addAll(list);
+					animeList.setItems(animes);
+					VBox.setVgrow(animeList, Priority.ALWAYS);
+					vBox.getChildren().add(animeList);
 				});
 			}
 		}).start();
-
 	}
 
 	@FXML
-	public void initialize() {
+	private void initialize() {
 		webEngine = webView.getEngine();
 		webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 		vBox = (VBox) scrollPane.getContent().lookup("#list");
@@ -171,47 +199,42 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 		tableView.setRowFactory(new TableSelectListener());
 		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
-		sources = Sources.getInstance(this);
+		servers = Servers.getInstance(this);
 		manager.setController(this);
-		servers.getSelectionModel().select(0);
-		servers.valueProperty().addListener((e) -> {
+		sources.getSelectionModel().select(0);
+		sources.valueProperty().addListener(e -> {
 			loadAnime(window);
 			poster.setImage(null);
 			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 		});
 
-		cb.selectedProperty().addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> paramObservableValue, Boolean old,
-					Boolean flag) {
-				if (listView == null) return;
-				if (flag) {
-					listView.getSelectionModel().selectAll();
-				} else {
-					listView.getSelectionModel().clearSelection();
-				}
-			}
+		cb.selectedProperty().addListener((paramObservableValue, old, flag) -> {
+			if (episodeList == null) return;
+			if (flag) episodeList.getSelectionModel().selectAll();
+			else episodeList.getSelectionModel().clearSelection();
 		});
+
+		animeList = new ListView<>();
+		animeList.getSelectionModel().selectedItemProperty().addListener((observable, oldV, newV) -> {
+			if (newV != null) servers.getSynopsys(newV);
+		});
+
 	}
 
 	private void search(String text) {
 		showEpisodes.setDisable(true);
 		download.setDisable(true);
-		if (!(animeList.isEmpty())) {
-			vBox.getChildren().clear();
-			List<AnimeLabel> anime = animeList.stream().filter(label -> label.hasValue(text))
-					.collect(Collectors.toList());
-
-			vBox.getChildren().addAll(anime);
+		animeList.getSelectionModel().clearSelection();
+		if (!(animes.isEmpty())) {
+			animeList.setItems(animes.filtered(label -> label.hasValue(text)));
 		}
+
 	}
 
 	private void downloadSelected() {
 		new Thread(() -> {
-			listView.getSelectionModel().getSelectedItems().forEach(episode -> {
-				manager.addDownloadURL(episode.copy());
-			});
-
+			episodeList.getSelectionModel().getSelectedItems()
+					.forEach(episode -> manager.addDownloadURL(episode.copy()));
 		}).start();
 	}
 
@@ -243,5 +266,64 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@Override
 	public void poster(Image image) {
 		Platform.runLater(() -> poster.setImage(image));
+	}
+
+	@FXML
+	private void resize() {
+		stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
+		resize.setText(resize.getText().equals("⬜") ? "⧉" : "⬜");
+		stage.setMaximized(!stage.isMaximized());
+		if (!stage.isMaximized()) stage.setY(0);
+	}
+
+	@FXML
+	private void titleSelected(MouseEvent event) {
+		if (stage == null) stage = (Stage) title.getScene().getWindow();
+		dragDelta.x = event.getScreenX() - stage.getX();
+		dragDelta.y = event.getScreenY() - stage.getY();
+	}
+
+	@FXML
+	private void titleDragged(MouseEvent event) {
+		if (stage.isMaximized()) {
+			double pw = stage.getWidth();
+			resize();
+			double nw = stage.getWidth();
+			dragDelta.x /= (pw / nw);
+		}
+		stage.setX(event.getScreenX() - dragDelta.x);
+		stage.setY(event.getScreenY() - dragDelta.y);
+	}
+
+	@FXML
+	private void titleReleased(MouseEvent event) {
+		if (event.getScreenY() == 0 && !stage.isMaximized()) {
+			resize();
+		}
+	}
+
+	@FXML
+	private void minimize() {
+		if (stage == null) stage = (Stage) title.getScene().getWindow();
+		stage.setIconified(true);
+	}
+
+	@FXML
+	private void close() {
+		if (stage == null) stage = (Stage) title.getScene().getWindow();
+		ConfirmDialog dialog = new ConfirmDialog("Exit?", "Are you sure that you want to exit?");
+		Optional<Boolean> res = dialog.showAndWait();
+		if (res.isPresent()) {
+			if (res.get()) {
+				DownloadManager.getInstance().pauseAll();
+				// Backup.takeBackup(); weird bug, I would like help on solving this issue.
+				stage.close();
+				System.exit(0);// I shouldn't do this but for now I'll force close the app.
+			}
+		}
+	}
+
+	private class Delta {
+		double x, y;
 	}
 }

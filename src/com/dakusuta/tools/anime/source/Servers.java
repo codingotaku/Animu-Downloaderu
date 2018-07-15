@@ -21,19 +21,11 @@ import com.dakusuta.tools.anime.custom.EpisodeLabel;
 import com.dakusuta.tools.anime.custom.LoadDialog;
 
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.geometry.Insets;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.paint.Color;
 import javafx.stage.Window;
 
-public class Sources {
-	private static Sources instance = null;
+public class Servers {
+	private static Servers instance = null;
 	private Source source = Source.SERVER_1;
 	private Crawler webCrawler;
 
@@ -43,25 +35,21 @@ public class Sources {
 		this.source = source;
 	}
 
-	private Sources(Crawler crawler) {
+	private Servers(Crawler crawler) {
 		webCrawler = crawler;
-		serverMap.put(Source.SERVER_1, new Anime1());
-		serverMap.put(Source.SERVER_2, new AnimeXD());
+		serverMap.put(Source.SERVER_1, new Server1());
+		serverMap.put(Source.SERVER_2, new Server2());
 	}
 
-	public static Sources getInstance(Crawler crawler) {
-		if (instance == null) instance = new Sources(crawler);
+	public static Servers getInstance(Crawler crawler) {
+		if (instance == null) instance = new Servers(crawler);
 		return instance;
 	}
 
-	private class Anime1 extends IServer {
-		private Anime1() {
+	private class Server1 extends IServer {
+		private Server1() {
 			path = "http://www.anime1.com/content/list/";
 		}
-
-		private final Background focusBackground = new Background(
-				new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY));
-		private final Background unfocusBackground = null;
 
 		@Override
 		public List<AnimeLabel> loadAnime(Document doc) {
@@ -72,19 +60,9 @@ public class Sources {
 				List<Element> nodes = element.parent().nextElementSibling().children();
 				nodes.forEach(node -> {
 					AnimeLabel label = new AnimeLabel(node.child(0));
-
-					label.backgroundProperty().bind(Bindings
-							.when(label.focusedProperty())
-							.then(focusBackground)
-							.otherwise(unfocusBackground));
 					Platform.runLater(() -> {
 						LoadDialog.setMessage("Found " + label.getText());
 						animeList.add(label);
-					});
-
-					label.setOnMouseClicked(e -> {
-						label.requestFocus();
-						this.getSynopsys(e);
 					});
 				});
 			});
@@ -93,11 +71,9 @@ public class Sources {
 		}
 
 		@Override
-		public void getSynopsys(MouseEvent ev) {
-			if (!ev.getButton().equals(MouseButton.PRIMARY)) return;
+		public void getSynopsys(AnimeLabel label) {
 			webCrawler.loading();
 			new Thread(() -> {
-				AnimeLabel label = (AnimeLabel) ev.getSource();
 				try {
 					Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
 					selectedDoc = doc;
@@ -105,7 +81,7 @@ public class Sources {
 					String html = description.html();
 
 					// A brute force way to replace all unnecessary links and scripts
-
+					
 					html = html.replaceAll("<a[^>]*>([^<]+)</a>", "$1")
 							.replaceAll("</span>", "</span><br><br>")
 							.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
@@ -155,15 +131,10 @@ public class Sources {
 
 	}
 
-	private class AnimeXD extends IServer {
-		//
-		private AnimeXD() {
+	private class Server2 extends IServer {
+		private Server2() {
 			path = "http://www.animexd.me/home/anime-list";
 		}
-
-		private final Background focusBackground = new Background(
-				new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY));
-		private final Background unfocusBackground = null;
 
 		@Override
 		public List<AnimeLabel> loadAnime(Document doc) {
@@ -173,19 +144,9 @@ public class Sources {
 				List<Element> nodes = element.nextElementSibling().children();
 				nodes.forEach(node -> {
 					AnimeLabel label = new AnimeLabel(node.child(0));
-
-					label.backgroundProperty().bind(Bindings
-							.when(label.focusedProperty())
-							.then(focusBackground)
-							.otherwise(unfocusBackground));
 					Platform.runLater(() -> {
 						LoadDialog.setMessage("Found " + label.getText());
 						animeList.add(label);
-					});
-
-					label.setOnMouseClicked(e -> {
-						label.requestFocus();
-						this.getSynopsys(e);
 					});
 				});
 			});
@@ -193,11 +154,9 @@ public class Sources {
 		}
 
 		@Override
-		public void getSynopsys(MouseEvent ev) {
-			if (!ev.getButton().equals(MouseButton.PRIMARY)) return;
+		public void getSynopsys(AnimeLabel label) {
 			webCrawler.loading();
 			new Thread(() -> {
-				AnimeLabel label = (AnimeLabel) ev.getSource();
 				try {
 					Document doc = Jsoup.parse(new URL(label.getUrl()), 60000);
 					selectedDoc = doc;
@@ -256,8 +215,6 @@ public class Sources {
 			LoadDialog.setMessage("Finding anime collection");
 			return serverMap.get(source).loadAnime(doc);
 		} catch (Exception e) {
-			
-			
 			Platform.runLater(() -> {
 				LoadDialog.stopDialog();
 				AlertDialog dialog = new AlertDialog("Connection Error", "Unable to connect! Please try again later.");
@@ -271,6 +228,10 @@ public class Sources {
 
 	public List<EpisodeLabel> loadEpisodes() {
 		return serverMap.get(source).loadEpisodes();
+	}
+	
+	public void getSynopsys(AnimeLabel label) {
+		serverMap.get(source).getSynopsys(label);
 	}
 
 }
