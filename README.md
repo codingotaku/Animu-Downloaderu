@@ -16,7 +16,7 @@ More details at https://codingotaku.com/apps/AnimuDownloaderu/
 
 **Screenshots**
 
-**Huge list of anime to choose from **
+**Huge list of anime to choose from**
 ![screenshot](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/screenshot.png "screenshot")
 
 
