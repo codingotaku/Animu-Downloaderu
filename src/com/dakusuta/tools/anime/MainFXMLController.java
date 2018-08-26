@@ -14,8 +14,8 @@ import com.dakusuta.tools.anime.custom.LoadDialog;
 import com.dakusuta.tools.anime.download.DownloadInfo;
 import com.dakusuta.tools.anime.download.DownloadManager;
 import com.dakusuta.tools.anime.download.Status;
-import com.dakusuta.tools.anime.source.Source;
 import com.dakusuta.tools.anime.source.Servers;
+import com.dakusuta.tools.anime.source.Source;
 import com.dakusuta.tools.anime.util.Backup;
 import com.dakusuta.tools.anime.util.Constants;
 
@@ -92,9 +92,10 @@ public class MainFXMLController implements TableObserver, Crawler {
 	private Stage stage;
 	private VBox vBox;
 
+	private Image defaultImg;
+
 	@FXML
 	private void showEpisodes(ActionEvent event) {
-		vBox.getChildren().clear();
 		if (showEpisodes.getText().equals("Show Episodes")) {
 			loadEpisodes();
 			download.setDisable(false);
@@ -103,17 +104,15 @@ public class MainFXMLController implements TableObserver, Crawler {
 			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 			showEpisodes.setDisable(true);
 			loadAnime(window);
-			poster.setImage(null);
+			poster.setImage(defaultImg);
 			showEpisodes.setText("Show Episodes");
 		}
 	}
 
 	private void loadEpisodes() {
-		episodes.clear();
 		cb.setIndeterminate(false);
 		cb.setSelected(false);
-		vBox.getChildren().clear();
-		episodes.addAll(servers.loadEpisodes());
+		episodes.setAll(servers.loadEpisodes());
 		episodeList = new ListView<EpisodeLabel>();
 		episodeList.setItems(episodes);
 		episodeList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -131,7 +130,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 			}
 		});
 		VBox.setVgrow(episodeList, Priority.ALWAYS);
-		vBox.getChildren().add(episodeList);
+		vBox.getChildren().setAll(episodeList);
 	}
 
 	@FXML
@@ -158,7 +157,6 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void download(ActionEvent event) {
-
 		int count = episodeList.getSelectionModel().getSelectedItems().size();
 		Optional<Boolean> result = new DownloadDialog(count).showAndWait();
 		result.ifPresent(res -> {
@@ -169,17 +167,15 @@ public class MainFXMLController implements TableObserver, Crawler {
 	void loadAnime(Window window) {
 		if (this.window == null) this.window = window;
 		servers.setSource(Source.values()[sources.getSelectionModel().getSelectedIndex()]);
-		animes.clear();
-		vBox.getChildren().clear();
 		animeList.getSelectionModel().clearSelection();
 		new Thread(() -> {
 			List<AnimeLabel> list = servers.loadAnime(window);
 			if (list != null) {
 				Platform.runLater(() -> {
-					animes.addAll(list);
-					animeList.setItems(animes);
+					animes.setAll(list);
+					search(search.getText());
 					VBox.setVgrow(animeList, Priority.ALWAYS);
-					vBox.getChildren().add(animeList);
+					vBox.getChildren().setAll(animeList);
 				});
 			}
 		}).start();
@@ -202,9 +198,11 @@ public class MainFXMLController implements TableObserver, Crawler {
 		servers = Servers.getInstance(this);
 		manager.setController(this);
 		sources.getSelectionModel().select(0);
+		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda.png"));
+		poster.setImage(defaultImg);
 		sources.valueProperty().addListener(e -> {
 			loadAnime(window);
-			poster.setImage(null);
+			poster.setImage(defaultImg);
 			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 		});
 
@@ -226,9 +224,15 @@ public class MainFXMLController implements TableObserver, Crawler {
 		download.setDisable(true);
 		animeList.getSelectionModel().clearSelection();
 		if (!(animes.isEmpty())) {
-			animeList.setItems(animes.filtered(label -> label.hasValue(text)));
+			if (text.isEmpty()) {
+				animeList.setItems(animes);
+			} else {
+				animeList.setItems(animes.filtered(label -> label.hasValue(text)));
+			}
 		}
-
+		if (!vBox.getChildren().contains(animeList)) {
+			vBox.getChildren().setAll(animeList);
+		}
 	}
 
 	private void downloadSelected() {
@@ -270,10 +274,15 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void resize() {
-		stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
-		resize.setText(resize.getText().equals("⬜") ? "⧉" : "⬜");
-		stage.setMaximized(!stage.isMaximized());
-		if (!stage.isMaximized()) stage.setY(0);
+		if (stage == null) stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
+		if (stage.isMaximized()) {
+			stage.setMaximized(false);
+			resize.setText("⬜");
+		} else {
+			stage.setY(0);
+			stage.setMaximized(true);
+			resize.setText("⧉");
+		}
 	}
 
 	@FXML

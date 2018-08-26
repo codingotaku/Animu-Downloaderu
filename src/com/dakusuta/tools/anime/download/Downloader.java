@@ -13,7 +13,7 @@ import java.net.URL;
  */
 public class Downloader implements Runnable {
 	private static final int DELAY_BETWEEN_RETRY = 10000; // Delay between retry after download error
-	private static final int MAX_BUFFER_SIZE = 4096; // Max size of download buffer.
+	private static final int MAX_BUFFER_SIZE = 8192; // Max size of download buffer. 8KB
 	private static final int MAX_RETRY = 8; // Maximum retry for each download thread
 
 	private URL downloadURL; // Download URL

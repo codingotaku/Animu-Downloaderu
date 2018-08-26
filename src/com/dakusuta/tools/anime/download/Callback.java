@@ -11,7 +11,7 @@ public abstract class Callback {
 		this.info = info;
 	}
 
-	abstract void add(int progress, Status status);
+	abstract void add(long progress, Status status);
 
 	public Status getStaus() {
 		return info.getStatus();

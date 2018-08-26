@@ -5,19 +5,19 @@ package com.dakusuta.tools.anime.download;
  *         This class contains segment details for each downloads
  */
 public class Segment {
-	public int start; // Start byte location
-	public int end; // End byte location
-	public int downloaded; // bytes downloaded
+	public long start; // Start byte location
+	public long end; // End byte location
+	public long downloaded; // bytes downloaded
 	public String file; // File name of downloaded segment
 
-	Segment(int start, int end, String file) {
+	Segment(long start, long end, String file) {
 		this.start = start;
 		this.end = end;
 		this.downloaded = 0;
 		this.file = file;
 	}
 
-	Segment(int start, int end, int downloaded, String file) {
+	Segment(long start, long end, long downloaded, String file) {
 		this.start = start;
 		this.end = end;
 		this.downloaded = downloaded;

@@ -35,7 +35,6 @@ public class Main extends Application {
 			MainFXMLController controller = (MainFXMLController) loader.getController();
 			controller.loadAnime(stage);
 			Backup.loadDownloadFolder();
-			// Backup.restore();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

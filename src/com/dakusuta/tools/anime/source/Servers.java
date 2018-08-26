@@ -1,8 +1,6 @@
 package com.dakusuta.tools.anime.source;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,7 +19,6 @@ import com.dakusuta.tools.anime.custom.EpisodeLabel;
 import com.dakusuta.tools.anime.custom.LoadDialog;
 
 import javafx.application.Platform;
-import javafx.scene.image.Image;
 import javafx.stage.Window;
 
 public class Servers {
@@ -81,7 +78,7 @@ public class Servers {
 					String html = description.html();
 
 					// A brute force way to replace all unnecessary links and scripts
-					
+
 					html = html.replaceAll("<a[^>]*>([^<]+)</a>", "$1")
 							.replaceAll("</span>", "</span><br><br>")
 							.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
@@ -109,26 +106,6 @@ public class Servers {
 			Collections.reverse(episodes);
 			return episodes;
 		}
-
-		@Override
-		Image getPoster(String imgUrl) {
-			try {
-				URL url = new URL(imgUrl);
-
-				final HttpURLConnection connection = (HttpURLConnection) url
-						.openConnection();
-				connection.setRequestProperty(
-						"User-Agent",
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0");
-				return new Image(connection.getInputStream());
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
-
 	}
 
 	private class Server2 extends IServer {
@@ -180,30 +157,13 @@ public class Servers {
 			episodes.clear();
 			String title = selectedDoc.select("div.anime-title").get(0).text();
 			Elements elements = selectedDoc.select("div.ci-contents > div.tnContent:nth-child(2) > ul > li > a");
+			if (elements.isEmpty()) { // for new animes
+				elements = selectedDoc.select("div.ci-contents > div.tnContent:nth-child(1) > ul > li > a");
+			}
 			elements.forEach(element -> episodes.add(new EpisodeLabel(title, element)));
 			return episodes;
 		}
-
-		@Override
-		Image getPoster(String imgUrl) {
-			try {
-				URL url = new URL(imgUrl);
-
-				final HttpURLConnection connection = (HttpURLConnection) url
-						.openConnection();
-				connection.setRequestProperty(
-						"User-Agent",
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0");
-				return new Image(connection.getInputStream());
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
 	}
-
 	public List<AnimeLabel> loadAnime(Window window) {
 		try {
 			if (!serverMap.get(source).animeList.isEmpty()) return serverMap.get(source).animeList;
@@ -229,9 +189,8 @@ public class Servers {
 	public List<EpisodeLabel> loadEpisodes() {
 		return serverMap.get(source).loadEpisodes();
 	}
-	
+
 	public void getSynopsys(AnimeLabel label) {
 		serverMap.get(source).getSynopsys(label);
 	}
-
 }

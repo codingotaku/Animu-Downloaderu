@@ -19,28 +19,25 @@ import org.jsoup.nodes.Document;
 import com.dakusuta.tools.anime.callback.DownloadObserver;
 import com.dakusuta.tools.anime.custom.EpisodeLabel;
 import com.dakusuta.tools.anime.util.Constants;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
 	private static final int MAX_THREAD = 8; // Maximum threads allowed for each download
-	private int size; // Size of download in bytes
-	private int downloaded; // Number of bytes downloaded
+	private long size; // Size of download in bytes
+	private long downloaded; // Number of bytes downloaded
 
 	private ArrayList<Segment> segments = new ArrayList<>(); // Download segments
 
-	private transient DownloadObserver observer = null; // Callback for download status
+	private DownloadObserver observer = null; // Callback for download status
 	private String fileName; // Download file name
 	private String anime;
 	private String pageUrl;
 
 	private URL url; // Download URL
 	private Status status; // Current status of download
-	private transient Callback callBack = new Callback(this) {
+	private Callback callBack = new Callback(this) {
 		@Override
-		public void add(int progress, Status status) {
+		public void add(long progress, Status status) {
 			addDownloaded(progress);
 			if (status == Status.ERROR) {
 				error();
@@ -49,7 +46,7 @@ public class DownloadInfo implements Runnable {
 	};
 
 	// For tracking download progress
-	private synchronized void addDownloaded(int count) {
+	private synchronized void addDownloaded(long count) {
 		downloaded += count;
 	}
 
@@ -65,9 +62,9 @@ public class DownloadInfo implements Runnable {
 		}
 
 		this.anime = episode.getAnime();
-		String folder = Constants.downloadFolder + "\\" + anime;
+		String folder = Constants.downloadFolder + "/" + anime;
 		new File(folder).mkdir();
-		this.fileName = folder + "\\" + episode.toString();
+		this.fileName = folder + "/" + episode.toString();
 		size = -1;
 		downloaded = 0;
 		status = Status.PENDING;
@@ -97,24 +94,22 @@ public class DownloadInfo implements Runnable {
 		URL verifiedUrl = null;
 		try {
 			verifiedUrl = new URL(url);
+			// Make sure URL specifies a file.
+			if (verifiedUrl.getFile().length() < 2) return null;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
 		}
-
-		// Make sure URL specifies a file.
-		if (verifiedUrl.getFile().length() < 2) return null;
 
 		return verifiedUrl;
 	}
 
 	// Returns total downloaded size
-	public int getDownloaded() {
+	public long getDownloaded() {
 		return downloaded;
 	}
 
 	// Get this download's size.
-	public int getSize() {
+	public long getSize() {
 		return size;
 	}
 
@@ -167,7 +162,7 @@ public class DownloadInfo implements Runnable {
 		return fileName;
 	}
 
-	private int setDownloadSize() {
+	private long setDownloadSize() {
 		try {
 			getContentSize();
 		} catch (IOException e) {
@@ -180,10 +175,10 @@ public class DownloadInfo implements Runnable {
 		segments.removeIf(segment -> segment.isFinished());
 
 		if (!segments.isEmpty()) return size - downloaded;
-		int partLen = size / MAX_THREAD;
-		int start = 0;
-		int end = partLen;
-		for (int i = 0; i < MAX_THREAD - 1; i++) {
+		long partLen = size / MAX_THREAD;
+		long start = 0;
+		long end = partLen;
+		for (long i = 0; i < MAX_THREAD - 1; i++) {
 			segments.add(new Segment(start, end, fileName + ".part" + (i + 1)));
 			start = end + 1;
 			end += partLen;
@@ -204,24 +199,24 @@ public class DownloadInfo implements Runnable {
 
 	// Download file.
 	public void run() {
-		int downloadSize = setDownloadSize();
+		long downloadSize = setDownloadSize();
 		if (downloadSize <= 0) return;
 
 		ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
 		ArrayList<File> files = new ArrayList<>(MAX_THREAD);
 
-		segments.forEach(segment -> {
-			File file = new File(segment.file);
+		for (Segment segment : segments) {
 			try {
+				File file = new File(segment.file);
 				file.createNewFile();
+				files.add(file);
+				threadPool.submit(new Downloader(url, segment, status, callBack));
 			} catch (IOException e) {
 				error();
 				e.printStackTrace();
-				return;
+				break;
 			}
-			files.add(file);
-			threadPool.submit(new Downloader(url, segment, status, callBack));
-		});
+		}
 
 		try {
 			threadPool.shutdown();
@@ -231,10 +226,7 @@ public class DownloadInfo implements Runnable {
 
 			if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() != size) {
 				error();
-				return;
-			}
-
-			if (status == Status.CANCELLING) {
+			} else if (status == Status.CANCELLING) {
 				// delete every segments
 				segments.forEach(segment -> {
 					File f = new File(segment.file);
@@ -243,13 +235,12 @@ public class DownloadInfo implements Runnable {
 				segments.clear();
 				status = Status.CANCELLED;
 				observer.cancelled(this);
-				return;
+			} else {
+				this.status = Status.MERGING_FILES;
+				observer.mergingFiles(this);
+				Thread.sleep(5000); // Dirty delay for closing all files
+				mergeSegments(files, new File(fileName));
 			}
-
-			this.status = Status.MERGING_FILES;
-			observer.mergingFiles(this);
-			Thread.sleep(5000); // Dirty delay for closing all files
-			mergeSegments(files, new File(fileName));
 		} catch (InterruptedException e) {
 			error();
 			e.printStackTrace();
@@ -270,7 +261,7 @@ public class DownloadInfo implements Runnable {
 		}
 
 		// Check for valid content length.
-		int contentLength = connection.getContentLength();
+		long contentLength = connection.getContentLength();
 		if (contentLength < 1) {
 			System.out.println("Content length " + contentLength);
 			error();
@@ -341,6 +332,8 @@ public class DownloadInfo implements Runnable {
 		if (status != Status.ERROR) {
 			status = Status.FINISHED;
 			observer.finished(this);
+		} else {
+			observer.error(this);
 		}
 	}
 
@@ -364,11 +357,10 @@ public class DownloadInfo implements Runnable {
 			URL verifiedUrl = verifyUrl(url);
 			if (verifiedUrl == null) {
 				error();
-				return;
+			} else {
+				setUrl(verifiedUrl);
+				download();
 			}
-
-			setUrl(verifiedUrl);
-			download();
 		}
 	}
 
@@ -381,34 +373,25 @@ public class DownloadInfo implements Runnable {
 		startDownload();
 	}
 
+	private String convertToUrl(Matcher matcher) {
+		return matcher.group(0);
+	}
+
 	private String generateDownloadUrl() {
 		try {
 			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
-			Pattern pattern = Pattern.compile("(http://.*(.mp4\\?)[^\"\']*)");
-			Matcher matcher = pattern.matcher(doc.data());
 
-			if (matcher.find()) {
-				return matcher.group(0);
-			} else {
-				if (pageUrl.contains("animexd")) {
-					pageUrl = doc.select("div.sd-nav > a:contains(English Subbed)").last().attr("href");
-					return generateAltDownloadUrl();
-				}
+			Matcher matcher;
+			Pattern pattern = Pattern.compile("(http[s]?:\\/\\/[^\\/]*.*.mp4\\\\??[^\\\"\\']*)");
+			matcher = pattern.matcher(doc.data());
+			if (matcher.find()) { return convertToUrl(matcher); }
+			if (pageUrl.contains("animexd")) {
+				pageUrl = doc.select("div.sd-nav > a:contains(English Subbed)").last().attr("href");
+				doc = Jsoup.parse(new URL(pageUrl), 60000);
+				matcher = pattern.matcher(doc.data());
+				if (matcher.find()) return convertToUrl(matcher);
 			}
-		} catch (IOException e) {
-			error();
-			e.printStackTrace();
-		}
-		return null;
-	}
 
-	private String generateAltDownloadUrl() {
-		try {
-			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
-			Pattern pattern = Pattern.compile("(http://.*(.mp4\\?)[^\"\']*)");
-			Matcher matcher = pattern.matcher(doc.data());
-
-			if (matcher.find()) { return matcher.group(0); }
 		} catch (IOException e) {
 			error();
 			e.printStackTrace();
@@ -419,21 +402,4 @@ public class DownloadInfo implements Runnable {
 	public String getUrl() {
 		return url.toString();
 	}
-
-	public JsonObject getJson() {
-		JsonObject object = new JsonObject();
-		JsonParser parser = new JsonParser();
-		Gson gson = new Gson();
-		object.addProperty("size", size);
-		object.addProperty("fileName", fileName);
-		object.addProperty("anime", anime);
-		object.addProperty("pageUrl", pageUrl);
-		object.addProperty("url", url.toString());
-		object.addProperty("downloaded", downloaded);
-		object.add("observer", parser.parse(gson.toJson(observer)).getAsJsonObject());
-		object.add("callBack", parser.parse(gson.toJson(callBack)).getAsJsonObject());
-		object.addProperty("status", status.name());
-		return object;
-	}
-
 }

@@ -34,13 +34,13 @@
 		</padding>
 		<ImageView id="boxImage" fitWidth="20" fitHeight="20">
 			<image>
-				<Image url="/icons/icon.png"/>
+				<Image url="/icons/icon.png" />
 			</image>
 		</ImageView>
 		<HBox fx:id="title" prefHeight="30" HBox.hgrow="ALWAYS">
 			<padding>
-					<Insets left="5"/>
-				</padding>
+				<Insets left="5" />
+			</padding>
 			<Label text="Animu Downloaderu" />
 		</HBox>
 		<Label text="_" prefWidth="30" alignment="CENTER"
@@ -85,7 +85,11 @@
 		<VBox spacing="10" HBox.hgrow="ALWAYS">
 			<HBox>
 				<ImageView fx:id="poster" fitHeight="300" fitWidth="200"
-					pickOnBounds="true" preserveRatio="true" />
+					pickOnBounds="true" preserveRatio="true">
+					<image>
+						<Image url="/icons/panda.png" />
+					</image>
+				</ImageView>
 				<WebView fx:id="webView" prefHeight="300"
 					maxWidth="Infinity" HBox.hgrow="ALWAYS" />
 			</HBox>
