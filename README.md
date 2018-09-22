@@ -1,4 +1,6 @@
 # Animu-Downloaderu
+Warning! the servers are down for some reason, so you may not be able to download anime.
+
 Animu Downloaderu is a java based software which helps you download your favorite anime as a batch.<br/>
 More details at https://codingotaku.com/apps/AnimuDownloaderu/
 
@@ -39,8 +41,3 @@ More details at https://codingotaku.com/apps/AnimuDownloaderu/
 **It is still under development and the code is a bit spaghettified so feel free to contribute :)**
 
 Download the latest Jar form [Releases](https://github.com/CodingOtaku/Animu-Downloaderu/releases)
-
-
-*PS.* **I would gladly pay for anime and I do not promote downloading anime illegally, downloading copyright materials is a serious crime.
-This service is for those who are unable to watch their favorite anime due to region specific restrictions.**
-yeah, I can't even watch one-piece because of the same reason. :/
