@@ -17,7 +17,7 @@ public class DownloadDialog extends Dialog<Boolean> {
 		ButtonType buttonType = new ButtonType("Yes", ButtonData.YES);
 		DialogPane dialogPane = getDialogPane();
 		initStyle(StageStyle.UNDECORATED);
-		dialogPane.getStylesheets().add(getClass().getResource("/css/combo.css").toExternalForm());
+		dialogPane.getStylesheets().add(getClass().getClassLoader().getResource("css/combo.css").toExternalForm());
 
 		HBox header = new HBox();
 		Label title = new Label("Confirm Download");

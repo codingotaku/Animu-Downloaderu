@@ -15,7 +15,7 @@ public class AlertDialog extends Dialog<Void> {
 	public AlertDialog(String title, String message) {
 		DialogPane dialogPane = getDialogPane();
 		initStyle(StageStyle.UNDECORATED);
-		dialogPane.getStylesheets().add(getClass().getResource("/css/combo.css").toExternalForm());
+		dialogPane.getStylesheets().add(getClass().getResource("css/combo.css").toExternalForm());
 
 		HBox titleBar = new HBox();
 		Label header = new Label(title);

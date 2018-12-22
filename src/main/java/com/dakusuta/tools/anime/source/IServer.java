@@ -46,6 +46,6 @@ public abstract class IServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return new Image(AnimuDownloaderu.class.getResourceAsStream("/icons/icon.png"));
+		return new Image(AnimuDownloaderu.class.getResourceAsStream("icons/icon.png"));
 	}
 }

@@ -223,7 +223,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 		servers = Servers.getInstance(this);
 		manager.setController(this);
 		sources.getSelectionModel().select(0);
-		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda.png"));
+		defaultImg = new Image(getClass().getClassLoader().getResourceAsStream("icons/panda.png"));
 		poster.setImage(defaultImg);
 		sources.valueProperty().addListener(e -> {
 			loadAnime(window);

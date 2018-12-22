@@ -15,7 +15,7 @@ public class ConfirmDialog extends Dialog<Boolean> {
 	public ConfirmDialog(String title, String message) {
 		DialogPane dialogPane = getDialogPane();
 		initStyle(StageStyle.UNDECORATED);
-		dialogPane.getStylesheets().add(getClass().getResource("/css/combo.css").toExternalForm());
+		dialogPane.getStylesheets().add(getClass().getClassLoader().getResource("css/combo.css").toExternalForm());
 
 		HBox titleBar = new HBox();
 		Label header = new Label(title);

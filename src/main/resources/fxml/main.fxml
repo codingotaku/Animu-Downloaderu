@@ -34,7 +34,7 @@
 		</padding>
 		<ImageView id="boxImage" fitWidth="20" fitHeight="20">
 			<image>
-				<Image url="/icons/icon.png" />
+				<Image url="icons/icon.png" />
 			</image>
 		</ImageView>
 		<HBox fx:id="title" prefHeight="30" HBox.hgrow="ALWAYS">
@@ -45,7 +45,7 @@
 		</HBox>
 		<Label text="_" prefWidth="30" alignment="CENTER"
 			fx:id="minimize" onMouseClicked="#minimize" />
-		<Label text="⬜" prefWidth="30" alignment="CENTER" fx:id="resize"
+		<Label text="◻" prefWidth="30" alignment="CENTER" fx:id="resize"
 			onMouseClicked="#resize" />
 		<Label text="X" prefWidth="30" alignment="CENTER" fx:id="close"
 			onMouseClicked="#close" />
@@ -87,7 +87,7 @@
 				<ImageView fx:id="poster" fitHeight="300" fitWidth="200"
 					pickOnBounds="true" preserveRatio="true">
 					<image>
-						<Image url="/icons/panda.png" />
+						<Image url="icons/panda.png" />
 					</image>
 				</ImageView>
 				<WebView fx:id="webView" prefHeight="300"

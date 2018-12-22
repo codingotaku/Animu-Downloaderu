@@ -19,16 +19,16 @@ public class AnimuDownloaderu extends Application {
 	@Override
 	public void start(Stage stage) {
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/main.fxml"));
 			Parent root = loader.load();
 			Scene scene = new Scene(root, WIDTH, HEIGHT);
 			stage.setMinWidth(WIDTH);
 			stage.setMinHeight(HEIGHT);
 			stage.initStyle(StageStyle.UNDECORATED);
-			Image icon = new Image(getClass().getResourceAsStream("/icons/icon.png"));
+			Image icon = new Image(getClass().getClassLoader().getResourceAsStream("icons/icon.png"));
 			stage.getIcons().add(icon);
 			stage.centerOnScreen();
-			scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
+			scene.getStylesheets().add(getClass().getClassLoader().getResource("css/application.css").toExternalForm());
 			stage.setTitle("Animu Downloaderu");
 			stage.setScene(scene);
 			stage.show();
