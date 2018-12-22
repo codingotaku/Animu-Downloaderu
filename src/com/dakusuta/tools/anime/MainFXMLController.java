@@ -3,6 +3,7 @@ package com.dakusuta.tools.anime;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.prefs.Preferences;
 
 import com.dakusuta.tools.anime.callback.Crawler;
 import com.dakusuta.tools.anime.callback.TableObserver;
@@ -24,6 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -44,38 +46,59 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
 public class MainFXMLController implements TableObserver, Crawler {
-	@FXML private VBox root; // Root
+	@FXML
+	private VBox root; // Root
 
 	// Title bar
-	@FXML private Label minimize;
-	@FXML private Label resize;
-	@FXML private Label close;
-	@FXML private HBox title;
-	@FXML private HBox center;
+	@FXML
+	private Label minimize;
+	@FXML
+	private Label resize;
+	@FXML
+	private Label close;
+	@FXML
+	private HBox title;
+	@FXML
+	private HBox center;
 
 	// Anime download and interactions
-	@FXML private TextField search;
-	@FXML private CheckBox cb;
-	@FXML private ComboBox<String> sources;
-	@FXML private Button download;
+	@FXML
+	private TextField search;
+	@FXML
+	private CheckBox cb;
+	@FXML
+	private ComboBox<String> sources;
+	@FXML
+	private Button download;
 
 	// Anime information
-	@FXML private Button showEpisodes;
-	@FXML private ImageView poster;
-	@FXML private WebView webView;
+	@FXML
+	private Button showEpisodes;
+	@FXML
+	private ImageView poster;
+	@FXML
+	private WebView webView;
 
 	// For displaying downloads
-	@FXML private ScrollPane scrollPane;
-	@FXML private TableView<DownloadInfo> tableView;
-	@FXML private TableColumn<DownloadInfo, String> fileName;
-	@FXML private TableColumn<DownloadInfo, Double> size;
-	@FXML private TableColumn<DownloadInfo, Double> downloaded;
-	@FXML private TableColumn<DownloadInfo, String> progress;
-	@FXML private TableColumn<DownloadInfo, Status> status;
+	@FXML
+	private ScrollPane scrollPane;
+	@FXML
+	private TableView<DownloadInfo> tableView;
+	@FXML
+	private TableColumn<DownloadInfo, String> fileName;
+	@FXML
+	private TableColumn<DownloadInfo, Double> size;
+	@FXML
+	private TableColumn<DownloadInfo, Double> downloaded;
+	@FXML
+	private TableColumn<DownloadInfo, String> progress;
+	@FXML
+	private TableColumn<DownloadInfo, Status> status;
 
 	private final ObservableList<EpisodeLabel> episodes = FXCollections.observableArrayList();
 	private final ObservableList<AnimeLabel> animes = FXCollections.observableArrayList();
@@ -135,7 +158,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void chooseFolder() {
-		if (window == null) window = showEpisodes.getScene().getWindow();
+		if (window == null)
+			window = showEpisodes.getScene().getWindow();
 		DirectoryChooser chooser = new DirectoryChooser();
 		chooser.setTitle("Select Download folder");
 		File defaultDirectory;
@@ -165,7 +189,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	void loadAnime(Window window) {
-		if (this.window == null) this.window = window;
+		if (this.window == null)
+			this.window = window;
 		servers.setSource(Source.values()[sources.getSelectionModel().getSelectedIndex()]);
 		animeList.getSelectionModel().clearSelection();
 		new Thread(() -> {
@@ -207,14 +232,18 @@ public class MainFXMLController implements TableObserver, Crawler {
 		});
 
 		cb.selectedProperty().addListener((paramObservableValue, old, flag) -> {
-			if (episodeList == null) return;
-			if (flag) episodeList.getSelectionModel().selectAll();
-			else episodeList.getSelectionModel().clearSelection();
+			if (episodeList == null)
+				return;
+			if (flag)
+				episodeList.getSelectionModel().selectAll();
+			else
+				episodeList.getSelectionModel().clearSelection();
 		});
 
 		animeList = new ListView<>();
 		animeList.getSelectionModel().selectedItemProperty().addListener((observable, oldV, newV) -> {
-			if (newV != null) servers.getSynopsys(newV);
+			if (newV != null)
+				servers.getSynopsys(newV);
 		});
 
 	}
@@ -272,22 +301,70 @@ public class MainFXMLController implements TableObserver, Crawler {
 		Platform.runLater(() -> poster.setImage(image));
 	}
 
+	/*
+	 * Some times the JavaFX unMaximize/maximize does not work (in Some OS in a few
+	 * versions This hopefully takes care of that!
+	 * 
+	 */
+	void unMaximize(Stage primaryStage) {
+		Preferences preferences = Preferences.userNodeForPackage(Main.class);
+		double x = preferences.getDouble("x", 0);
+		double y = preferences.getDouble("y", 0);
+		double w = preferences.getDouble("w", 0);
+		double h = preferences.getDouble("h", 0);
+
+		primaryStage.setX(x);
+		primaryStage.setY(y);
+		primaryStage.setWidth(w);
+		primaryStage.setHeight(h);
+	}
+
+	/*
+	 * Some times the JavaFX unMaximize/maximize does not work (in Some OS in a few
+	 * versions This hopefully takes care of that!
+	 * 
+	 */
+	void maximize(Stage primaryStage) {
+		Preferences preferences = Preferences.userNodeForPackage(Main.class);
+		preferences.putDouble("x", stage.getX());
+		preferences.putDouble("y", stage.getY());
+		preferences.putDouble("w", stage.getWidth());
+		preferences.putDouble("h", stage.getHeight());
+
+		Rectangle2D rect = new Rectangle2D(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
+		// For multiple monitors, get the monitor that can handle the app size, if not
+		// the app will crash!
+		// I dont't care who you are, but if you cannot afford a good monitor then you
+		// shouldn't be watching anime all day
+		ObservableList<Screen> screens = Screen.getScreensForRectangle(rect);
+
+		Rectangle2D bounds = screens.get(0).getVisualBounds();
+		primaryStage.setX(bounds.getMinX());
+		primaryStage.setY(bounds.getMinY());
+		primaryStage.setWidth(bounds.getWidth());
+		primaryStage.setHeight(bounds.getHeight());
+	}
+
 	@FXML
 	private void resize() {
-		if (stage == null) stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
+
+		if (stage == null)
+			stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
 		if (stage.isMaximized()) {
 			stage.setMaximized(false);
-			resize.setText("⬜");
+			unMaximize(stage);
+			resize.setText("◻");
 		} else {
-			stage.setY(0);
 			stage.setMaximized(true);
+			maximize(stage);
 			resize.setText("⧉");
 		}
 	}
 
 	@FXML
 	private void titleSelected(MouseEvent event) {
-		if (stage == null) stage = (Stage) title.getScene().getWindow();
+		if (stage == null)
+			stage = (Stage) title.getScene().getWindow();
 		dragDelta.x = event.getScreenX() - stage.getX();
 		dragDelta.y = event.getScreenY() - stage.getY();
 	}
@@ -313,19 +390,20 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void minimize() {
-		if (stage == null) stage = (Stage) title.getScene().getWindow();
+		if (stage == null)
+			stage = (Stage) title.getScene().getWindow();
 		stage.setIconified(true);
 	}
 
 	@FXML
 	private void close() {
-		if (stage == null) stage = (Stage) title.getScene().getWindow();
-		ConfirmDialog dialog = new ConfirmDialog("Exit?", "Are you sure that you want to exit?");
+		if (stage == null)
+			stage = (Stage) title.getScene().getWindow();
+		ConfirmDialog dialog = new ConfirmDialog("Exit?", Constants.EXIT_QUESTION);
 		Optional<Boolean> res = dialog.showAndWait();
 		if (res.isPresent()) {
 			if (res.get()) {
 				DownloadManager.getInstance().pauseAll();
-				// Backup.takeBackup(); weird bug, I would like help on solving this issue.
 				stage.close();
 				System.exit(0);// I shouldn't do this but for now I'll force close the app.
 			}

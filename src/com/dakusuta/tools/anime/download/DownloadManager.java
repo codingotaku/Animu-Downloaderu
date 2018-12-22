@@ -35,6 +35,7 @@ public class DownloadManager implements DownloadObserver {
 		return instance;
 	}
 
+	
 	public void restoreDownload(DownloadInfo info) {
 		switch (info.getStatus()) {
 		case CANCELLED:

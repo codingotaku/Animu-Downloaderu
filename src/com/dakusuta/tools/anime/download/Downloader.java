@@ -67,8 +67,7 @@ public class Downloader implements Runnable {
 
 				data = new byte[MAX_BUFFER_SIZE];
 				while (callBack.getStaus() == Status.DOWNLOADING
-						&& ((readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1)
-						&& (segment.start < segment.end)) { // Redundant
+						&& ((readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1) && (segment.start < segment.end)) { // Redundant
 					// Write buffer to file.
 					file.write(data, 0, readNum);
 					segment.start += readNum;
@@ -91,7 +90,8 @@ public class Downloader implements Runnable {
 				e.printStackTrace();
 			} finally {
 				closeSession();
-				if (retry == MAX_RETRY) break;
+				if (retry == MAX_RETRY)
+					break;
 			}
 		}
 	}
@@ -100,10 +100,13 @@ public class Downloader implements Runnable {
 		status = Status.ERROR;
 		callBack.add(0, status);
 	}
+
 	private void closeSession() {
 		try {
-			if (file != null) file.close();
-			if (httpURLConnection != null) httpURLConnection.disconnect();
+			if (file != null)
+				file.close();
+			if (httpURLConnection != null)
+				httpURLConnection.disconnect();
 		} catch (IOException e) {
 			error();
 		}

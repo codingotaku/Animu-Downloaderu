@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.jsoup.nodes.Document;
 
-import com.dakusuta.tools.anime.Main;
+import com.dakusuta.tools.anime.AnimuDownloaderu;
 import com.dakusuta.tools.anime.custom.AnimeLabel;
 import com.dakusuta.tools.anime.custom.EpisodeLabel;
 
@@ -46,6 +46,6 @@ public abstract class IServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return new Image(Main.class.getResourceAsStream("/icons/icon.png"));
+		return new Image(AnimuDownloaderu.class.getResourceAsStream("/icons/icon.png"));
 	}
 }
