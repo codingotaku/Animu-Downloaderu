@@ -1,10 +1,9 @@
 # Animu-Downloaderu
-Warning! the servers are down for some reason, so you may not be able to download anime.
 
 Animu Downloaderu is a java based software which helps you download your favorite anime as a batch.<br/>
 More details at https://codingotaku.com/apps/AnimuDownloaderu/
 
-**Requirements :** Java 8 or above.
+**Requirements :** Java **11** or above.
 1) Launch the app with a double click.
 2) Wait for a few seconds for the app to fetch list of anime. (one time wait!)
 3) Select the folder where you want to keep your anime.
@@ -15,7 +14,13 @@ More details at https://codingotaku.com/apps/AnimuDownloaderu/
 8) If you cannot find your favorite anime from the list, you can try changing the server!.
 9) Enjoy ;)
 
-
+**To build from Source**
+Run 
+```
+ ./gradlew jar
+ #Runnable jar will be present at build/lib/ folder
+ 
+```
 **Screenshots**
 
 **Huge list of anime to choose from**
