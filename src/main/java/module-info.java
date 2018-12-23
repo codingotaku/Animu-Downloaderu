@@ -17,5 +17,5 @@ module Animu_Downloaderu {
 	requires javafx.fxml;
 	requires transitive javafx.graphics;
 	requires javafx.web;
-	requires transitive org.jsoup;
+	requires org.jsoup;
 }

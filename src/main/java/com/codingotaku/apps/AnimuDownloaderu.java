@@ -16,7 +16,13 @@ public class AnimuDownloaderu extends Application {
 	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
 	private static final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.75;
 
-	@Override
+	//It is a workaround, Down't ask me whats happening here
+	//Called from Main.java file
+    public static void main(String[] args) {
+    	launch(args);
+    }
+
+    @Override
 	public void start(Stage stage) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
