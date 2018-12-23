@@ -15,7 +15,7 @@
 <?import javafx.scene.web.WebView?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
-<?import com.dakusuta.tools.anime.custom.CustomTableColumn?>
+<?import com.codingotaku.apps.custom.CustomTableColumn?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
@@ -23,7 +23,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.CheckBox?>
 
-<VBox fx:controller="com.dakusuta.tools.anime.MainFXMLController"
+<VBox fx:controller="com.codingotaku.apps.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
 
 	<HBox fx:id="title" prefHeight="30"
@@ -32,9 +32,9 @@
 		<padding>
 			<Insets left="5" top="5" bottom="5" right="5" />
 		</padding>
-		<ImageView id="boxImage" fitWidth="20" fitHeight="20">
+		<ImageView fx:id="boxImage" id="boxImage" fitWidth="20" fitHeight="20">
 			<image>
-				<Image url="icons/icon.png" />
+				<Image url="@../icons/icon.png" />
 			</image>
 		</ImageView>
 		<HBox fx:id="title" prefHeight="30" HBox.hgrow="ALWAYS">
@@ -87,7 +87,7 @@
 				<ImageView fx:id="poster" fitHeight="300" fitWidth="200"
 					pickOnBounds="true" preserveRatio="true">
 					<image>
-						<Image url="icons/panda.png" />
+						<Image url="@../icons/panda.png" />
 					</image>
 				</ImageView>
 				<WebView fx:id="webView" prefHeight="300"

@@ -1,0 +1,26 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'codingotaku.AnimeDownloader'
+version = '1.0'
+
+description = 'AnimuDownloaderu'
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+
+
+repositories {
+        
+     maven { url "https://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.jsoup', name: 'jsoup', version:'1.11.3'
+    compile group: 'org.openjfx', name: 'javafx-fxml', version:'11'
+    compile group: 'org.openjfx', name: 'javafx-controls', version:'11'
+    compile group: 'org.openjfx', name: 'javafx-web', version:'11'
+}
