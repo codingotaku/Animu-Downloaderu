@@ -211,7 +211,6 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void initialize() {
-		System.err.println(boxImage.getImage().getUrl());
 		webEngine = webView.getEngine();
 		webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 		vBox = (VBox) scrollPane.getContent().lookup("#list");

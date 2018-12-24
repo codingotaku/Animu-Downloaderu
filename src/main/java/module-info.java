@@ -10,5 +10,7 @@ module Animu_Downloaderu {
 	requires javafx.web;
 	requires org.jsoup;
 	opens com.codingotaku.apps to javafx.fxml;
+	opens com.codingotaku.apps.custom to javafx.fxml;
+
 	exports com.codingotaku.apps;
 }

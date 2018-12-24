@@ -1,43 +1,50 @@
 plugins {
+//    id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.5'
+    id 'org.beryx.jlink' version '2.2.1'
 }
 
 repositories {
+//    mavenLocal()
     mavenCentral()
 }
 
 
-//def currentOS = org.gradle.internal.os.OperatingSystem.current()
-//def platform
-//if (currentOS.isWindows()) {
-//    platform = 'win'
-//} else if (currentOS.isLinux()) {
-//    platform = 'linux'
-//} else if (currentOS.isMacOsX()) {
-//    platform = 'mac'
-//}
+def currentOS = org.gradle.internal.os.OperatingSystem.current()
+def platform
+if (currentOS.isWindows()) {
+    platform = 'win'
+} else if (currentOS.isLinux()) {
+    platform = 'linux'
+} else if (currentOS.isMacOsX()) {
+    platform = 'mac'
+}
 
 dependencies {
-//    compile "org.openjfx:javafx-controls:11:${platform}"
-//    compile "org.openjfx:javafx-fxml:11:${platform}"
-//    compile "org.openjfx:javafx-web:11:${platform}"
-    compile 'org.jsoup:jsoup:1.11.3'
+//    compile 'io.javaslang:javaslang:2.0.6'
+    implementation "org.openjfx:javafx-controls:11:${platform}"
+    implementation "org.openjfx:javafx-fxml:11:${platform}"
+    implementation "org.openjfx:javafx-web:11:${platform}"
+    implementation 'org.jsoup:jsoup:1.11.3'
 }
 
 javafx {
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.web']
 }
+
 jar {
     manifest {
         attributes 'Main-Class': 'com.codingotaku.apps.Main'
         attributes 'Application-Name': 'Animu Downloaderu'
     }
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    
 }
 
-mainClassName = 'com.codingotaku.apps.Main'
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher{
+        name = 'AnimuDownloaderu'
+    }
+}
+
+mainClassName = 'Animu_Downloaderu/com.codingotaku.apps.Main'
