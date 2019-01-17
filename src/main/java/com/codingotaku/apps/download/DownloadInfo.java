@@ -268,7 +268,7 @@ public class DownloadInfo implements Runnable {
 			return;
 		}
 
-		if (!fileName.contains(".")) { // if file type not provided
+		if (!fileName.endsWith(".mp4")||!fileName.endsWith(".flv")) { // if file type not provided
 			String ext = url.getFile();
 			ext = ext.substring(ext.lastIndexOf('.'), ext.indexOf('?'));
 			fileName += ext;
