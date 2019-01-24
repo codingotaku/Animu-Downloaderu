@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import com.codingotaku.apps.callback.DownloadObserver;
 import com.codingotaku.apps.callback.TableObserver;
-import com.codingotaku.apps.custom.EpisodeLabel;
+import com.codingotaku.apps.source.Episode;
 
 /**
  * @author Rahul Sivananda <br>
@@ -112,7 +112,7 @@ public class DownloadManager implements DownloadObserver {
 
 	private TableObserver observer;
 
-	public void addDownloadURL(EpisodeLabel episode) {
+	public void addDownloadURL(Episode episode) {
 		DownloadInfo downloadInfo = new DownloadInfo(episode, this);
 		queue.add(downloadInfo);
 

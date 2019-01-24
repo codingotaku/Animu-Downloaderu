@@ -17,6 +17,7 @@ public class LoadDialog {
 		alert.setTitle(title);
 		alert.setContentText(message);
 		alert.initStyle(StageStyle.UNDECORATED);
+		alert.getDialogPane().getStylesheets().add(LoadDialog.class.getResource("/css/application.css").toExternalForm());
 		alert.show();
 	}
 

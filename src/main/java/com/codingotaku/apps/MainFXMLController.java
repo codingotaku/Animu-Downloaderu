@@ -8,14 +8,16 @@ import java.util.prefs.Preferences;
 import com.codingotaku.apps.callback.Crawler;
 import com.codingotaku.apps.callback.TableObserver;
 import com.codingotaku.apps.callback.TableSelectListener;
-import com.codingotaku.apps.custom.AnimeLabel;
+import com.codingotaku.apps.custom.AlertDialog;
 import com.codingotaku.apps.custom.DownloadDialog;
-import com.codingotaku.apps.custom.EpisodeLabel;
 import com.codingotaku.apps.custom.LoadDialog;
 import com.codingotaku.apps.download.DownloadInfo;
 import com.codingotaku.apps.download.DownloadManager;
 import com.codingotaku.apps.download.Status;
-import com.codingotaku.apps.source.Servers;
+import com.codingotaku.apps.source.Anime;
+import com.codingotaku.apps.source.Episode;
+import com.codingotaku.apps.source.Helper;
+import com.codingotaku.apps.source.Result;
 import com.codingotaku.apps.source.Source;
 import com.codingotaku.apps.util.Backup;
 import com.codingotaku.apps.util.Constants;
@@ -100,29 +102,30 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@FXML
 	private TableColumn<DownloadInfo, Status> status;
 
-	private final ObservableList<EpisodeLabel> episodes = FXCollections.observableArrayList();
-	private final ObservableList<AnimeLabel> animes = FXCollections.observableArrayList();
+	private final ObservableList<Episode> episodes = FXCollections.observableArrayList();
+	private final ObservableList<Anime> animes = FXCollections.observableArrayList();
 	private final DownloadManager manager = DownloadManager.getInstance();
 
-	private ListView<EpisodeLabel> episodeList;
-	private ListView<AnimeLabel> animeList;
+	private ListView<Episode> episodeList;
+	private ListView<Anime> animeList;
 
 	private final Delta dragDelta = new Delta();// for title bar dragging
 
 	private WebEngine webEngine;
-	private Servers servers;
+	private Helper servers;
 	private Window window;
 	private Stage stage;
 	private VBox vBox;
 
 	private Image defaultImg;
-	
-	@FXML private ImageView boxImage;
+
+	@FXML
+	private ImageView boxImage;
 
 	@FXML
 	private void showEpisodes(ActionEvent event) {
 		if (showEpisodes.getText().equals("Show Episodes")) {
-			loadEpisodes();
+			loadEpisodes(window);
 			download.setDisable(false);
 			showEpisodes.setText("Back to Anime list");
 		} else {
@@ -134,28 +137,11 @@ public class MainFXMLController implements TableObserver, Crawler {
 		}
 	}
 
-	private void loadEpisodes() {
+	private void loadEpisodes(Window window) {
 		cb.setIndeterminate(false);
 		cb.setSelected(false);
-		episodes.setAll(servers.loadEpisodes());
-		episodeList = new ListView<EpisodeLabel>();
-		episodeList.setItems(episodes);
-		episodeList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-		episodeList.setOnMouseClicked(event -> {
-			int size = episodeList.getSelectionModel().getSelectedIndices().size();
-			if (size == 0) {
-				cb.setIndeterminate(false);
-				cb.setSelected(false);
-			}
-			if (size < episodes.size()) {
-				cb.setIndeterminate(true);
-			} else {
-				cb.setIndeterminate(false);
-				cb.setSelected(true);
-			}
-		});
-		VBox.setVgrow(episodeList, Priority.ALWAYS);
-		vBox.getChildren().setAll(episodeList);
+		LoadDialog.showDialog(window, "Loading..", "Loading Episodes.. please wait!");
+		servers.loadEpisodes(animeList.getSelectionModel().getSelectedItem());
 	}
 
 	@FXML
@@ -186,27 +172,17 @@ public class MainFXMLController implements TableObserver, Crawler {
 		int count = episodeList.getSelectionModel().getSelectedItems().size();
 		Optional<Boolean> result = new DownloadDialog(count).showAndWait();
 		result.ifPresent(res -> {
-			if (res) downloadSelected();
+			if (res)
+				downloadSelected();
 		});
 	}
 
 	void loadAnime(Window window) {
-		if (this.window == null) {
-			this.window = window;
-		}
-		servers.setSource(Source.values()[sources.getSelectionModel().getSelectedIndex()]);
+		Source source = Source.values()[sources.getSelectionModel().getSelectedIndex()];
+		servers.setSource(source);
 		animeList.getSelectionModel().clearSelection();
-		new Thread(() -> {
-			List<AnimeLabel> list = servers.loadAnime(window);
-			if (list != null) {
-				Platform.runLater(() -> {
-					animes.setAll(list);
-					search(search.getText());
-					VBox.setVgrow(animeList, Priority.ALWAYS);
-					vBox.getChildren().setAll(animeList);
-				});
-			}
-		}).start();
+		LoadDialog.showDialog(window, "Loading..", "Loading Anime.. please wait!");
+		servers.loadAnime();
 	}
 
 	@FXML
@@ -223,7 +199,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 		tableView.setRowFactory(new TableSelectListener());
 		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
-		servers = Servers.getInstance(this);
+		servers = Helper.getInstance(this);
 		manager.setController(this);
 		sources.getSelectionModel().select(0);
 		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda.png"));
@@ -259,7 +235,9 @@ public class MainFXMLController implements TableObserver, Crawler {
 			if (text.isEmpty()) {
 				animeList.setItems(animes);
 			} else {
-				animeList.setItems(animes.filtered(label -> label.hasValue(text)));
+				animeList.setItems(animes.filtered(label -> {
+					return label.getName().toLowerCase().contains(text.toLowerCase());
+				}));
 			}
 		}
 		if (!vBox.getChildren().contains(animeList)) {
@@ -269,8 +247,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	private void downloadSelected() {
 		new Thread(() -> {
-			episodeList.getSelectionModel().getSelectedItems()
-					.forEach(episode -> manager.addDownloadURL(episode.copy()));
+			episodeList.getSelectionModel().getSelectedItems().forEach(episode -> manager.addDownloadURL(episode));
 		}).start();
 	}
 
@@ -290,9 +267,11 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	@Override
-	public void loaded(String content) {
+	public void loadedSynopsys(String content) {
 		Platform.runLater(() -> {
-			webEngine.loadContent(content);
+			String html = content.replaceAll("<a[^>]*>([^<]+)</a>", "$1").replaceAll("</span>", "</span><br><br>")
+					.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
+			webEngine.loadContent("<body bgcolor=\"#424242\"><font color=\"white\">" + html + "</font></body>");
 			LoadDialog.stopDialog();
 			showEpisodes.setDisable(false);
 			showEpisodes.setText("Show Episodes");
@@ -415,5 +394,57 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	private class Delta {
 		double x, y;
+	}
+
+	@Override
+	public void loadedAnime(List<Anime> animesTmp, Result result) {
+		LoadDialog.stopDialog();
+		if (result.getStatus() == com.codingotaku.apps.source.Result.Status.OK) {
+			Platform.runLater(() -> {
+				animes.setAll(animesTmp);
+				search(search.getText());
+				VBox.setVgrow(animeList, Priority.ALWAYS);
+				vBox.getChildren().setAll(animeList);
+			});
+		} else {
+			Platform.runLater(() -> {
+				AlertDialog dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
+				dialog.showAndWait();
+			});
+
+		}
+	}
+
+	@Override
+	public void loadedEpisodes(List<Episode> episodesTmp, Result result) {
+		LoadDialog.stopDialog();
+		if (result.getStatus() == com.codingotaku.apps.source.Result.Status.OK) {
+			episodes.setAll(episodesTmp);
+			episodeList = new ListView<Episode>();
+			episodeList.setItems(episodes);
+			episodeList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+			episodeList.setOnMouseClicked(event -> {
+				int size = episodeList.getSelectionModel().getSelectedIndices().size();
+				if (size == 0) {
+					cb.setIndeterminate(false);
+					cb.setSelected(false);
+				}
+				if (size < episodes.size()) {
+					cb.setIndeterminate(true);
+				} else {
+					cb.setIndeterminate(false);
+					cb.setSelected(true);
+				}
+			});
+			Platform.runLater(() -> {
+				VBox.setVgrow(episodeList, Priority.ALWAYS);
+				vBox.getChildren().setAll(episodeList);
+			});
+		} else {
+			Platform.runLater(() -> {
+				AlertDialog dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
+				dialog.showAndWait();
+			});
+		}
 	}
 }

@@ -61,8 +61,9 @@
 		<ComboBox fx:id="sources" prefWidth="100">
 			<items>
 				<FXCollections fx:factory="observableArrayList">
-					<String fx:value="Server 1" />
-					<String fx:value="Server 2" />
+					<String fx:value="Anime1" />
+					<String fx:value="Sub" />
+					<String fx:value="Dub" />
 				</FXCollections>
 			</items>
 		</ComboBox>

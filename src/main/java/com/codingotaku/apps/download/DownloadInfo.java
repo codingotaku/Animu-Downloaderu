@@ -4,20 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import com.codingotaku.apps.callback.DownloadObserver;
-import com.codingotaku.apps.custom.EpisodeLabel;
+import com.codingotaku.apps.source.Episode;
 import com.codingotaku.apps.util.Constants;
 
 // This class downloads a file from a URL.
@@ -31,9 +25,7 @@ public class DownloadInfo implements Runnable {
 	private DownloadObserver observer = null; // Callback for download status
 	private String fileName; // Download file name
 	private String anime;
-	private String pageUrl;
-
-	private URL url; // Download URL
+	private URL url;
 	private Status status; // Current status of download
 	private Callback callBack = new Callback(this) {
 		@Override
@@ -41,9 +33,11 @@ public class DownloadInfo implements Runnable {
 			addDownloaded(progress);
 			if (status == Status.ERROR) {
 				error();
-			} else observer.downloading(info);
+			} else
+				observer.downloading(info);
 		}
 	};
+	private Episode episode;
 
 	// For tracking download progress
 	private synchronized void addDownloaded(long count) {
@@ -51,16 +45,9 @@ public class DownloadInfo implements Runnable {
 	}
 
 	// Constructor for Download.
-	public DownloadInfo(EpisodeLabel episode, DownloadObserver observer) {
+	public DownloadInfo(Episode episode, DownloadObserver observer) {
+		this.episode = episode;
 		this.observer = observer;
-		try {
-			this.pageUrl = episode.getUrl();
-			this.url = new URL(pageUrl);
-		} catch (MalformedURLException e) {
-			observer.error(this);
-			e.printStackTrace();
-		}
-
 		this.anime = episode.getAnime();
 		String folder = Constants.downloadFolder + "/" + anime;
 		new File(folder).mkdir();
@@ -73,7 +60,13 @@ public class DownloadInfo implements Runnable {
 
 	// Begin the download.
 	public void startDownload() {
-		String url = generateDownloadUrl();
+		String url;
+		try {
+			url = episode.getVideoUrl();
+		} catch (IOException e) {
+			error();
+			return;
+		}
 		URL verifiedUrl = verifyUrl(url);
 		if (verifiedUrl != null) {
 			setUrl(verifiedUrl);
@@ -86,16 +79,19 @@ public class DownloadInfo implements Runnable {
 	}
 
 	private URL verifyUrl(String url) {
-		if (url == null) return null;
+		if (url == null)
+			return null;
 		// Only allow HTTP URLs.
-		if (!url.toLowerCase().startsWith("http://")) return null;
+		if (!url.toLowerCase().startsWith("http://"))
+			return null;
 
 		// Verify format of URL.
 		URL verifiedUrl = null;
 		try {
 			verifiedUrl = new URL(url);
 			// Make sure URL specifies a file.
-			if (verifiedUrl.getFile().length() < 2) return null;
+			if (verifiedUrl.getFile().length() < 2)
+				return null;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -132,7 +128,8 @@ public class DownloadInfo implements Runnable {
 	// Resume this download.
 	public void resume() {
 		// Do not allow resuming downloads if it is not paused
-		if (status != Status.PAUSED) return;
+		if (status != Status.PAUSED)
+			return;
 		status = Status.DOWNLOADING;
 		observer.resumed(this);
 		download();
@@ -140,7 +137,8 @@ public class DownloadInfo implements Runnable {
 
 	// Cancel this download.
 	public void cancel() {
-		if (status != Status.DOWNLOADING) return;
+		if (status != Status.DOWNLOADING)
+			return;
 		status = Status.CANCELLING;
 		observer.cancelling(this);
 	}
@@ -174,7 +172,8 @@ public class DownloadInfo implements Runnable {
 		// Clear out finished download segments if any
 		segments.removeIf(segment -> segment.isFinished());
 
-		if (!segments.isEmpty()) return size - downloaded;
+		if (!segments.isEmpty())
+			return size - downloaded;
 		long partLen = size / MAX_THREAD;
 		long start = 0;
 		long end = partLen;
@@ -189,7 +188,8 @@ public class DownloadInfo implements Runnable {
 
 		// Delete previously downloaded file if it exists
 		File tmp = new File(fileName);
-		if (tmp.exists()) tmp.delete();
+		if (tmp.exists())
+			tmp.delete();
 		return size;
 	}
 
@@ -200,7 +200,8 @@ public class DownloadInfo implements Runnable {
 	// Download file.
 	public void run() {
 		long downloadSize = setDownloadSize();
-		if (downloadSize <= 0) return;
+		if (downloadSize <= 0)
+			return;
 
 		ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
 		ArrayList<File> files = new ArrayList<>(MAX_THREAD);
@@ -222,7 +223,8 @@ public class DownloadInfo implements Runnable {
 			threadPool.shutdown();
 			threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 
-			if (status == Status.PAUSED) return;
+			if (status == Status.PAUSED)
+				return;
 
 			if ((status == Status.ERROR || status == Status.DOWNLOADING) && getDownloaded() != size) {
 				error();
@@ -230,7 +232,8 @@ public class DownloadInfo implements Runnable {
 				// delete every segments
 				segments.forEach(segment -> {
 					File f = new File(segment.file);
-					if (f.exists()) f.delete();
+					if (f.exists())
+						f.delete();
 				});
 				segments.clear();
 				status = Status.CANCELLED;
@@ -268,11 +271,11 @@ public class DownloadInfo implements Runnable {
 			return;
 		}
 
-		if (!fileName.endsWith(".mp4")||!fileName.endsWith(".flv")) { // if file type not provided
-			String ext = url.getFile();
-			ext = ext.substring(ext.lastIndexOf('.'), ext.indexOf('?'));
-			fileName += ext;
-		}
+//		if (!fileName.endsWith(".mp4")||!fileName.endsWith(".flv")) { // if file type not provided
+		String ext = url.getFile();
+		ext = ext.substring(ext.lastIndexOf('.'), ext.indexOf('?'));
+		fileName += ext;
+//		}
 
 		size = contentLength;
 	}
@@ -348,11 +351,18 @@ public class DownloadInfo implements Runnable {
 	}
 
 	public void retry() {
-		if (status == Status.DOWNLOADING) return;
+		if (status == Status.DOWNLOADING)
+			return;
 
 		if (status == Status.ERROR) {
 			status = Status.DOWNLOADING;
-			String url = generateDownloadUrl();
+			String url = null;
+			try {
+				url = episode.getVideoUrl();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			URL verifiedUrl = verifyUrl(url);
 			if (verifiedUrl == null) {
@@ -365,38 +375,13 @@ public class DownloadInfo implements Runnable {
 	}
 
 	public void restart() {
-		if (status == Status.DOWNLOADING) return;
+		if (status == Status.DOWNLOADING)
+			return;
 
 		cancel();
 		downloaded = 0;
 
 		startDownload();
-	}
-
-	private String convertToUrl(Matcher matcher) {
-		return matcher.group(0);
-	}
-
-	private String generateDownloadUrl() {
-		try {
-			Document doc = Jsoup.parse(new URL(pageUrl), 60000);
-
-			Matcher matcher;
-			Pattern pattern = Pattern.compile("(http[s]?:\\/\\/[^\\/]*.*.mp4\\\\??[^\\\"\\']*)");
-			matcher = pattern.matcher(doc.data());
-			if (matcher.find()) { return convertToUrl(matcher); }
-			if (pageUrl.contains("animexd")) {
-				pageUrl = doc.select("div.sd-nav > a:contains(English Subbed)").last().attr("href");
-				doc = Jsoup.parse(new URL(pageUrl), 60000);
-				matcher = pattern.matcher(doc.data());
-				if (matcher.find()) return convertToUrl(matcher);
-			}
-
-		} catch (IOException e) {
-			error();
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	public String getUrl() {
