@@ -1,7 +1,6 @@
 package com.codingotaku.apps.source;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +18,11 @@ class Server {
 	static void listAllAnime(Source source, AnimeFetchListener listener) {
 		new Thread(() -> {
 			try {
-				Document doc = Jsoup.parse(new URL(source.listUrl()), 60000);
+				Document doc = Jsoup.connect(source.listUrl())
+					      .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+					      .referrer("http://www.google.com")
+					      .timeout(60000)
+					      .get();
 				Elements elements = doc.select(source.listRegex());
 				listener.loaded(generateAnimeList(source, elements), new Result());
 			} catch (IOException e) {
@@ -52,7 +55,11 @@ class Server {
 	}
 
 	static String generateVideoUrl(Episode episode) throws IOException {
-		Document doc = Jsoup.parse(new URL(episode.episodeUrl), 60000);
+		Document doc = Jsoup.connect(episode.episodeUrl)
+			      .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+			      .referrer("http://www.google.com")
+			      .timeout(60000)
+			      .get();
 		Pattern pattern = Pattern.compile(episode.source.vidRegex());
 		Matcher matcher = pattern.matcher(doc.data());
 		if (matcher.find())

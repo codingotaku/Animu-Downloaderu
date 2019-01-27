@@ -1,7 +1,6 @@
 package com.codingotaku.apps.source;
 
 import java.io.IOException;
-import java.net.URL;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -24,7 +23,10 @@ public class Anime {
 	}
 
 	Document getDoc() throws IOException {
-		if (doc == null) doc = Jsoup.parse(new URL(url), 60000);
+		if (doc == null) doc = Jsoup.connect(url)
+			      .userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0")
+			      .referrer(source.listUrl())
+			      .get();
 		return doc;
 	}
 

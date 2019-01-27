@@ -1,7 +1,7 @@
 package com.codingotaku.apps.source;
 
 public enum Source {
-	Anime1, SUB, DUB;
+	Anime1, ANIMESIMPLE;
 
 	private Source() {
 		vidRegex = "(http[s]?:\\/\\/[^\\/]*.*.mp4\\\\??[^\\\"\\']*)";
@@ -17,20 +17,6 @@ public enum Source {
 		.setDocRegex("div.detail-left > span > span:eq(3)")
 		.setPosterRegex("div.detail-cover >a >img")
 		.setEpRegex("div.left-left > ul.anime-list > li > a");
-
-		SUB.setListUrl("https://www.thewatchcartoononline.tv/subbed-anime-list")
-		.setListRegex("div.ddmcc ul > li > a")
-		.setNameRegex("div.h1-tag > a")
-		.setDocRegex("div#sidebar_cat > p")
-		.setPosterRegex("div#sidebar_cat > img")
-		.setEpRegex("div.cat-eps > a");
-
-		DUB.setListUrl("https://www.thewatchcartoononline.tv/dubbed-anime-list")
-		.setListRegex("div.ddmcc ul > li > a")
-		.setNameRegex("div.h1-tag > a")
-		.setDocRegex("div#sidebar_cat > p")
-		.setPosterRegex("div#sidebar_cat > img")
-		.setEpRegex("div.cat-eps > a");
 	}
 
 	private String docRegex;
