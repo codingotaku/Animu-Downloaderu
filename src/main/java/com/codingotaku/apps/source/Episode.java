@@ -1,7 +1,7 @@
 package com.codingotaku.apps.source;
 
 import java.io.IOException;
-import java.net.URLEncoder;
+//import java.net.URLEncoder;
 
 import org.jsoup.nodes.Element;
 
@@ -24,9 +24,6 @@ public class Episode {
 
 	public String getVideoUrl() throws IOException {
 		String url=Server.generateVideoUrl(this);
-		int pos = url.lastIndexOf('/') + 1;
-		//convert URL to proper format
-		url=url.substring(0, pos)+ URLEncoder.encode(url.substring(pos),"utf-8");
 		System.out.println(url);
 		return url;
 	}

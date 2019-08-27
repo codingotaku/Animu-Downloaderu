@@ -14,7 +14,7 @@ public class Backup {
 		try {
 			File file = new File(Constants.CONFIG_FILE);
 			if (!file.exists()) {
-				file.getParentFile().mkdir();
+				file.getParentFile().mkdirs();
 				file.createNewFile();
 			}
 			FileWriter fileWriter = new FileWriter(Constants.CONFIG_FILE);

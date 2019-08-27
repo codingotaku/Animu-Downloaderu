@@ -129,6 +129,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 			download.setDisable(false);
 			showEpisodes.setText("Back to Anime list");
 		} else {
+			//Just background color
 			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
 			showEpisodes.setDisable(true);
 			loadAnime(window);
@@ -154,15 +155,14 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 		defaultDirectory = new File(Constants.downloadFolder);
 		if (!defaultDirectory.exists()) {// If the path was external HD or it doesn't exist.
-			String defaultPath = System.getProperty("user.home") + "\\Downloads";
-			Constants.downloadFolder = defaultPath.replace("\\", "/");
+			Constants.downloadFolder = System.getProperty("user.home") + File.pathSeparator+"Downloads";
 			defaultDirectory = new File(Constants.downloadFolder);
 		}
 
 		chooser.setInitialDirectory(defaultDirectory);
 		File selectedDir = chooser.showDialog(window);
 		if (selectedDir != null && selectedDir.exists()) {
-			Constants.downloadFolder = selectedDir.getAbsolutePath().replace("\\", "/");
+			Constants.downloadFolder = selectedDir.getAbsolutePath();
 			Backup.saveDownloadFolder();
 		}
 	}
@@ -269,6 +269,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@Override
 	public void loadedSynopsys(String content) {
 		Platform.runLater(() -> {
+			//Clean up HTML to have just texts, remove links, and add dividers
 			String html = content.replaceAll("<a[^>]*>([^<]+)</a>", "$1").replaceAll("</span>", "</span><br><br>")
 					.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
 			webEngine.loadContent("<body bgcolor=\"#424242\"><font color=\"white\">" + html + "</font></body>");
