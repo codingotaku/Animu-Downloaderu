@@ -48,10 +48,14 @@ public class DownloadInfo implements Runnable {
 	public DownloadInfo(Episode episode, DownloadObserver observer) {
 		this.episode = episode;
 		this.observer = observer;
-		this.anime = episode.getAnime();
-		String folder = Constants.downloadFolder + "/" + anime;
-		new File(folder).mkdir();
-		this.fileName = folder + "/" + episode.toString();
+		//sanitize file and folder names
+		this.anime = episode.getAnime().replaceAll("[^a-zA-Z0-9\\-]", "_");
+		
+		var folderName = Constants.downloadFolder + "/" + anime;
+		this.fileName = folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
+		
+		new File(folderName).mkdir();
+
 		size = -1;
 		downloaded = 0;
 		status = Status.PENDING;
