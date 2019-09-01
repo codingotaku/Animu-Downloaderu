@@ -152,7 +152,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 		defaultDirectory = new File(Constants.downloadFolder);
 		if (!defaultDirectory.exists()) {// If the path was external HD or it doesn't exist.
-			Constants.downloadFolder = System.getProperty("user.home") + File.pathSeparator+"Downloads";
+			Constants.downloadFolder = System.getProperty("user.home") + File.separator + "Downloads";
 			defaultDirectory = new File(Constants.downloadFolder);
 		}
 
@@ -265,7 +265,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@Override
 	public void loadedSynopsys(String content) {
 		Platform.runLater(() -> {
-			//Clean up HTML to have just texts, remove links, and add dividers
+			// Clean up HTML to have just texts, remove links, and add dividers
 			String html = content.replaceAll("<a[^>]*>([^<]+)</a>", "$1").replaceAll("</span>", "</span><br><br>")
 					.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
 			area.setText(html);

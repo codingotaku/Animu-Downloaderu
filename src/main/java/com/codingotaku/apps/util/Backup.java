@@ -13,8 +13,11 @@ public class Backup {
 	public static void saveDownloadFolder() {
 		try {
 			File file = new File(Constants.CONFIG_FILE);
-			if (!file.exists()) {
-				file.getParentFile().mkdirs();
+			File parent = file.getParentFile(); 
+			if (!parent.exists() && !parent.mkdirs()) {
+				throw new IllegalStateException("Couldn't create dir: " + parent);
+			}
+			if(!file.exists()) {
 				file.createNewFile();
 			}
 			FileWriter fileWriter = new FileWriter(Constants.CONFIG_FILE);
