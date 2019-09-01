@@ -3,7 +3,6 @@ package com.codingotaku.apps;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -13,27 +12,31 @@ import javafx.stage.StageStyle;
 
 public class ConfirmDialog extends Dialog<Boolean> {
 	public ConfirmDialog(String title, String message) {
-		DialogPane dialogPane = getDialogPane();
+		var dialogPane = getDialogPane();
+
 		initStyle(StageStyle.UNDECORATED);
 		dialogPane.getStylesheets().add(getClass().getResource("/css/combo.css").toExternalForm());
 
-		HBox titleBar = new HBox();
-		Label header = new Label(title);
+		var titleBar = new HBox();
+		var header = new Label(title);
+		var space = new Pane();
+		var close = new Label("X");
+
 		header.setId("head");
-		Label close = new Label("X");
 		close.setId("head");
-		Pane space = new Pane();
+
 		HBox.setHgrow(space, Priority.ALWAYS);
 		close.setAlignment(Pos.TOP_RIGHT);
 		close.setOnMouseEntered(e -> close.setId("none"));
 		close.setOnMouseExited(e -> close.setId("head"));
 		close.setOnMouseClicked(e -> close());
 		titleBar.getChildren().addAll(header, space, close);
-		GridPane gridPane = new GridPane();
+
+		var gridPane = new GridPane();
 		gridPane.setVgap(10);
 		dialogPane.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
 
-		Label label = new Label(message);
+		var label = new Label(message);
 		GridPane.setConstraints(titleBar, 0, 0, 2, 1);
 		GridPane.setConstraints(label, 1, 2);
 		gridPane.getChildren().addAll(titleBar, label);

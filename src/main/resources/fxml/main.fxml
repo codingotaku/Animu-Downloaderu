@@ -31,7 +31,8 @@
 		<padding>
 			<Insets left="5" top="5" bottom="5" right="5" />
 		</padding>
-		<ImageView fx:id="boxImage" id="boxImage" fitWidth="20" fitHeight="20">
+		<ImageView fx:id="boxImage" id="boxImage" fitWidth="20"
+			fitHeight="20">
 			<image>
 				<Image url="@../icons/icon.png" />
 			</image>
@@ -57,7 +58,7 @@
 
 		<CheckBox fx:id="cb"></CheckBox>
 
-		<ComboBox fx:id="sources" prefWidth="100">
+		<ComboBox fx:id="sources" prefWidth="150">
 			<items>
 				<FXCollections fx:factory="observableArrayList">
 					<String fx:value="Anime1" />
@@ -71,7 +72,7 @@
 			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
 	</HBox>
 
-	<HBox spacing="10">
+	<HBox spacing="10" VBox.vgrow="ALWAYS">
 		<padding>
 			<Insets right="10" bottom="10" left="10" />
 		</padding>
@@ -88,8 +89,8 @@
 						<Image url="@../icons/panda.png" />
 					</image>
 				</ImageView>
-				<TextArea fx:id="area" prefHeight="300"
-					maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+				<TextArea fx:id="area" prefHeight="300" maxWidth="Infinity"
+					HBox.hgrow="ALWAYS" />
 			</HBox>
 			<HBox spacing="10">
 				<padding>

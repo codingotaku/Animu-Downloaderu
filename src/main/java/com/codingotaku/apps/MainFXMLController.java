@@ -2,7 +2,6 @@ package com.codingotaku.apps;
 
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
 import java.util.prefs.Preferences;
 
 import com.codingotaku.apps.callback.Crawler;
@@ -146,6 +145,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	private void chooseFolder() {
 		if (window == null)
 			window = showEpisodes.getScene().getWindow();
+
 		DirectoryChooser chooser = new DirectoryChooser();
 		chooser.setTitle("Select Download folder");
 		File defaultDirectory;
@@ -167,7 +167,21 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@FXML
 	private void download(ActionEvent event) {
 		int count = episodeList.getSelectionModel().getSelectedItems().size();
-		Optional<Boolean> result = new DownloadDialog(count).showAndWait();
+		var dialog = new DownloadDialog(count);
+
+		if (stage == null)
+			stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
+		// Calculate the center position of the parent Stage
+		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
+		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
+
+		dialog.setOnShowing((e) -> {
+			System.out.println();
+			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
+			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
+		});
+
+		var result = dialog.showAndWait();
 		result.ifPresent(res -> {
 			if (res)
 				downloadSelected();
@@ -175,7 +189,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	void loadAnime(Window window) {
-		Source source = Source.values()[sources.getSelectionModel().getSelectedIndex()];
+		var source = Source.values()[sources.getSelectionModel().getSelectedIndex()];
 		servers.setSource(source);
 		animeList.getSelectionModel().clearSelection();
 		LoadDialog.showDialog(window, "Loading..", "Loading Anime.. please wait!");
@@ -288,7 +302,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	 * 
 	 */
 	void unMaximize(Stage primaryStage) {
-		Preferences preferences = Preferences.userNodeForPackage(Main.class);
+		var preferences = Preferences.userNodeForPackage(Main.class);
 		double x = preferences.getDouble("x", 0);
 		double y = preferences.getDouble("y", 0);
 		double w = preferences.getDouble("w", 0);
@@ -306,7 +320,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	 * 
 	 */
 	void maximize(Stage primaryStage) {
-		Preferences preferences = Preferences.userNodeForPackage(Main.class);
+		var preferences = Preferences.userNodeForPackage(Main.class);
 		preferences.putDouble("x", stage.getX());
 		preferences.putDouble("y", stage.getY());
 		preferences.putDouble("w", stage.getWidth());
@@ -317,9 +331,10 @@ public class MainFXMLController implements TableObserver, Crawler {
 		// the app will crash!
 		// I dont't care who you are, but if you cannot afford a good monitor then you
 		// shouldn't be watching anime all day
-		ObservableList<Screen> screens = Screen.getScreensForRectangle(rect);
 
-		Rectangle2D bounds = screens.get(0).getVisualBounds();
+		var screens = Screen.getScreensForRectangle(rect);
+		var bounds = screens.get(0).getVisualBounds();
+
 		primaryStage.setX(bounds.getMinX());
 		primaryStage.setY(bounds.getMinY());
 		primaryStage.setWidth(bounds.getWidth());
@@ -380,8 +395,20 @@ public class MainFXMLController implements TableObserver, Crawler {
 	private void close() {
 		if (stage == null)
 			stage = (Stage) title.getScene().getWindow();
-		ConfirmDialog dialog = new ConfirmDialog("Exit?", Constants.EXIT_QUESTION);
-		Optional<Boolean> res = dialog.showAndWait();
+
+		var dialog = new ConfirmDialog("Exit?", Constants.EXIT_QUESTION);
+
+		// Calculate the center position of the parent Stage
+		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
+		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
+
+		dialog.setOnShowing((e) -> {
+			System.out.println();
+			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
+			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
+		});
+
+		var res = dialog.showAndWait();
 		if (res.isPresent()) {
 			if (res.get()) {
 				DownloadManager.getInstance().pauseAll();
@@ -407,7 +434,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 			});
 		} else {
 			Platform.runLater(() -> {
-				AlertDialog dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
+				var dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
 				dialog.showAndWait();
 			});
 
@@ -441,7 +468,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 			});
 		} else {
 			Platform.runLater(() -> {
-				AlertDialog dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
+				var dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
 				dialog.showAndWait();
 			});
 		}

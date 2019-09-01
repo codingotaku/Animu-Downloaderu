@@ -12,15 +12,16 @@ import java.util.Properties;
 public class Backup {
 	public static void saveDownloadFolder() {
 		try {
-			File file = new File(Constants.CONFIG_FILE);
-			File parent = file.getParentFile(); 
+			var file = new File(Constants.CONFIG_FILE);
+			var parent = file.getParentFile();
+
 			if (!parent.exists() && !parent.mkdirs()) {
 				throw new IllegalStateException("Couldn't create dir: " + parent);
 			}
 			if(!file.exists()) {
 				file.createNewFile();
 			}
-			FileWriter fileWriter = new FileWriter(Constants.CONFIG_FILE);
+			var fileWriter = new FileWriter(Constants.CONFIG_FILE);
 			fileWriter.write(String.format("folder %s", Constants.downloadFolder));
 			fileWriter.close();
 		} catch (IOException e) {
