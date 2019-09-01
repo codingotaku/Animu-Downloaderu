@@ -18,11 +18,9 @@ class Server {
 	static void listAllAnime(Source source, AnimeFetchListener listener) {
 		new Thread(() -> {
 			try {
-				Document doc = Jsoup.connect(source.listUrl())
-					      .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
-					      .referrer("http://www.google.com")
-					      .timeout(60000)
-					      .get();
+				Document doc = Jsoup.connect(source.listUrl()).userAgent(
+						"Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+						.referrer("http://www.google.com").timeout(60000).get();
 				Elements elements = doc.select(source.listRegex());
 				listener.loaded(generateAnimeList(source, elements), new Result());
 			} catch (IOException e) {
@@ -32,8 +30,7 @@ class Server {
 	}
 
 	static String getSynopsys(Anime anime) throws IOException {
-		String synopsys = anime.getDoc().select(anime.source.docRegex()).text();
-		return synopsys;
+		return anime.getDoc().select(anime.source.docRegex()).text().replaceAll("([\\w]+ :)", "\n\n$1").trim();
 	}
 
 	static void listAllEpisodes(Anime anime, EpisodeListListener listener) {
@@ -43,7 +40,7 @@ class Server {
 				Source source = anime.source;
 				Document doc = anime.getDoc();
 				Elements elements = doc.select(source.epRegex());
-				listener.loaded(generateEpList(source, elements,name), new Result());
+				listener.loaded(generateEpList(source, elements, name), new Result());
 			} catch (IOException e) {
 				listener.loaded(null, new Result(e));
 			}
@@ -56,10 +53,8 @@ class Server {
 
 	static String generateVideoUrl(Episode episode) throws IOException {
 		Document doc = Jsoup.connect(episode.episodeUrl)
-			      .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
-			      .referrer("http://www.google.com")
-			      .timeout(60000)
-			      .get();
+				.userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+				.referrer("http://www.google.com").timeout(60000).get();
 		Pattern pattern = Pattern.compile(episode.source.vidRegex());
 		Matcher matcher = pattern.matcher(doc.data());
 		if (matcher.find())
@@ -67,9 +62,9 @@ class Server {
 		return null;
 	}
 
-	private static List<Episode> generateEpList(Source source, Elements elements,String name) {
+	private static List<Episode> generateEpList(Source source, Elements elements, String name) {
 		List<Episode> episodes = new ArrayList<>();
-		elements.forEach(element -> episodes.add(new Episode(source, element,name)));
+		elements.forEach(element -> episodes.add(new Episode(source, element, name)));
 		return Collections.unmodifiableList(episodes);
 	}
 

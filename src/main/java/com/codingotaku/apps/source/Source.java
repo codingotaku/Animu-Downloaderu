@@ -12,11 +12,11 @@ public enum Source {
 
 	static {
 		Anime1.setListUrl("http://www.anime1.com/content/list/")
-		.setListRegex("div.alph-list-box > h4:has(a[name]) + ul > li > a")
-		.setNameRegex("h1.blue-main-title")
-		.setDocRegex("div.detail-left > span > span:eq(3)")
-		.setPosterRegex("div.detail-cover >a >img")
-		.setEpRegex("div.left-left > ul.anime-list > li > a");
+				.setListRegex("div.alph-list-box > h4:has(a[name]) + ul > li > a")
+				.setNameRegex("h1.blue-main-title")
+				.setDocRegex("div.detail-left > span > span")
+				.setPosterRegex("div.detail-cover >a >img")
+				.setEpRegex("div.left-left > ul.anime-list > li > a");
 	}
 
 	private String docRegex;
@@ -79,7 +79,7 @@ public enum Source {
 		this.epRegex = epRegex;
 		return this;
 	}
-	
+
 	private Source setListRegex(String listRegex) {
 		this.listRegex = listRegex;
 		return this;

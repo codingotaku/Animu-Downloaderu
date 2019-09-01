@@ -279,10 +279,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@Override
 	public void loadedSynopsys(String content) {
 		Platform.runLater(() -> {
-			// Clean up HTML to have just texts, remove links, and add dividers
-			String html = content.replaceAll("<a[^>]*>([^<]+)</a>", "$1").replaceAll("</span>", "</span><br><br>")
-					.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
-			area.setText(html);
+			area.setText(content);
 			area.setEditable(false);
 			area.setWrapText(true);
 			LoadDialog.stopDialog();
