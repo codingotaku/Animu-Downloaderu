@@ -37,6 +37,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -45,8 +46,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -84,7 +83,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@FXML
 	private ImageView poster;
 	@FXML
-	private WebView webView;
+	private TextArea area;
 
 	// For displaying downloads
 	@FXML
@@ -111,7 +110,6 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	private final Delta dragDelta = new Delta();// for title bar dragging
 
-	private WebEngine webEngine;
 	private Helper servers;
 	private Window window;
 	private Stage stage;
@@ -129,8 +127,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 			download.setDisable(false);
 			showEpisodes.setText("Back to Anime list");
 		} else {
-			//Just background color
-			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
+			area.clear();
 			showEpisodes.setDisable(true);
 			loadAnime(window);
 			poster.setImage(defaultImg);
@@ -187,8 +184,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void initialize() {
-		webEngine = webView.getEngine();
-		webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
+		area.clear();
 		vBox = (VBox) scrollPane.getContent().lookup("#list");
 
 		fileName.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("fileName"));
@@ -207,7 +203,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 		sources.valueProperty().addListener(e -> {
 			loadAnime(window);
 			poster.setImage(defaultImg);
-			webEngine.loadContent("<html><body bgcolor='#424242'></body></html>");
+			area.clear();
 		});
 
 		cb.selectedProperty().addListener((paramObservableValue, old, flag) -> {
@@ -272,7 +268,9 @@ public class MainFXMLController implements TableObserver, Crawler {
 			//Clean up HTML to have just texts, remove links, and add dividers
 			String html = content.replaceAll("<a[^>]*>([^<]+)</a>", "$1").replaceAll("</span>", "</span><br><br>")
 					.replaceAll("<div[^>]*onclick[^>]*>[^<]+</div>", "");
-			webEngine.loadContent("<body bgcolor=\"#424242\"><font color=\"white\">" + html + "</font></body>");
+			area.setText(html);
+			area.setEditable(false);
+			area.setWrapText(true);
 			LoadDialog.stopDialog();
 			showEpisodes.setDisable(false);
 			showEpisodes.setText("Show Episodes");
