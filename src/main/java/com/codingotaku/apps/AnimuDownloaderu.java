@@ -16,13 +16,13 @@ public class AnimuDownloaderu extends Application {
 	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
 	private static final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.75;
 
-	//It is a workaround, Down't ask me whats happening here
-	//Called from Main.java file
-    public static void main(String[] args) {
-    	launch(args);
-    }
+	// It was a workaround, may be the issue is fixed but I'm too lazy to check
+	// Called from Main.java file
+	public static void main(String[] args) {
+		launch(args);
+	}
 
-    @Override
+	@Override
 	public void start(Stage stage) {
 		try {
 			var loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
@@ -33,7 +33,7 @@ public class AnimuDownloaderu extends Application {
 			stage.setMinWidth(WIDTH);
 			stage.setMinHeight(HEIGHT);
 			stage.initStyle(StageStyle.UNDECORATED);
-			
+
 			stage.getIcons().add(icon);
 			stage.centerOnScreen();
 			scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());

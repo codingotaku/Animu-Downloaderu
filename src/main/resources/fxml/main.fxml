@@ -62,6 +62,7 @@
 			<items>
 				<FXCollections fx:factory="observableArrayList">
 					<String fx:value="Anime1" />
+					<String fx:value="ANIMERAM"></String>
 				</FXCollections>
 			</items>
 		</ComboBox>

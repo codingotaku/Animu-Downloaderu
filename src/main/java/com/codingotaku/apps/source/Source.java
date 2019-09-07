@@ -1,7 +1,7 @@
 package com.codingotaku.apps.source;
 
 public enum Source {
-	Anime1, ANIMESIMPLE;
+	Anime1, ANIMERAM;
 
 	private Source() {
 		vidRegex = "(http[s]?:\\/\\/[^\\/]*.*.mp4\\\\??[^\\\"\\']*)";
@@ -17,6 +17,13 @@ public enum Source {
 				.setDocRegex("div.detail-left > span > span")
 				.setPosterRegex("div.detail-cover >a >img")
 				.setEpRegex("div.left-left > ul.anime-list > li > a");
+
+		ANIMERAM.setListUrl("https://ww2.animeram.cc/series")
+		.setListRegex("div.panel > div.panel-footer > ul.series_alpha > li > a")
+		.setNameRegex("div.first > h1")
+		.setDocRegex("p.ptext")
+		.setPosterRegex("img.media-object")
+		.setEpRegex("ul.newmanga > li > div > a:(2)");
 	}
 
 	private String docRegex;

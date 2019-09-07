@@ -188,7 +188,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 		});
 	}
 
-	void loadAnime(Window window) {
+	public void loadAnime(Window window) {
 		var source = Source.values()[sources.getSelectionModel().getSelectedIndex()];
 		servers.setSource(source);
 		animeList.getSelectionModel().clearSelection();
@@ -430,6 +430,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 				vBox.getChildren().setAll(animeList);
 			});
 		} else {
+			
 			Platform.runLater(() -> {
 				var dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
 				dialog.showAndWait();
