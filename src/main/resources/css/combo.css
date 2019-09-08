@@ -89,3 +89,16 @@ Label{
     -fx-background-color: white;
     -fx-background-radius: 5em;
 }
+#link{
+	-fx-background-color:firebrick;
+	-fx-text-fill: white;
+	-fx-font-weight: bold;
+	-fx-padding: 1em 1em 1em 1em;
+}
+
+#link:hover{
+	-fx-background-color:red;
+	-fx-text-fill: white;
+	-fx-font-weight: bold;
+}
+

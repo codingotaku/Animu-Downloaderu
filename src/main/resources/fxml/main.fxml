@@ -43,6 +43,7 @@
 			</padding>
 			<Label text="Animu Downloaderu" />
 		</HBox>
+		<Button text="Donate" onAction="#donate"></Button>
 		<Label text="_" prefWidth="30" alignment="CENTER"
 			fx:id="minimize" onMouseClicked="#minimize" />
 		<Label text="◻" prefWidth="30" alignment="CENTER" fx:id="resize"
@@ -50,7 +51,6 @@
 		<Label text="X" prefWidth="30" alignment="CENTER" fx:id="close"
 			onMouseClicked="#close" />
 	</HBox>
-
 	<HBox spacing="10">
 		<padding>
 			<Insets right="10" bottom="10" left="10" />
@@ -62,7 +62,7 @@
 			<items>
 				<FXCollections fx:factory="observableArrayList">
 					<String fx:value="Anime1" />
-					<String fx:value="ANIMERAM"></String>
+					<String fx:value="GOGOAnime"></String>
 				</FXCollections>
 			</items>
 		</ComboBox>

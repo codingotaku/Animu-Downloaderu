@@ -18,16 +18,17 @@ public class AnimeSources {
 				.setDocRegex("div.detail-left > span > span")
 				.setPosterRegex("div.detail-cover >a >img")
 				.setEpRegex("div.left-left > ul.anime-list > li > a").build();
-
-		Source ANIMERAM = builder.setListUrl("https://ww2.animeram.cc/series")
-				.setListRegex("div.panel > div.panel-footer > ul.series_alpha > li > a")
-				.setNameRegex("div.first > h1")
-				.setDocRegex("p.ptext")
-				.setPosterRegex("img.media-object")
-				.setEpRegex("ul.newmanga > li > div > a:(2)")
+		
+		Source GOGOAnime = builder.setListUrl("https://www.gogoanime1.com/home/anime-list")
+				.setListRegex("div.container-left > div.container-item > ul > li > a")
+				.setNameRegex("div.anime-title)")
+				.setDocRegex("p.anime-details")
+				.setPosterRegex("div.animeDetail-image > img")
+				.setEpRegex("div.ci-contents > div:eq(1) > ul > li >  a")
 				.build();
+		
 		sources.add(Anime1);
-		sources.add(ANIMERAM);
+		sources.add(GOGOAnime);
 	}
 
 	public List<Source> values() {

@@ -13,6 +13,8 @@ import com.codingotaku.apps.callback.Crawler;
 import com.codingotaku.apps.callback.TableObserver;
 import com.codingotaku.apps.callback.TableSelectListener;
 import com.codingotaku.apps.custom.AlertDialog;
+import com.codingotaku.apps.custom.ConfirmDialog;
+import com.codingotaku.apps.custom.DonateDialog;
 import com.codingotaku.apps.custom.DownloadDialog;
 import com.codingotaku.apps.custom.LoadDialog;
 import com.codingotaku.apps.download.DownloadInfo;
@@ -231,11 +233,17 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 		animeList = new ListView<>();
 		animeList.getSelectionModel().selectedItemProperty().addListener((observable, oldV, newV) -> {
-			if (newV != null)
-			api.getSynopsys(newV, this::loadedSynopsys);
-			api.getPosterUrl(newV, this::loadedPoster);
+			if (newV != null) {
+				api.getSynopsys(newV, this::loadedSynopsys);
+				api.getPosterUrl(newV, this::loadedPoster);
+			}
 		});
 
+	}
+
+	@FXML
+	private void donate() {
+		new DonateDialog().showAndWait();
 	}
 
 	private void search(String text) {
@@ -291,7 +299,14 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@Override
 	public void loadedPoster(String url, Result result) {
-		Platform.runLater(() -> poster.setImage(new Image(url)));
+		Platform.runLater(() -> {
+			if (url == null) {
+				poster.setImage(null);
+			} else {
+				poster.setImage(new Image(url));
+			}
+
+		});
 	}
 
 	/*
@@ -299,17 +314,17 @@ public class MainFXMLController implements TableObserver, Crawler {
 	 * versions This hopefully takes care of that!
 	 * 
 	 */
-	void unMaximize(Stage primaryStage) {
+	void unMaximize(Stage stage) {
 		var preferences = Preferences.userNodeForPackage(Main.class);
 		double x = preferences.getDouble("x", 0);
 		double y = preferences.getDouble("y", 0);
 		double w = preferences.getDouble("w", 0);
 		double h = preferences.getDouble("h", 0);
 
-		primaryStage.setX(x);
-		primaryStage.setY(y);
-		primaryStage.setWidth(w);
-		primaryStage.setHeight(h);
+		stage.setX(x);
+		stage.setY(y);
+		stage.setWidth(w);
+		stage.setHeight(h);
 	}
 
 	/*
@@ -317,7 +332,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	 * versions This hopefully takes care of that!
 	 * 
 	 */
-	void maximize(Stage primaryStage) {
+	void maximize(Stage stage) {
 		var preferences = Preferences.userNodeForPackage(Main.class);
 		preferences.putDouble("x", stage.getX());
 		preferences.putDouble("y", stage.getY());
@@ -332,11 +347,10 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 		var screens = Screen.getScreensForRectangle(rect);
 		var bounds = screens.get(0).getVisualBounds();
-
-		primaryStage.setX(bounds.getMinX());
-		primaryStage.setY(bounds.getMinY());
-		primaryStage.setWidth(bounds.getWidth());
-		primaryStage.setHeight(bounds.getHeight());
+		stage.setX(bounds.getMinX());
+		stage.setY(bounds.getMinY());
+		stage.setWidth(bounds.getWidth());
+		stage.setHeight(bounds.getHeight());
 	}
 
 	@FXML

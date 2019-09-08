@@ -1,4 +1,4 @@
-package com.codingotaku.apps;
+package com.codingotaku.apps.custom;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
