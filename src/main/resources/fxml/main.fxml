@@ -24,36 +24,9 @@
 
 <VBox fx:controller="com.codingotaku.apps.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
-
-	<HBox fx:id="title" prefHeight="30"
-		onMousePressed="#titleSelected" onMouseDragged="#titleDragged"
-		onMouseReleased="#titleReleased">
-		<padding>
-			<Insets left="5" top="5" bottom="5" right="5" />
-		</padding>
-		<ImageView fx:id="boxImage" id="boxImage" fitWidth="20"
-			fitHeight="20">
-			<image>
-				<Image url="@../icons/icon.png" />
-			</image>
-		</ImageView>
-		<HBox fx:id="title" prefHeight="30" HBox.hgrow="ALWAYS">
-			<padding>
-				<Insets left="5" />
-			</padding>
-			<Label text="Animu Downloaderu" />
-		</HBox>
-		<Button text="Donate" onAction="#donate"></Button>
-		<Label text="_" prefWidth="30" alignment="CENTER"
-			fx:id="minimize" onMouseClicked="#minimize" />
-		<Label text="◻" prefWidth="30" alignment="CENTER" fx:id="resize"
-			onMouseClicked="#resize" />
-		<Label text="X" prefWidth="30" alignment="CENTER" fx:id="close"
-			onMouseClicked="#close" />
-	</HBox>
 	<HBox spacing="10">
 		<padding>
-			<Insets right="10" bottom="10" left="10" />
+			<Insets top="5" right="10" bottom="10" left="10" />
 		</padding>
 
 		<CheckBox fx:id="cb"></CheckBox>
@@ -71,6 +44,7 @@
 			onAction="#download" prefWidth="150" HBox.hgrow="ALWAYS" />
 		<TextField fx:id="search" promptText="Enter Anime to search"
 			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+		<Button text="Donate" onAction="#donate"></Button>
 	</HBox>
 
 	<HBox spacing="10" VBox.vgrow="ALWAYS">
@@ -87,7 +61,7 @@
 				<ImageView fx:id="poster" fitHeight="300" fitWidth="200"
 					pickOnBounds="true" preserveRatio="true">
 					<image>
-						<Image url="@../icons/panda.png" />
+						<Image url="@../icons/panda.jpg" />
 					</image>
 				</ImageView>
 				<TextArea fx:id="area" prefHeight="300" maxWidth="Infinity"

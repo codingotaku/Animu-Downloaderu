@@ -1,7 +1,6 @@
 package com.codingotaku.apps;
 
 import java.io.File;
-import java.util.prefs.Preferences;
 
 import com.codingotaku.apis.animecrawler.Anime;
 import com.codingotaku.apis.animecrawler.AnimeCrawlerAPI;
@@ -13,7 +12,6 @@ import com.codingotaku.apps.callback.Crawler;
 import com.codingotaku.apps.callback.TableObserver;
 import com.codingotaku.apps.callback.TableSelectListener;
 import com.codingotaku.apps.custom.AlertDialog;
-import com.codingotaku.apps.custom.ConfirmDialog;
 import com.codingotaku.apps.custom.DonateDialog;
 import com.codingotaku.apps.custom.DownloadDialog;
 import com.codingotaku.apps.custom.LoadDialog;
@@ -29,11 +27,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
@@ -44,30 +40,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
 public class MainFXMLController implements TableObserver, Crawler {
 	@FXML
 	private VBox root; // Root
-
-	// Title bar
-	@FXML
-	private Label minimize;
-	@FXML
-	private Label resize;
-	@FXML
-	private Label close;
-	@FXML
-	private HBox title;
-	@FXML
-	private HBox center;
 
 	// Anime download and interactions
 	@FXML
@@ -111,8 +92,6 @@ public class MainFXMLController implements TableObserver, Crawler {
 	private ListView<Episode> episodeList;
 	private ListView<Anime> animeList;
 
-	private final Delta dragDelta = new Delta();// for title bar dragging
-
 	private Window window;
 	private Stage stage;
 	private VBox vBox;
@@ -124,6 +103,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void showEpisodes(ActionEvent event) {
+		if (window == null)
+			window = showEpisodes.getScene().getWindow();
 		if (showEpisodes.getText().equals("Show Episodes")) {
 			loadEpisodes(window);
 			download.setDisable(false);
@@ -138,6 +119,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	private void loadEpisodes(Window window) {
+		if (window == null)
+			window = showEpisodes.getScene().getWindow();
 		cb.setIndeterminate(false);
 		cb.setSelected(false);
 		LoadDialog.showDialog(window, "Loading..", "Loading Episodes.. please wait!");
@@ -173,13 +156,12 @@ public class MainFXMLController implements TableObserver, Crawler {
 		var dialog = new DownloadDialog(count);
 
 		if (stage == null)
-			stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
+			stage = (Stage) root.getScene().getWindow(); // an ugly way of initializing stage
 		// Calculate the center position of the parent Stage
 		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
 		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
 
 		dialog.setOnShowing((e) -> {
-			System.out.println();
 			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
 			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
 		});
@@ -214,9 +196,11 @@ public class MainFXMLController implements TableObserver, Crawler {
 		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
 		manager.setController(this);
 		sources.getSelectionModel().select(0);
-		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda.png"));
+		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda1.jpg"));
 		poster.setImage(defaultImg);
 		sources.valueProperty().addListener(e -> {
+			if (window == null)
+				window = root.getScene().getWindow();
 			loadAnime(window);
 			poster.setImage(defaultImg);
 			area.clear();
@@ -243,7 +227,19 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	@FXML
 	private void donate() {
-		new DonateDialog().showAndWait();
+		var dialog = new DonateDialog();
+		if (stage == null)
+			stage = (Stage) root.getScene().getWindow(); // an ugly way of initializing stage
+		// Calculate the center position of the parent Stage
+		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
+		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
+
+		dialog.setOnShowing((e) -> {
+			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
+			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
+		});
+
+		dialog.showAndWait();
 	}
 
 	private void search(String text) {
@@ -301,137 +297,12 @@ public class MainFXMLController implements TableObserver, Crawler {
 	public void loadedPoster(String url, Result result) {
 		Platform.runLater(() -> {
 			if (url == null) {
-				poster.setImage(null);
+				poster.setImage(defaultImg);
 			} else {
 				poster.setImage(new Image(url));
 			}
 
 		});
-	}
-
-	/*
-	 * Some times the JavaFX unMaximize/maximize does not work (in Some OS in a few
-	 * versions This hopefully takes care of that!
-	 * 
-	 */
-	void unMaximize(Stage stage) {
-		var preferences = Preferences.userNodeForPackage(Main.class);
-		double x = preferences.getDouble("x", 0);
-		double y = preferences.getDouble("y", 0);
-		double w = preferences.getDouble("w", 0);
-		double h = preferences.getDouble("h", 0);
-
-		stage.setX(x);
-		stage.setY(y);
-		stage.setWidth(w);
-		stage.setHeight(h);
-	}
-
-	/*
-	 * Some times the JavaFX unMaximize/maximize does not work (in Some OS in a few
-	 * versions This hopefully takes care of that!
-	 * 
-	 */
-	void maximize(Stage stage) {
-		var preferences = Preferences.userNodeForPackage(Main.class);
-		preferences.putDouble("x", stage.getX());
-		preferences.putDouble("y", stage.getY());
-		preferences.putDouble("w", stage.getWidth());
-		preferences.putDouble("h", stage.getHeight());
-
-		Rectangle2D rect = new Rectangle2D(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
-		// For multiple monitors, get the monitor that can handle the app size, if not
-		// the app will crash!
-		// I dont't care who you are, but if you cannot afford a good monitor then you
-		// shouldn't be watching anime all day
-
-		var screens = Screen.getScreensForRectangle(rect);
-		var bounds = screens.get(0).getVisualBounds();
-		stage.setX(bounds.getMinX());
-		stage.setY(bounds.getMinY());
-		stage.setWidth(bounds.getWidth());
-		stage.setHeight(bounds.getHeight());
-	}
-
-	@FXML
-	private void resize() {
-
-		if (stage == null)
-			stage = (Stage) close.getScene().getWindow(); // an ugly way of initializing stage
-		if (stage.isMaximized()) {
-			stage.setMaximized(false);
-			unMaximize(stage);
-			resize.setText("◻");
-		} else {
-			stage.setMaximized(true);
-			maximize(stage);
-			resize.setText("⧉");
-		}
-	}
-
-	@FXML
-	private void titleSelected(MouseEvent event) {
-		if (stage == null)
-			stage = (Stage) title.getScene().getWindow();
-		dragDelta.x = event.getScreenX() - stage.getX();
-		dragDelta.y = event.getScreenY() - stage.getY();
-	}
-
-	@FXML
-	private void titleDragged(MouseEvent event) {
-		if (stage.isMaximized()) {
-			double pw = stage.getWidth();
-			resize();
-			double nw = stage.getWidth();
-			dragDelta.x /= (pw / nw);
-		}
-		stage.setX(event.getScreenX() - dragDelta.x);
-		stage.setY(event.getScreenY() - dragDelta.y);
-	}
-
-	@FXML
-	private void titleReleased(MouseEvent event) {
-		if (event.getScreenY() == 0 && !stage.isMaximized()) {
-			resize();
-		}
-	}
-
-	@FXML
-	private void minimize() {
-		if (stage == null)
-			stage = (Stage) title.getScene().getWindow();
-		stage.setIconified(true);
-	}
-
-	@FXML
-	private void close() {
-		if (stage == null)
-			stage = (Stage) title.getScene().getWindow();
-
-		var dialog = new ConfirmDialog("Exit?", Constants.EXIT_QUESTION);
-
-		// Calculate the center position of the parent Stage
-		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
-		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
-
-		dialog.setOnShowing((e) -> {
-			System.out.println();
-			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
-			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
-		});
-
-		var res = dialog.showAndWait();
-		if (res.isPresent()) {
-			if (res.get()) {
-				DownloadManager.getInstance().pauseAll();
-				stage.close();
-				System.exit(0);// I shouldn't do this but for now I'll force close the app.
-			}
-		}
-	}
-
-	private class Delta {
-		double x, y;
 	}
 
 	@Override
@@ -448,6 +319,16 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 			Platform.runLater(() -> {
 				var dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
+				if (stage == null)
+					stage = (Stage) root.getScene().getWindow(); // an ugly way of initializing stage
+				// Calculate the center position of the parent Stage
+				double centerXPosition = stage.getX() + stage.getWidth() / 2d;
+				double centerYPosition = stage.getY() + stage.getHeight() / 2d;
+
+				dialog.setOnShowing((e) -> {
+					dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
+					dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
+				});
 				dialog.showAndWait();
 			});
 
@@ -482,6 +363,16 @@ public class MainFXMLController implements TableObserver, Crawler {
 		} else {
 			Platform.runLater(() -> {
 				var dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
+				if (stage == null)
+					stage = (Stage) root.getScene().getWindow(); // an ugly way of initializing stage
+				// Calculate the center position of the parent Stage
+				double centerXPosition = stage.getX() + stage.getWidth() / 2d;
+				double centerYPosition = stage.getY() + stage.getHeight() / 2d;
+
+				dialog.setOnShowing((e) -> {
+					dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
+					dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
+				});
 				dialog.showAndWait();
 			});
 		}
