@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import com.codingotaku.apps.callback.DownloadObserver;
 import com.codingotaku.apps.callback.TableObserver;
-import com.codingotaku.apps.source.Episode;
+import com.codingotaku.apis.animecrawler.Episode;
 
 /**
  * @author Rahul Sivananda <br>

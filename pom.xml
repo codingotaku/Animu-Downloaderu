@@ -29,6 +29,11 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.12.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.codingotaku.api</groupId>
+			<artifactId>anime-crawler-api</artifactId>
+			<version>0.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

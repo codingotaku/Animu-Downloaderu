@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.codingotaku.apps.callback.DownloadObserver;
-import com.codingotaku.apps.source.Episode;
+import com.codingotaku.apis.animecrawler.Episode;
 import com.codingotaku.apps.util.Constants;
 
 // This class downloads a file from a URL.
@@ -49,7 +49,7 @@ public class DownloadInfo implements Runnable {
 		this.episode = episode;
 		this.observer = observer;
 		//sanitize file and folder names
-		this.anime = episode.getAnime().replaceAll("[^a-zA-Z0-9\\-]", "_");
+		this.anime = episode.getTitle().replaceAll("[^a-zA-Z0-9\\-]", "_");
 		
 		var folderName = Constants.downloadFolder + "/" + anime;
 		this.fileName = folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));

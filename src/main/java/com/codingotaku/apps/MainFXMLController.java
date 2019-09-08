@@ -1,9 +1,14 @@
 package com.codingotaku.apps;
 
 import java.io.File;
-import java.util.List;
 import java.util.prefs.Preferences;
 
+import com.codingotaku.apis.animecrawler.Anime;
+import com.codingotaku.apis.animecrawler.AnimeCrawlerAPI;
+import com.codingotaku.apis.animecrawler.AnimeList;
+import com.codingotaku.apis.animecrawler.Episode;
+import com.codingotaku.apis.animecrawler.EpisodeList;
+import com.codingotaku.apis.animecrawler.Result;
 import com.codingotaku.apps.callback.Crawler;
 import com.codingotaku.apps.callback.TableObserver;
 import com.codingotaku.apps.callback.TableSelectListener;
@@ -13,11 +18,7 @@ import com.codingotaku.apps.custom.LoadDialog;
 import com.codingotaku.apps.download.DownloadInfo;
 import com.codingotaku.apps.download.DownloadManager;
 import com.codingotaku.apps.download.Status;
-import com.codingotaku.apps.source.Anime;
-import com.codingotaku.apps.source.Episode;
-import com.codingotaku.apps.source.Helper;
-import com.codingotaku.apps.source.Result;
-import com.codingotaku.apps.source.Source;
+import com.codingotaku.apps.source.AnimeSources;
 import com.codingotaku.apps.util.Backup;
 import com.codingotaku.apps.util.Constants;
 
@@ -103,13 +104,13 @@ public class MainFXMLController implements TableObserver, Crawler {
 	private final ObservableList<Episode> episodes = FXCollections.observableArrayList();
 	private final ObservableList<Anime> animes = FXCollections.observableArrayList();
 	private final DownloadManager manager = DownloadManager.getInstance();
-
+	private final AnimeCrawlerAPI api = new AnimeCrawlerAPI();
+	private final AnimeSources animeProviders = AnimeSources.getInstance();
 	private ListView<Episode> episodeList;
 	private ListView<Anime> animeList;
 
 	private final Delta dragDelta = new Delta();// for title bar dragging
 
-	private Helper servers;
 	private Window window;
 	private Stage stage;
 	private VBox vBox;
@@ -138,7 +139,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 		cb.setIndeterminate(false);
 		cb.setSelected(false);
 		LoadDialog.showDialog(window, "Loading..", "Loading Episodes.. please wait!");
-		servers.loadEpisodes(animeList.getSelectionModel().getSelectedItem());
+		api.listAllEpisodes(animeList.getSelectionModel().getSelectedItem(), this::loadedEpisodes);
 	}
 
 	@FXML
@@ -189,11 +190,11 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	public void loadAnime(Window window) {
-		var source = Source.values()[sources.getSelectionModel().getSelectedIndex()];
-		servers.setSource(source);
+		var source = animeProviders.values().get(sources.getSelectionModel().getSelectedIndex());
+
 		animeList.getSelectionModel().clearSelection();
 		LoadDialog.showDialog(window, "Loading..", "Loading Anime.. please wait!");
-		servers.loadAnime();
+		api.listAllAnime(source, this::loadedAnime);
 	}
 
 	@FXML
@@ -209,7 +210,6 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 		tableView.setRowFactory(new TableSelectListener());
 		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
-		servers = Helper.getInstance(this);
 		manager.setController(this);
 		sources.getSelectionModel().select(0);
 		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda.png"));
@@ -232,7 +232,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 		animeList = new ListView<>();
 		animeList.getSelectionModel().selectedItemProperty().addListener((observable, oldV, newV) -> {
 			if (newV != null)
-				servers.getSynopsys(newV);
+			api.getSynopsys(newV, this::loadedSynopsys);
+			api.getPosterUrl(newV, this::loadedPoster);
 		});
 
 	}
@@ -277,7 +278,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	@Override
-	public void loadedSynopsys(String content) {
+	public void loadedSynopsys(String content, Result result) {
 		Platform.runLater(() -> {
 			area.setText(content);
 			area.setEditable(false);
@@ -289,8 +290,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	@Override
-	public void poster(Image image) {
-		Platform.runLater(() -> poster.setImage(image));
+	public void loadedPoster(String url, Result result) {
+		Platform.runLater(() -> poster.setImage(new Image(url)));
 	}
 
 	/*
@@ -420,17 +421,17 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	@Override
-	public void loadedAnime(List<Anime> animesTmp, Result result) {
+	public void loadedAnime(AnimeList animesTmp, Result result) {
 		LoadDialog.stopDialog();
-		if (result.getStatus() == com.codingotaku.apps.source.Result.Status.OK) {
+		if (result.getStatus() == Result.Status.OK) {
 			Platform.runLater(() -> {
-				animes.setAll(animesTmp);
+				animes.setAll(animesTmp.getAnimes());
 				search(search.getText());
 				VBox.setVgrow(animeList, Priority.ALWAYS);
 				vBox.getChildren().setAll(animeList);
 			});
 		} else {
-			
+
 			Platform.runLater(() -> {
 				var dialog = new AlertDialog("Error", "Error loading anime, " + result.getError().getMessage());
 				dialog.showAndWait();
@@ -440,10 +441,10 @@ public class MainFXMLController implements TableObserver, Crawler {
 	}
 
 	@Override
-	public void loadedEpisodes(List<Episode> episodesTmp, Result result) {
+	public void loadedEpisodes(EpisodeList episodesTmp, Result result) {
 		LoadDialog.stopDialog();
-		if (result.getStatus() == com.codingotaku.apps.source.Result.Status.OK) {
-			episodes.setAll(episodesTmp);
+		if (result.getStatus() == Result.Status.OK) {
+			episodes.setAll(episodesTmp.episodes());
 			episodeList = new ListView<Episode>();
 			episodeList.setItems(episodes);
 			episodeList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
