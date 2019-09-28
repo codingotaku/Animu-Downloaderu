@@ -284,7 +284,8 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@Override
 	public void loadedSynopsys(String content, Result result) {
 		Platform.runLater(() -> {
-			area.setText(content);
+			String text = content.replaceAll("([\\w]+ :)", "\n$1").trim();
+			area.setText(text);
 			area.setEditable(false);
 			area.setWrapText(true);
 			LoadDialog.stopDialog();
