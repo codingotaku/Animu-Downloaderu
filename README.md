@@ -2,20 +2,18 @@
 
 ## Notes
 
-1. Removed Server 2,
-1. Modified code so that it would be easier to add new servers in the future! ([this file](https://github.com/codingotaku/Animu-Downloaderu/blob/master/src/main/java/com/codingotaku/apps/source/Source.java))
+1. Now has two Servers (Anime1, and GogoAnime),
+1. Uses AnimeCrawlerAPI [github](https://github.com/codingotaku/AnimeCrawlerAPI) [gitlab](https://gitlab.com/codingotaku/AnimeCrawlerAPI) for fetching Anime.
+1. Modified code so that it would be easier to add new servers in the future! ([this file](https://github.com/codingotaku/Animu-Downloaderu/blob/master/src/main/java/com/codingotaku/apps/source/AnimeSources.java))
+We might add more servers in the future! 
+1. Android version coming soon!
 
- We might add more servers in the future! 
-
- Anime1 server should work, but I cannot guarantee on when the videos gets blocked. 
-
- **I do not support piracy!**, The only reason for me making this app was because of the licensing crap that mainstream anime hosing services created and the ad+tracking bullshit in other websites adopted to.
+ **I do not support piracy!**, The only reason for me making this app was because of the DRM/licensing crap that mainstream anime hosing services created and the ad+tracking bullshit in other websites adopted to.
 ___
 
 ## About the App
 
 Animu Downloaderu is a java based software which helps you download your favorite anime as a batch. 
-More details at https://codingotaku.com/apps/AnimuDownloaderu/
 
 **To build from Source**
 Run
@@ -47,4 +45,5 @@ Run
 
 ### It is still under development and the code is a bit spaghettified so feel free to contribute :)
 
-Download the latest Jar form [Releases](https://github.com/CodingOtaku/Animu-Downloaderu/releases)
+Download the latest binary form [Releases](https://github.com/CodingOtaku/Animu-Downloaderu/releases)
+
