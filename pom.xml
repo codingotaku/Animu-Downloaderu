@@ -35,6 +35,12 @@
 			<version>0.3</version>
 		</dependency>
 	</dependencies>
+	<repositories>
+		<repository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.com/api/v4/projects/14189257/packages/maven</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
