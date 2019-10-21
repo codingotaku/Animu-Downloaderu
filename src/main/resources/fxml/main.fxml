@@ -35,6 +35,7 @@
 			<items>
 				<FXCollections fx:factory="observableArrayList">
 					<String fx:value="Anime1" />
+					<String fx:value="AnimeFreak"></String>
 					<String fx:value="GOGOAnime"></String>
 				</FXCollections>
 			</items>

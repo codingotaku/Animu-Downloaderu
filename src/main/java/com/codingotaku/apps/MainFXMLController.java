@@ -104,15 +104,14 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@FXML
 	private void showEpisodes(ActionEvent event) {
 		if (window == null)
-			window = showEpisodes.getScene().getWindow();
+			window = root.getScene().getWindow();
 		if (showEpisodes.getText().equals("Show Episodes")) {
 			loadEpisodes(window);
 			download.setDisable(false);
 			showEpisodes.setText("Back to Anime list");
 		} else {
-			area.clear();
+			search(search.getText());
 			showEpisodes.setDisable(true);
-			loadAnime(window);
 			poster.setImage(defaultImg);
 			showEpisodes.setText("Show Episodes");
 		}
@@ -120,7 +119,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 
 	private void loadEpisodes(Window window) {
 		if (window == null)
-			window = showEpisodes.getScene().getWindow();
+			window = root.getScene().getWindow();
 		cb.setIndeterminate(false);
 		cb.setSelected(false);
 		LoadDialog.showDialog(window, "Loading..", "Loading Episodes.. please wait!");
@@ -130,7 +129,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 	@FXML
 	private void chooseFolder() {
 		if (window == null)
-			window = showEpisodes.getScene().getWindow();
+			window = root.getScene().getWindow();
 
 		DirectoryChooser chooser = new DirectoryChooser();
 		chooser.setTitle("Select Download folder");
@@ -177,7 +176,7 @@ public class MainFXMLController implements TableObserver, Crawler {
 		var source = animeProviders.values().get(sources.getSelectionModel().getSelectedIndex());
 
 		animeList.getSelectionModel().clearSelection();
-		LoadDialog.showDialog(window, "Loading..", "Loading Anime.. please wait!");
+		LoadDialog.showDialog(window, "Loading..", "Loading Anime list.. please wait!");
 		api.listAllAnime(source, this::loadedAnime);
 	}
 
@@ -276,10 +275,6 @@ public class MainFXMLController implements TableObserver, Crawler {
 		tableView.refresh();
 	}
 
-	@Override
-	public void loading() {
-		LoadDialog.showDialog(window, "Please wait", "Fetching anime details");
-	}
 
 	@Override
 	public void loadedSynopsys(String content, Result result) {

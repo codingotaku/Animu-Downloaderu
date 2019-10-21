@@ -10,32 +10,16 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.stage.StageStyle;
 
 public class DonateDialog extends Dialog<Boolean> {
 	public DonateDialog() {
 		var buttonType = new ButtonType("Yes", ButtonData.YES);
 		var dialogPane = getDialogPane();
-		initStyle(StageStyle.UNDECORATED);
+
+		setTitle("Donate :3");
 		dialogPane.getStylesheets().add(getClass().getResource("/css/combo.css").toExternalForm());
 
-		var header = new HBox();
-		var title = new Label("Donate :3");
-		var close = new Label("X");
-		var space = new Pane();
 		var gridPane = new GridPane();
-
-		title.setId("head");
-		close.setId("head");
-
-		HBox.setHgrow(space, Priority.ALWAYS);
-		close.setAlignment(Pos.TOP_RIGHT);
-		close.setOnMouseEntered(e -> close.setId("none"));
-		close.setOnMouseExited(e -> close.setId("head"));
-		close.setOnMouseClicked(e -> close());
-		header.getChildren().addAll(title, space, close);
 
 		gridPane.setVgap(10);
 		String question = "Thank you for clicking the donate button!! <3\n\n"
@@ -62,10 +46,9 @@ public class DonateDialog extends Dialog<Boolean> {
 
 		
 		var label = new Label(question);
-		GridPane.setConstraints(header, 0, 0, 2, 1);
 		GridPane.setConstraints(label, 1, 2);
 		GridPane.setConstraints(donateButtons, 1, 3, 2, 1);
-		gridPane.getChildren().addAll(header, label, donateButtons);
+		gridPane.getChildren().addAll(label, donateButtons);
 		dialogPane.setContent(gridPane);
 		setResultConverter(dialogButton -> dialogButton == buttonType);
 	}
