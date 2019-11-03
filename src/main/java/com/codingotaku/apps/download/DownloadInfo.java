@@ -55,10 +55,10 @@ public class DownloadInfo implements Runnable {
 		this.episode = episode;
 		this.observer = observer;
 		// sanitize file and folder names
-		this.anime = episode.getanimeName().replaceAll("[^a-zA-Z0-9\\-]", "_");
+		this.anime = episode.getanimeName().replaceAll("[^a-zA-Z0-9 \\-]", "_");
 
 		var folderName = Constants.getDownloadFolder() + "/" + anime;
-		this.fileName = folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
+		this.fileName = folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9 \\.\\-]", "_"));
 
 		new File(folderName).mkdir();
 
@@ -253,6 +253,11 @@ public class DownloadInfo implements Runnable {
 			case DOWNLOADING:
 				if (getDownloaded() != size) {
 					error();
+				}else {
+					this.status = Status.MERGING_FILES;
+					observer.mergingFiles(this);
+					Thread.sleep(5000); // Dirty delay for closing all files
+					mergeSegments(files, new File(fileName));	
 				}
 				break;
 			case CANCELLING:
@@ -271,10 +276,6 @@ public class DownloadInfo implements Runnable {
 				observer.cancelled(this);
 				break;
 			default:
-				this.status = Status.MERGING_FILES;
-				observer.mergingFiles(this);
-				Thread.sleep(5000); // Dirty delay for closing all files
-				mergeSegments(files, new File(fileName));
 				break;
 			}
 		} catch (InterruptedException e) {
