@@ -68,6 +68,7 @@
 				<Button fx:id="download" text="Download" onAction="#download" />
 				<Button fx:id="showDownloads" text="Show Downloads"
 					onAction="#showDownloads" />
+				<Button text="⇅ order" onAction="#reverse" />
 			</HBox>
 			<ScrollPane fx:id="epScrollPane" styleClass="edge-to-edge"
 				fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">

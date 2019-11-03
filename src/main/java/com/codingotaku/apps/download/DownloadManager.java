@@ -195,7 +195,6 @@ public class DownloadManager implements DownloadObserver {
 			toCancel.add(info);
 			downloads.remove(info);
 		}
-
 		toCancel.forEach(DownloadInfo::cancel);
 	}
 
@@ -255,7 +254,6 @@ public class DownloadManager implements DownloadObserver {
 				queue.add(0, info);
 			}
 		}
-
 		toRemove.forEach(errQueue::remove);
 		startNextDownload();
 	}
@@ -349,6 +347,13 @@ public class DownloadManager implements DownloadObserver {
 		startNextDownload();
 	}
 
+	public void remove(DownloadInfo info) {
+		queue.remove(info);
+		downloads.remove(info);
+		errQueue.remove(info);
+		pauseQueue.remove(info);
+	}
+
 	public void retry(DownloadInfo info) {
 		if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
 			errQueue.remove(info);
@@ -358,20 +363,21 @@ public class DownloadManager implements DownloadObserver {
 			} else {
 				queue.add(0, info);
 			}
+		} else if (info.getStatus() == Status.PENDING && downloads.size() < MAX_DOWNLOAD) {
+			downloads.add(info);
+			info.startDownload();
 		}
 	}
 
 	public void restart(DownloadInfo info) {
-		if (info.getStatus() == Status.CANCELLED || info.getStatus() == Status.ERROR) {
-			errQueue.remove(info);
-			if (downloads.size() < MAX_DOWNLOAD) {
-				downloads.add(info);
-				info.restart();
-			} else {
-				info.cancel();
-				info.setStatus(Status.PENDING);
-				queue.add(0, info);
-			}
+		errQueue.remove(info);
+		if (downloads.size() < MAX_DOWNLOAD) {
+			downloads.add(info);
+			info.restart();
+		} else {
+			info.cancel();
+			info.setStatus(Status.PENDING);
+			queue.add(0, info);
 		}
 	}
 }

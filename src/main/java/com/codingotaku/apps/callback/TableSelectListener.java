@@ -3,6 +3,7 @@ package com.codingotaku.apps.callback;
 import com.codingotaku.apps.download.DownloadInfo;
 import com.codingotaku.apps.download.DownloadManager;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -37,15 +38,17 @@ public class TableSelectListener implements Callback<TableView<DownloadInfo>, Ta
 	private void initListeners(TableView<DownloadInfo> view, DownloadInfo info) {
 		// Add for selected row (add nothing if the row is empty)
 		if (info != null) {
-			pause.setOnAction(e -> manager.pause(info));
-			resume.setOnAction(e -> manager.resume(info));
-			cancel.setOnAction(e -> manager.cancel(info));
-			retry.setOnAction(e -> manager.retry(info));
-			restart.setOnAction(e -> manager.restart(info));
-			delete.setOnAction(e -> {
-				manager.cancel(info);
+			pause.setOnAction(e -> Platform.runLater(() -> manager.pause(info)));
+			resume.setOnAction(e -> Platform.runLater(() -> manager.resume(info)));
+			cancel.setOnAction(e -> Platform.runLater(() -> manager.cancel(info)));
+			retry.setOnAction(e -> Platform.runLater(() -> manager.retry(info)));
+			restart.setOnAction(e -> Platform.runLater(() -> manager.restart(info)));
+			delete.setOnAction(e -> Platform.runLater(() -> {
 				view.getItems().remove(info);
-			});
+				manager.cancel(info);
+				manager.remove(info);
+				view.refresh();
+			}));
 		}
 		// For all rows
 

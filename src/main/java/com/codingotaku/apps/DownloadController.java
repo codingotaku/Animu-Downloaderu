@@ -60,8 +60,16 @@ public class DownloadController implements TableObserver {
 		progress.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("progress"));
 		status.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Status>("status"));
 
-		clearAll.setOnAction(e -> tableView.getItems()
-				.removeIf(d -> d.getStatus() == Status.FINISHED || d.getStatus() == Status.CANCELLED));
+		clearAll.setOnAction(e -> {
+			tableView.getItems().removeIf(d -> {
+				boolean remove = d.getStatus() == Status.FINISHED || d.getStatus() == Status.CANCELLED;
+				if (remove) {
+					manager.remove(d);
+				}
+				return remove;
+			});
+			tableView.refresh();
+		});
 		pauseAll.setOnAction(e -> manager.pauseAll());
 		resumeAll.setOnAction(e -> manager.resumeAll());
 		cancelAll.setOnAction(e -> manager.cancelAll());

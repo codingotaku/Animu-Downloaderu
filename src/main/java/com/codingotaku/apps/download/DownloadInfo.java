@@ -389,7 +389,7 @@ public class DownloadInfo implements Runnable {
 		if (status == Status.DOWNLOADING)
 			return;
 
-		if (status == Status.ERROR) {
+		if (status == Status.ERROR || status == Status.CANCELLED) {
 			status = Status.DOWNLOADING;
 			String newURL = null;
 			try {

@@ -21,8 +21,8 @@
 		<Button fx:id="pauseAll" text="Pause All" />
 		<Button fx:id="resumeAll" text="Resume All" />
 		<Button fx:id="cancelAll" text="Cancel All" />
-		<Button fx:id="retryAll" text="Retry Failed" />
-		<Button fx:id="restartAll" text="Restart Failed" />
+		<Button fx:id="retryAll" text="Retry All" />
+		<Button fx:id="restartAll" text="Restart All" />
 	</HBox>
 	<TableView fx:id="tableView" VBox.vgrow="ALWAYS">
 		<placeholder>

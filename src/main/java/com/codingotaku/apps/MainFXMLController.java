@@ -1,6 +1,7 @@
 package com.codingotaku.apps;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,8 +118,11 @@ public class MainFXMLController implements Crawler {
 
 		var result = dialog.showAndWait();
 		result.ifPresent(res -> {
-			if (Boolean.TRUE.equals(res))
+			if (Boolean.TRUE.equals(res)) {
 				downloadSelected();
+				showDownloads(event);
+			}
+				
 		});
 	}
 
@@ -287,6 +291,11 @@ public class MainFXMLController implements Crawler {
 			});
 
 		}
+	}
+
+	@FXML
+	private void reverse() {
+		Collections.reverse(episodeList.getItems());
 	}
 
 	@Override
