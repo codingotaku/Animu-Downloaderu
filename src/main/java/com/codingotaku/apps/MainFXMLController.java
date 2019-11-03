@@ -1,6 +1,8 @@
 package com.codingotaku.apps;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.codingotaku.apis.animecrawler.Anime;
 import com.codingotaku.apis.animecrawler.AnimeCrawlerAPI;
@@ -40,6 +42,8 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 public class MainFXMLController implements Crawler {
+	private static Logger logger = Logger.getLogger(MainFXMLController.class.getName());
+
 	@FXML
 	private VBox root; // Root
 
@@ -88,14 +92,11 @@ public class MainFXMLController implements Crawler {
 
 	@FXML
 	private void showDownloads(ActionEvent event) {
-		if (window == null)
-			window = root.getScene().getWindow();
 		if (downloads.isShowing()) {
 			downloads.requestFocus();
 		} else {
 			downloads.show();
 		}
-
 	}
 
 	@FXML
@@ -109,14 +110,14 @@ public class MainFXMLController implements Crawler {
 		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
 		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
 
-		dialog.setOnShowing((e) -> {
+		dialog.setOnShowing(e -> {
 			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
 			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
 		});
 
 		var result = dialog.showAndWait();
 		result.ifPresent(res -> {
-			if (res)
+			if (Boolean.TRUE.equals(res))
 				downloadSelected();
 		});
 	}
@@ -131,39 +132,20 @@ public class MainFXMLController implements Crawler {
 
 	@FXML
 	private void initialize() {
-		area.clear();
 		animeBox = (VBox) scrollPane.getContent().lookup("#list");
 		epBox = (VBox) epScrollPane.getContent().lookup("#epList");
-
-		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
-
-		try {
-			downloads = new Stage();
-			var loader = new FXMLLoader(getClass().getResource("/fxml/table.fxml"));
-			Parent root = loader.load();
-			final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
-			final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.50;
-
-			var scene = new Scene(root, WIDTH, HEIGHT);
-			var icon = new Image(getClass().getResourceAsStream("/icons/icon.png"));
-
-			downloads.setMinWidth(WIDTH);
-			downloads.setMinHeight(HEIGHT);
-			downloads.getIcons().add(icon);
-			downloads.centerOnScreen();
-			scene.getStylesheets().add(getClass().getResource("/css/table.css").toExternalForm());
-			downloads.setTitle("Downloads");
-			downloads.setScene(scene);
-			var controller = (DownloadController) loader.getController();
-			manager.setController(controller);
-
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda1.jpg"));
+		animeList = new ListView<>();
 
 		sources.getSelectionModel().select(0);
-		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda1.jpg"));
 		poster.setImage(defaultImg);
+
+		initListeners();
+		initDownloadDialog();
+	}
+
+	private void initListeners() {
+		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
 		sources.valueProperty().addListener(e -> {
 			if (window == null)
 				window = root.getScene().getWindow();
@@ -175,13 +157,12 @@ public class MainFXMLController implements Crawler {
 		cb.selectedProperty().addListener((paramObservableValue, old, flag) -> {
 			if (episodeList == null)
 				return;
-			if (flag)
+			if (Boolean.TRUE.equals(flag))
 				episodeList.getSelectionModel().selectAll();
 			else
 				episodeList.getSelectionModel().clearSelection();
 		});
 
-		animeList = new ListView<>();
 		animeList.getSelectionModel().selectedItemProperty().addListener((observable, oldV, newV) -> {
 			if (newV != null) {
 				if (window == null)
@@ -191,7 +172,33 @@ public class MainFXMLController implements Crawler {
 				api.getPosterUrl(newV, this::loadedPoster);
 			}
 		});
+	}
 
+	private void initDownloadDialog() {
+
+		try {
+			downloads = new Stage();
+			var loader = new FXMLLoader(getClass().getResource("/fxml/table.fxml"));
+			Parent dlRoot = loader.load();
+			final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
+			final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.50;
+
+			var scene = new Scene(dlRoot, WIDTH, HEIGHT);
+			var icon = new Image(getClass().getResourceAsStream("/icons/icon.png"));
+
+			downloads.setMinWidth(WIDTH);
+			downloads.setMinHeight(HEIGHT);
+			downloads.getIcons().add(icon);
+			downloads.centerOnScreen();
+			scene.getStylesheets().add(getClass().getResource("/css/table.css").toExternalForm());
+			downloads.setTitle("Downloads");
+			downloads.setScene(scene);
+			DownloadController controller = loader.getController();
+			manager.setController(controller);
+
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
 	}
 
 	@FXML
@@ -203,7 +210,7 @@ public class MainFXMLController implements Crawler {
 		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
 		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
 
-		dialog.setOnShowing((e) -> {
+		dialog.setOnShowing(e -> {
 			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
 			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
 		});
@@ -217,9 +224,8 @@ public class MainFXMLController implements Crawler {
 			if (text.isEmpty()) {
 				animeList.setItems(animes);
 			} else {
-				animeList.setItems(animes.filtered(label -> {
-					return label.getName().toLowerCase().contains(text.toLowerCase());
-				}));
+				animeList
+						.setItems(animes.filtered(label -> label.getName().toLowerCase().contains(text.toLowerCase())));
 			}
 		}
 		if (!animeBox.getChildren().contains(animeList)) {
@@ -228,9 +234,7 @@ public class MainFXMLController implements Crawler {
 	}
 
 	private void downloadSelected() {
-		new Thread(() -> {
-			episodeList.getSelectionModel().getSelectedItems().forEach(episode -> manager.addDownloadURL(episode));
-		}).start();
+		new Thread(() -> episodeList.getSelectionModel().getSelectedItems().forEach(manager::addDownloadURL)).start();
 	}
 
 	@Override
@@ -275,7 +279,7 @@ public class MainFXMLController implements Crawler {
 				double centerXPosition = stage.getX() + stage.getWidth() / 2d;
 				double centerYPosition = stage.getY() + stage.getHeight() / 2d;
 
-				dialog.setOnShowing((e) -> {
+				dialog.setOnShowing(e -> {
 					dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
 					dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
 				});
@@ -291,7 +295,7 @@ public class MainFXMLController implements Crawler {
 		if (result.getStatus() == Result.Status.OK) {
 			Platform.runLater(() -> {
 				episodes.setAll(episodesTmp.episodes());
-				episodeList = new ListView<Episode>();
+				episodeList = new ListView<>();
 				episodeList.setItems(episodes);
 				episodeList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 				episodeList.setOnMouseClicked(event -> {
@@ -322,7 +326,7 @@ public class MainFXMLController implements Crawler {
 				double centerXPosition = stage.getX() + stage.getWidth() / 2d;
 				double centerYPosition = stage.getY() + stage.getHeight() / 2d;
 
-				dialog.setOnShowing((e) -> {
+				dialog.setOnShowing(e -> {
 					dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
 					dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
 				});

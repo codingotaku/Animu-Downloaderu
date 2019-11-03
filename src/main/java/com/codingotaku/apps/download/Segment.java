@@ -5,10 +5,42 @@ package com.codingotaku.apps.download;
  *         This class contains segment details for each downloads
  */
 public class Segment {
-	public long start; // Start byte location
-	public long end; // End byte location
-	public long downloaded; // bytes downloaded
-	public String file; // File name of downloaded segment
+	private long start; // Start byte location
+	private long end; // End byte location
+	private long downloaded; // bytes downloaded
+	private String file; // File name of downloaded segment
+
+	public long getStart() {
+		return start;
+	}
+
+	public void setStart(long start) {
+		this.start = start;
+	}
+
+	public long getEnd() {
+		return end;
+	}
+
+	public void setEnd(long end) {
+		this.end = end;
+	}
+
+	public long getDownloaded() {
+		return downloaded;
+	}
+
+	public void setDownloaded(long downloaded) {
+		this.downloaded = downloaded;
+	}
+
+	public String getFile() {
+		return file;
+	}
+
+	public void setFile(String file) {
+		this.file = file;
+	}
 
 	Segment(long start, long end, String file) {
 		this.start = start;

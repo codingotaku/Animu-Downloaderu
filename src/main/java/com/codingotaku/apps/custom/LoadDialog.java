@@ -9,6 +9,10 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 public class LoadDialog {
+	private LoadDialog() {
+
+	}
+
 	private static Alert alert;
 
 	public static void showDialog(Window owner, String title, String message) {
@@ -17,12 +21,13 @@ public class LoadDialog {
 		alert.setTitle(title);
 		alert.setContentText(message);
 		alert.initStyle(StageStyle.UNDECORATED);
-		alert.getDialogPane().getStylesheets().add(LoadDialog.class.getResource("/css/application.css").toExternalForm());
+		alert.getDialogPane().getStylesheets()
+				.add(LoadDialog.class.getResource("/css/application.css").toExternalForm());
 		// Calculate the center position of the parent Stage
 		double centerXPosition = owner.getX() + owner.getWidth() / 2d;
 		double centerYPosition = owner.getY() + owner.getHeight() / 2d;
 
-		alert.setOnShowing((e) -> {
+		alert.setOnShowing(e -> {
 			alert.setX(centerXPosition - alert.getDialogPane().getWidth() / 2d);
 			alert.setY(centerYPosition - alert.getDialogPane().getHeight() / 2d);
 		});
@@ -41,9 +46,7 @@ public class LoadDialog {
 
 	public static void setMessage(String message) {
 		if (alert != null && alert.isShowing()) {
-			Platform.runLater(() -> {
-				alert.setContentText(message);
-			});
+			Platform.runLater(() -> alert.setContentText(message));
 		}
 	}
 }

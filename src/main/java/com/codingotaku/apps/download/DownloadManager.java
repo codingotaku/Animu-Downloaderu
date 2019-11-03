@@ -4,10 +4,11 @@
 package com.codingotaku.apps.download;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import com.codingotaku.apis.animecrawler.Episode;
 import com.codingotaku.apps.callback.DownloadObserver;
 import com.codingotaku.apps.callback.TableObserver;
-import com.codingotaku.apis.animecrawler.Episode;
 
 /**
  * @author Rahul Sivananda <br>
@@ -31,11 +32,11 @@ public class DownloadManager implements DownloadObserver {
 	 * download manager per application
 	 */
 	public static DownloadManager getInstance() {
-		if (instance == null) instance = new DownloadManager();
+		if (instance == null)
+			instance = new DownloadManager();
 		return instance;
 	}
 
-	
 	public void restoreDownload(DownloadInfo info) {
 		switch (info.getStatus()) {
 		case CANCELLED:
@@ -63,7 +64,7 @@ public class DownloadManager implements DownloadObserver {
 		}
 	}
 
-	public ArrayList<DownloadInfo> getQueue(Status status) {
+	public List<DownloadInfo> getQueue(Status status) {
 		ArrayList<DownloadInfo> ret = new ArrayList<>();
 		switch (status) {
 		case PENDING:
@@ -103,7 +104,8 @@ public class DownloadManager implements DownloadObserver {
 			added = false;
 			break;
 		}
-		if (added) observer.added(info);
+		if (added)
+			observer.added(info);
 	}
 
 	private DownloadManager() {
@@ -194,7 +196,7 @@ public class DownloadManager implements DownloadObserver {
 			downloads.remove(info);
 		}
 
-		toCancel.forEach(info -> info.cancel());
+		toCancel.forEach(DownloadInfo::cancel);
 	}
 
 	public void pauseAll() {
@@ -210,7 +212,7 @@ public class DownloadManager implements DownloadObserver {
 			}
 		}
 
-		toPause.forEach(info -> info.pause());
+		toPause.forEach(DownloadInfo::pause);
 	}
 
 	public void resumeAll() {
@@ -226,7 +228,10 @@ public class DownloadManager implements DownloadObserver {
 			if (downloads.size() < MAX_DOWNLOAD) {
 				downloads.add(info);
 				info.resume();
-			} else queue.add(0, info);
+			} else {
+				queue.add(0, info);
+			}
+
 			i++;
 		}
 
@@ -246,7 +251,9 @@ public class DownloadManager implements DownloadObserver {
 			if (downloads.size() < MAX_DOWNLOAD) {
 				downloads.add(info);
 				info.retry();
-			} else queue.add(0, info);
+			} else {
+				queue.add(0, info);
+			}
 		}
 
 		toRemove.forEach(errQueue::remove);
@@ -286,23 +293,31 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	private void startNextDownload() {
-		if (globalStop) return;
+		if (globalStop)
+			return;
 
 		int tmp = downloads.size();
-		if (tmp >= MAX_DOWNLOAD || queue.isEmpty()) return;
+		if (tmp >= MAX_DOWNLOAD || queue.isEmpty())
+			return;
 
 		int last = MAX_DOWNLOAD - tmp;
-		if (last > queue.size()) last = queue.size();
+		if (last > queue.size())
+			last = queue.size();
 
 		for (int i = 0; i < last; i++) {
 			DownloadInfo info = queue.get(i);
 			addDownload(info);
 			queue.remove(info);
 			if (info.getSize() > -1) {
-				if (info.getStatus() == Status.PENDING) info.restart();
-				else if (info.getStatus() == Status.PAUSED) info.resume();
-				else info.retry();
-			} else startDownload(info);
+				if (info.getStatus() == Status.PENDING)
+					info.restart();
+				else if (info.getStatus() == Status.PAUSED)
+					info.resume();
+				else
+					info.retry();
+			} else {
+				startDownload(info);
+			}
 		}
 	}
 
@@ -328,7 +343,8 @@ public class DownloadManager implements DownloadObserver {
 	}
 
 	public void cancel(DownloadInfo info) {
-		if (info.getStatus() == Status.DOWNLOADING) info.cancel();
+		if (info.getStatus() == Status.DOWNLOADING)
+			info.cancel();
 		downloads.remove(info);
 		startNextDownload();
 	}

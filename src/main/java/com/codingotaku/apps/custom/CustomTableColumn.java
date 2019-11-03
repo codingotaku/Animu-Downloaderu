@@ -28,7 +28,7 @@ public class CustomTableColumn<S, T> extends TableColumn<S, T> {
 		return percentageWidthProperty().get();
 	}
 
-	public final void setWidthPercentage(double value) throws IllegalArgumentException {
+	public final void setWidthPercentage(double value) {
 		if (value >= 0 && value <= 1) {
 			percentageWidthProperty().set(value);
 		} else {

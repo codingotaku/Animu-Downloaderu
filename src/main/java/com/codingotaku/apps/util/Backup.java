@@ -5,11 +5,19 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Rahul S<br>
  */
 public class Backup {
+	private static Logger logger = Logger.getLogger(Backup.class.getName());
+
+	private Backup() {
+
+	}
+
 	public static void saveDownloadFolder() {
 		try {
 			var file = new File(Constants.CONFIG_FILE);
@@ -18,14 +26,15 @@ public class Backup {
 			if (!parent.exists() && !parent.mkdirs()) {
 				throw new IllegalStateException("Couldn't create dir: " + parent);
 			}
-			if(!file.exists()) {
-				file.createNewFile();
+			if (!file.exists() && !file.createNewFile()) {
+				// Create failed
 			}
-			var fileWriter = new FileWriter(Constants.CONFIG_FILE);
-			fileWriter.write(String.format("folder %s", Constants.downloadFolder));
-			fileWriter.close();
+			try (FileWriter fileWriter = new FileWriter(Constants.CONFIG_FILE)) {
+				fileWriter.write(String.format("folder %s", Constants.getDownloadFolder()));
+			}
+
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage());
 		}
 	}
 
@@ -39,11 +48,11 @@ public class Backup {
 				String folder = properties.getProperty("folder");
 				if (new File(folder).exists()) {
 					// Don't assign if folder doesn't exist
-					Constants.downloadFolder = folder;
+					Constants.setDownloadFolder(folder);
 				}
 				fileReader.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.log(Level.SEVERE, e.getMessage());
 			}
 		}
 	}

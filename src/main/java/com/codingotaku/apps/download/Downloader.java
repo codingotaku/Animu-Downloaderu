@@ -6,12 +6,15 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Rahul S
  */
 public class Downloader implements Runnable {
+	private static Logger logger = Logger.getLogger(Downloader.class.getName());
 	private static final int DELAY_BETWEEN_RETRY = 10000; // Delay between retry after download error
 	private static final int MAX_BUFFER_SIZE = 8192; // Max size of download buffer. 8KB
 	private static final int MAX_RETRY = 8; // Maximum retry for each download thread
@@ -37,61 +40,78 @@ public class Downloader implements Runnable {
 	// Running download in a different thread
 	@Override
 	public void run() {
-		download();
+		try {
+			downloadSegments();
+		} catch (InterruptedException e) {
+			error();
+			Thread.currentThread().interrupt();
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+	}
+
+	private boolean createDownloadFile() {
+		try {
+			this.file = new RandomAccessFile(segment.getFile(), "rw");
+			return false;
+		} catch (FileNotFoundException e) {
+			error();
+			closeSession();
+			logger.log(Level.SEVERE, e.getMessage());
+			return true;
+		}
 	}
 
 	// Start downloading segment
-	private void download() {
+	private void downloadSegments() throws InterruptedException {
 		int retry = 0;
-		while (callBack.getStaus() == Status.DOWNLOADING && (segment.start < segment.end)) {
+		boolean quit = false;
+
+		while (!quit && callBack.getStaus() == Status.DOWNLOADING && (segment.getStart() < segment.getEnd())) {
+
 			try {
 				this.httpURLConnection = (HttpURLConnection) downloadURL.openConnection();
-				httpURLConnection.setRequestProperty("Range", "bytes=" + segment.start + "-" + segment.end);
+				httpURLConnection.setRequestProperty("Range", "bytes=" + segment.getStart() + "-" + segment.getEnd());
 				httpURLConnection.connect();
 
-				try {
-					this.file = new RandomAccessFile(segment.file, "rw");
-				} catch (FileNotFoundException e) {
-					error();
-					closeSession();
-					e.printStackTrace();
-					break;
+				quit = createDownloadFile();
+
+				if (quit) {
+					continue;
 				}
 
-				file.seek(segment.downloaded);
+				file.seek(segment.getDownloaded());
 
 				InputStream is = httpURLConnection.getInputStream();
 
-				byte data[];
 				int readNum;
 
-				data = new byte[MAX_BUFFER_SIZE];
-				while (callBack.getStaus() == Status.DOWNLOADING
-						&& ((readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1) && (segment.start < segment.end)) { // Redundant
+				byte[] data = new byte[MAX_BUFFER_SIZE];
+				while (callBack.getStaus() == Status.DOWNLOADING && (readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1
+						&& (segment.getStart() < segment.getEnd())) { // Redundant
 					// Write buffer to file.
 					file.write(data, 0, readNum);
-					segment.start += readNum;
-					segment.downloaded += readNum;
+					segment.setStart(segment.getStart() + readNum );
+					segment.setDownloaded(segment.getDownloaded() + readNum );
 					callBack.add(readNum, Status.DOWNLOADING);
 				}
 				closeSession();
-				break;
+				quit = true;
+
 			} catch (IOException e) {
 				if (retry == MAX_RETRY) {
 					error();
-				} else {
-					try {
-						Thread.sleep(DELAY_BETWEEN_RETRY);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
-					retry++;
 				}
-				e.printStackTrace();
+
+				Thread.sleep(DELAY_BETWEEN_RETRY);
+				retry++;
+
+				logger.log(Level.SEVERE, e.getMessage());
 			} finally {
 				closeSession();
-				if (retry == MAX_RETRY)
-					break;
+				if (retry == MAX_RETRY) {
+					quit = true;
+				}
+
 			}
 		}
 	}

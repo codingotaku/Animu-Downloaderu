@@ -50,11 +50,9 @@ public class DownloadController implements TableObserver {
 	@FXML
 	private Button restartAll;
 
-	private static DownloadManager manager;
-
 	@FXML
 	private void initialize() {
-		manager = DownloadManager.getInstance();
+		DownloadManager manager = DownloadManager.getInstance();
 		tableView.setRowFactory(new TableSelectListener());
 		fileName.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("fileName"));
 		size.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("size"));
@@ -90,16 +88,16 @@ public class DownloadController implements TableObserver {
 		chooser.setTitle("Select Download folder");
 		File defaultDirectory;
 
-		defaultDirectory = new File(Constants.downloadFolder);
+		defaultDirectory = new File(Constants.getDownloadFolder());
 		if (!defaultDirectory.exists()) {// If the path was external HD or it doesn't exist.
-			Constants.downloadFolder = System.getProperty("user.home") + File.separator + "Downloads";
-			defaultDirectory = new File(Constants.downloadFolder);
+			Constants.setDownloadFolder(System.getProperty("user.home") + File.separator + "Downloads");
+			defaultDirectory = new File(Constants.getDownloadFolder());
 		}
 
 		chooser.setInitialDirectory(defaultDirectory);
 		File selectedDir = chooser.showDialog(window);
 		if (selectedDir != null && selectedDir.exists()) {
-			Constants.downloadFolder = selectedDir.getAbsolutePath();
+			Constants.setDownloadFolder(selectedDir.getAbsolutePath());
 			Backup.saveDownloadFolder();
 		}
 	}

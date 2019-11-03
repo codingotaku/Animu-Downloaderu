@@ -13,7 +13,7 @@ public class AnimeSources {
 	private AnimeSources() {
 		SourceBuilder builder = new SourceBuilder();
 
-		Source Anime1 = builder.setListUrl("http://www.anime1.com/content/list/")
+		Source anime1 = builder.setListUrl("http://www.anime1.com/content/list/")
 				.setListRegex("div.alph-list-box > h4:has(a[name]) + ul > li > a")
 				.setNameRegex("h1.blue-main-title")
 				.setDocRegex("div.detail-left > span > span")
@@ -22,7 +22,7 @@ public class AnimeSources {
 				.build();
 	
 		builder = new SourceBuilder();
-		Source GOGOAnime = builder.setListUrl("https://www.gogoanime1.com/home/anime-list")
+		Source gogoAnime = builder.setListUrl("https://www.gogoanime1.com/home/anime-list")
 				.setListRegex("div.container-left > div.container-item > ul > li > a")
 				.setNameRegex("div.anime-title)")
 				.setDocRegex("p.anime-details")
@@ -31,7 +31,7 @@ public class AnimeSources {
 				.build();
 
 		builder = new SourceBuilder();
-		Source AnimeFreak = builder.setListUrl("https://www.animefreak.tv/home/anime-list")
+		Source animeFreak = builder.setListUrl("https://www.animefreak.tv/home/anime-list")
 				.setListRegex("div.container-left > div.container-item > ul > li > a")
 				.setNameRegex("div.anime-title)")
 				.setDocRegex("p.anime-details")
@@ -40,9 +40,9 @@ public class AnimeSources {
 				.build();
 
 		// add sources alphabetically and as available in main.fxml
-		sources.add(Anime1);
-		sources.add(AnimeFreak);
-		sources.add(GOGOAnime);
+		sources.add(anime1);
+		sources.add(animeFreak);
+		sources.add(gogoAnime);
 	}
 
 	public List<Source> values() {

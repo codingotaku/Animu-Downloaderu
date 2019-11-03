@@ -1,6 +1,8 @@
 package com.codingotaku.apps;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.codingotaku.apps.custom.ConfirmDialog;
 import com.codingotaku.apps.download.DownloadManager;
@@ -15,6 +17,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class AnimuDownloaderu extends Application {
+	private static Logger logger = Logger.getLogger(AnimuDownloaderu.class.getName());
 	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
 	private static final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.75;
 
@@ -34,7 +37,6 @@ public class AnimuDownloaderu extends Application {
 
 			stage.setMinWidth(WIDTH);
 			stage.setMinHeight(HEIGHT);
-//			stage.initStyle(StageStyle.TRANSPARENT);
 
 			stage.getIcons().add(icon);
 			stage.centerOnScreen();
@@ -43,7 +45,7 @@ public class AnimuDownloaderu extends Application {
 			stage.setScene(scene);
 			stage.show();
 
-			var controller = (MainFXMLController) loader.getController();
+			MainFXMLController controller = loader.getController();
 			controller.loadAnime(stage);
 			Backup.loadDownloadFolder();
 
@@ -55,21 +57,21 @@ public class AnimuDownloaderu extends Application {
 				double centerXPosition = stage.getX() + stage.getWidth() / 2d;
 				double centerYPosition = stage.getY() + stage.getHeight() / 2d;
 
-				dialog.setOnShowing((e) -> {
+				dialog.setOnShowing(e -> {
 					dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
 					dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
 				});
 
 				var res = dialog.showAndWait();
-				if (res.isPresent() && res.get()) {
-						DownloadManager.getInstance().pauseAll();
-						stage.close();
-						System.exit(0);// I shouldn't do this but for now I'll force close the app.
+				if (res.isPresent() && Boolean.TRUE.equals(res.get())) {
+					DownloadManager.getInstance().pauseAll();
+					stage.close();
+					System.exit(0);// I shouldn't do this but for now I'll force close the app.
 				}
 			});
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage());
 		}
 	}
 }

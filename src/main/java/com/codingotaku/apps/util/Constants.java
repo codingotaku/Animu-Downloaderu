@@ -7,8 +7,20 @@ import java.io.File;
  *         Constants class store constant values
  */
 public class Constants {
-	public static final String CONFIG_FILE = "settings"+File.separator+"anime.properties";
+	private Constants() {
+
+	}
+
+	public static final String CONFIG_FILE = "settings" + File.separator + "anime.properties";
 	public static final String EXIT_QUESTION = "Are you sure you want to exit?";
-	public static String downloadFolder = (System.getProperty("user.home") +File.separator+ "Downloads");
-	
+	private static String downloadFolder = (System.getProperty("user.home") + File.separator + "Downloads");
+
+	public static String getDownloadFolder() {
+		return downloadFolder;
+	}
+
+	public static void setDownloadFolder(String folder) {
+		Constants.downloadFolder = folder;
+	}
+
 }

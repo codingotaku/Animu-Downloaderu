@@ -15,4 +15,5 @@ module animu_downloaderu {
 	requires org.jsoup;
 	requires transitive javafx.graphics;
 	requires transitive anime_crawler_api;
+	requires java.logging;
 }
