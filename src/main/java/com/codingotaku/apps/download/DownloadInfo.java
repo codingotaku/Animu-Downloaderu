@@ -364,7 +364,6 @@ public class DownloadInfo implements Runnable {
 			try {
 				url = episode.getVideoUrl();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 

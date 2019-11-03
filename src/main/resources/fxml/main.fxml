@@ -12,9 +12,6 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TableColumn?>
-<?import com.codingotaku.apps.custom.CustomTableColumn?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
@@ -29,8 +26,6 @@
 			<Insets top="5" right="10" bottom="10" left="10" />
 		</padding>
 
-		<CheckBox fx:id="cb"></CheckBox>
-
 		<ComboBox fx:id="sources" prefWidth="150">
 			<items>
 				<FXCollections fx:factory="observableArrayList">
@@ -40,9 +35,6 @@
 				</FXCollections>
 			</items>
 		</ComboBox>
-
-		<Button fx:id="download" text="Download" disable="true"
-			onAction="#download" prefWidth="150" HBox.hgrow="ALWAYS" />
 		<TextField fx:id="search" promptText="Enter Anime to search"
 			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
 		<Button text="Donate" onAction="#donate"></Button>
@@ -59,46 +51,28 @@
 
 		<VBox spacing="10" HBox.hgrow="ALWAYS">
 			<HBox>
-				<ImageView fx:id="poster" fitHeight="300" fitWidth="200"
+				<ImageView fx:id="poster" fitHeight="180" fitWidth="120"
 					pickOnBounds="true" preserveRatio="true">
 					<image>
 						<Image url="@../icons/panda.jpg" />
 					</image>
 				</ImageView>
-				<TextArea fx:id="area" prefHeight="300" maxWidth="Infinity"
+				<TextArea fx:id="area" prefHeight="180" maxWidth="Infinity"
 					HBox.hgrow="ALWAYS" />
 			</HBox>
 			<HBox spacing="10">
 				<padding>
 					<Insets top="0" right="10" bottom="0" left="10" />
 				</padding>
-				<Button fx:id="showEpisodes" text="Show Episodes"
-					disable="true" onAction="#showEpisodes" />
-				<Button text="Select Download Folder"
-					onAction="#chooseFolder" />
+				<CheckBox fx:id="cb"></CheckBox>
+				<Button fx:id="download" text="Download" onAction="#download" />
+				<Button fx:id="showDownloads" text="Show Downloads"
+					onAction="#showDownloads" />
 			</HBox>
-			<TableView fx:id="tableView" VBox.vgrow="ALWAYS">
-				<placeholder>
-					<Label text="No downloads in the list" />
-				</placeholder>
-
-				<columns>
-					<CustomTableColumn editable="false"
-						widthPercentage="0.40" sortable="true" fx:id="fileName"
-						text="File Name" />
-					<CustomTableColumn editable="false"
-						widthPercentage="0.15" sortable="true" fx:id="size" text="Size" />
-					<CustomTableColumn editable="false"
-						widthPercentage="0.15" sortable="false" fx:id="downloaded"
-						text="Downloaded" />
-					<CustomTableColumn editable="false"
-						widthPercentage="0.10" sortable="false" fx:id="progress"
-						text="Progess" />
-					<CustomTableColumn editable="false"
-						widthPercentage="0.15" sortable="true" fx:id="status"
-						text="Status" />
-				</columns>
-			</TableView>
+			<ScrollPane fx:id="epScrollPane" styleClass="edge-to-edge"
+				fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
+				<VBox id="epList" />
+			</ScrollPane>
 		</VBox>
 	</HBox>
 </VBox>

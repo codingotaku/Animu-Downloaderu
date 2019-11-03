@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.Button?>
+<?import com.codingotaku.apps.custom.CustomTableColumn?>
+
+<VBox fx:controller="com.codingotaku.apps.DownloadController"
+	xmlns:fx="http://javafx.com/fxml" spacing="20" fx:id="root">
+	<HBox spacing="20">
+		<padding>
+			<Insets top="20" right="10" bottom="0" left="50" />
+		</padding>
+
+		<Button text="Select Folder" onAction="#chooseFolder" />
+		<Button fx:id="clearAll" text="Clear Finished" />
+		<Button fx:id="pauseAll" text="Pause All" />
+		<Button fx:id="resumeAll" text="Resume All" />
+		<Button fx:id="cancelAll" text="Cancel All" />
+		<Button fx:id="retryAll" text="Retry Failed" />
+		<Button fx:id="restartAll" text="Restart Failed" />
+	</HBox>
+	<TableView fx:id="tableView" VBox.vgrow="ALWAYS">
+		<placeholder>
+			<Label text="No downloads in the list" />
+		</placeholder>
+
+		<columns>
+			<CustomTableColumn editable="false"
+				widthPercentage="0.40" sortable="true" fx:id="fileName"
+				text="File Name" />
+			<CustomTableColumn editable="false"
+				widthPercentage="0.15" sortable="true" fx:id="size" text="Size" />
+			<CustomTableColumn editable="false"
+				widthPercentage="0.15" sortable="false" fx:id="downloaded"
+				text="Downloaded" />
+			<CustomTableColumn editable="false"
+				widthPercentage="0.10" sortable="false" fx:id="progress"
+				text="Progess" />
+			<CustomTableColumn editable="false"
+				widthPercentage="0.15" sortable="true" fx:id="status" text="Status" />
+		</columns>
+	</TableView>
+</VBox>
+
