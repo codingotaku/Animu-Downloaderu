@@ -10,9 +10,9 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.control.ListView?>
@@ -38,6 +38,7 @@
 		<TextField fx:id="search" promptText="Enter Anime to search"
 			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
 		<Button text="Donate" onAction="#donate"></Button>
+		<Button text="Settings" onAction="#settings"></Button>
 	</HBox>
 
 	<HBox spacing="10" VBox.vgrow="ALWAYS">
@@ -60,20 +61,32 @@
 				<TextArea fx:id="area" prefHeight="180" maxWidth="Infinity"
 					HBox.hgrow="ALWAYS" />
 			</HBox>
-			<HBox spacing="10">
-				<padding>
-					<Insets top="0" right="10" bottom="0" left="10" />
-				</padding>
-				<CheckBox fx:id="cb"></CheckBox>
-				<Button fx:id="download" text="Download" onAction="#download" />
-				<Button fx:id="showDownloads" text="Show Downloads"
-					onAction="#showDownloads" />
-				<Button text="⇅ order" onAction="#reverse" />
-			</HBox>
-			<ScrollPane fx:id="epScrollPane" styleClass="edge-to-edge"
-				fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
-				<VBox id="epList" />
-			</ScrollPane>
+			<TabPane fx:id="tabPane">
+				<tabs>
+					<Tab fx:id="epTab" text="Episodes">
+						<VBox>
+							<HBox spacing="10">
+								<padding>
+									<Insets top="5" right="10" bottom="0" left="10" />
+								</padding>
+								<CheckBox fx:id="cb"></CheckBox>
+								<Button fx:id="downloadEp" text="Download"
+									onAction="#download" />
+								<Button text="⇅ order" onAction="#reverse" />
+							</HBox>
+							<ScrollPane fx:id="epScrollPane"
+								styleClass="edge-to-edge" fitToHeight="true" fitToWidth="true"
+								VBox.vgrow="ALWAYS">
+								<VBox id="epList" />
+							</ScrollPane>
+						</VBox>
+					</Tab>
+					<Tab fx:id="dwnTab" text="Downloads">
+						<fx:include fx:id="download" source="table.fxml" />
+					</Tab>
+				</tabs>
+			</TabPane>
+
 		</VBox>
 	</HBox>
 </VBox>

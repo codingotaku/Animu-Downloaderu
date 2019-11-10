@@ -1,9 +1,6 @@
 package com.codingotaku.apps;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.codingotaku.apis.animecrawler.Anime;
 import com.codingotaku.apis.animecrawler.AnimeCrawlerAPI;
@@ -24,54 +21,48 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
 public class MainFXMLController implements Crawler {
-	private static Logger logger = Logger.getLogger(MainFXMLController.class.getName());
 
-	@FXML
-	private VBox root; // Root
+	@FXML private VBox root; // Root
 
 	// Anime download and interactions
-	@FXML
-	private TextField search;
-	@FXML
-	private CheckBox cb;
-	@FXML
-	private ComboBox<String> sources;
-	@FXML
-	private Button download;
+	@FXML private TextField search;
+	@FXML private CheckBox cb;
+	@FXML private ComboBox<String> sources;
+	@FXML private Button downloadEp;
 
 	// Anime information
-	@FXML
-	private Button showDownloads;
 	@FXML
 	private ImageView poster;
 	@FXML
 	private TextArea area;
-
+	
 	// For displaying downloads
-	@FXML
-	private ScrollPane scrollPane;
-	@FXML
-	private ScrollPane epScrollPane;
-
+	@FXML private ScrollPane scrollPane;
+	@FXML private ScrollPane epScrollPane;
+	@FXML private DownloadController downloadController;
+	@FXML private Tab epTab;
+	@FXML private Tab dwnTab;
+	@FXML private TabPane tabPane;
 	private final ObservableList<Episode> episodes = FXCollections.observableArrayList();
 	private final ObservableList<Anime> animes = FXCollections.observableArrayList();
 	private final DownloadManager manager = DownloadManager.getInstance();
@@ -82,23 +73,14 @@ public class MainFXMLController implements Crawler {
 
 	private Window window;
 	private Stage stage;
-	private Stage downloads;
+
 	private VBox animeBox;
 	private VBox epBox;
 
 	private Image defaultImg;
 
-	@FXML
-	private ImageView boxImage;
+	@FXML private ImageView boxImage;
 
-	@FXML
-	private void showDownloads(ActionEvent event) {
-		if (downloads.isShowing()) {
-			downloads.requestFocus();
-		} else {
-			downloads.show();
-		}
-	}
 
 	@FXML
 	private void download(ActionEvent event) {
@@ -120,7 +102,7 @@ public class MainFXMLController implements Crawler {
 		result.ifPresent(res -> {
 			if (Boolean.TRUE.equals(res)) {
 				downloadSelected();
-				showDownloads(event);
+				tabPane.getSelectionModel().select(dwnTab);
 			}
 				
 		});
@@ -145,7 +127,6 @@ public class MainFXMLController implements Crawler {
 		poster.setImage(defaultImg);
 
 		initListeners();
-		initDownloadDialog();
 	}
 
 	private void initListeners() {
@@ -171,38 +152,11 @@ public class MainFXMLController implements Crawler {
 			if (newV != null) {
 				if (window == null)
 					window = root.getScene().getWindow();
-				api.getSynopsys(newV, this::loadedSynopsys);
+				api.getSynopsys(newV, this::loadedSynopsis);
 				api.listAllEpisodes(newV, this::loadedEpisodes);
 				api.getPosterUrl(newV, this::loadedPoster);
 			}
 		});
-	}
-
-	private void initDownloadDialog() {
-
-		try {
-			downloads = new Stage();
-			var loader = new FXMLLoader(getClass().getResource("/fxml/table.fxml"));
-			Parent dlRoot = loader.load();
-			final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
-			final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.50;
-
-			var scene = new Scene(dlRoot, WIDTH, HEIGHT);
-			var icon = new Image(getClass().getResourceAsStream("/icons/icon.png"));
-
-			downloads.setMinWidth(WIDTH);
-			downloads.setMinHeight(HEIGHT);
-			downloads.getIcons().add(icon);
-			downloads.centerOnScreen();
-			scene.getStylesheets().add(getClass().getResource("/css/table.css").toExternalForm());
-			downloads.setTitle("Downloads");
-			downloads.setScene(scene);
-			DownloadController controller = loader.getController();
-			manager.setController(controller);
-
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, e.getMessage());
-		}
 	}
 
 	@FXML
@@ -220,6 +174,11 @@ public class MainFXMLController implements Crawler {
 		});
 
 		dialog.showAndWait();
+	}
+
+	@FXML
+	private void settings() {
+		
 	}
 
 	private void search(String text) {
@@ -242,9 +201,20 @@ public class MainFXMLController implements Crawler {
 	}
 
 	@Override
-	public void loadedSynopsys(String content, Result result) {
+	public void loadedSynopsis(String content, Result result) {
 		Platform.runLater(() -> {
-			String text = content.replaceAll("([\\w]+ :)", "\n$1").trim();
+			String text;
+			manager.setController(downloadController);
+			// Synopsis can be empty 
+			if(content.length() > 0) {
+				text = content.replaceAll("([\\w]+ :)", "\n$1").trim();
+			}else {
+				text = "Unable to load synopsys";
+				if(result.getStatus() == Result.Status.ERROR) {
+					text +=  " : "+result.getError().getMessage();
+				}
+			}
+			
 			area.setText(text);
 			area.setEditable(false);
 			area.setWrapText(true);
@@ -325,6 +295,7 @@ public class MainFXMLController implements Crawler {
 			Platform.runLater(() -> {
 				VBox.setVgrow(episodeList, Priority.ALWAYS);
 				epBox.getChildren().setAll(episodeList);
+				tabPane.getSelectionModel().select(epTab);
 			});
 		} else {
 			Platform.runLater(() -> {
@@ -335,7 +306,7 @@ public class MainFXMLController implements Crawler {
 				double centerXPosition = stage.getX() + stage.getWidth() / 2d;
 				double centerYPosition = stage.getY() + stage.getHeight() / 2d;
 
-				dialog.setOnShowing(e -> {
+				dialog.setOnShowing(e -> {				
 					dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
 					dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
 				});

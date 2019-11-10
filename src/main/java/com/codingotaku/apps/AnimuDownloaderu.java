@@ -18,7 +18,7 @@ import javafx.stage.Stage;
 
 public class AnimuDownloaderu extends Application {
 	private static Logger logger = Logger.getLogger(AnimuDownloaderu.class.getName());
-	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.75;
+	private static final double WIDTH = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width * 0.80;
 	private static final double HEIGHT = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height * 0.75;
 
 	// It was a workaround, may be the issue is fixed but I'm too lazy to check

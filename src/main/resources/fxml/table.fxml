@@ -10,13 +10,11 @@
 <?import com.codingotaku.apps.custom.CustomTableColumn?>
 
 <VBox fx:controller="com.codingotaku.apps.DownloadController"
-	xmlns:fx="http://javafx.com/fxml" spacing="20" fx:id="root">
-	<HBox spacing="20">
+	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
+	<HBox spacing="10">
 		<padding>
-			<Insets top="20" right="10" bottom="0" left="50" />
+			<Insets top="5" right="10" bottom="0" left="10" />
 		</padding>
-
-		<Button text="Select Folder" onAction="#chooseFolder" />
 		<Button fx:id="clearAll" text="Clear Finished" />
 		<Button fx:id="pauseAll" text="Pause All" />
 		<Button fx:id="resumeAll" text="Resume All" />

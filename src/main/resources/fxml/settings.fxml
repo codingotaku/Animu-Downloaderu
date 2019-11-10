@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1">
+	<children>
+		<HBox>
+			<children>
+				<Button text="Download Folder" onAction="#chooseFolder" />
+				<TextField editable="false"></TextField>
+			</children>
+		</HBox>
+		<HBox>
+			<children>
+				<Label text="Download thread count : " />
+				<Spinner fx:id="spinner" editable="true">
+					<valueFactory>
+						<SpinnerValueFactory.IntegerSpinnerValueFactory
+							min="1" max="10" initialValue="8" />
+					</valueFactory>
+				</Spinner>
+			</children>
+		</HBox>
+		<HBox>
+			<children>
+				<Label text="Auto switch Tab" />
+				<CheckBox fx:id="switchTabs" editable="true"
+					selected="true">
+				</CheckBox>
+			</children>
+		</HBox>
+	</children>
+</VBox>
