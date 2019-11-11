@@ -30,7 +30,7 @@ public class AnimuDownloaderu extends Application {
 	@Override
 	public void start(Stage stage) {
 		try {
-			var loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+			var loader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
 			Parent root = loader.load();
 			var scene = new Scene(root, WIDTH, HEIGHT);
 			var icon = new Image(getClass().getResourceAsStream("/icons/icon.png"));

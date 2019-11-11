@@ -63,26 +63,11 @@
 			</HBox>
 			<TabPane fx:id="tabPane">
 				<tabs>
-					<Tab fx:id="epTab" text="Episodes">
-						<VBox>
-							<HBox spacing="10">
-								<padding>
-									<Insets top="5" right="10" bottom="0" left="10" />
-								</padding>
-								<CheckBox fx:id="cb"></CheckBox>
-								<Button fx:id="downloadEp" text="Download"
-									onAction="#download" />
-								<Button text="⇅ order" onAction="#reverse" />
-							</HBox>
-							<ScrollPane fx:id="epScrollPane"
-								styleClass="edge-to-edge" fitToHeight="true" fitToWidth="true"
-								VBox.vgrow="ALWAYS">
-								<VBox id="epList" />
-							</ScrollPane>
-						</VBox>
+					<Tab fx:id="epTab" text="Episodes"  closable="false">
+						<fx:include fx:id="episode" source="EpisodeList.fxml" />
 					</Tab>
-					<Tab fx:id="dwnTab" text="Downloads">
-						<fx:include fx:id="download" source="table.fxml" />
+					<Tab fx:id="dwnTab" text="Downloads" closable="false">
+						<fx:include fx:id="download" source="DownloadTable.fxml" />
 					</Tab>
 				</tabs>
 			</TabPane>
