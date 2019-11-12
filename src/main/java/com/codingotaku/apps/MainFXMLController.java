@@ -68,7 +68,7 @@ public class MainFXMLController implements Crawler {
 	private Message message;
 
 	public void loadAnime(Window window) {
-		var source = animeProviders.values().get(sources.getSelectionModel().getSelectedIndex());
+		var source = animeProviders.values().get(sources.getSelectionModel().getSelectedItem());
 
 		animeList.getSelectionModel().clearSelection();
 		message.setMessage("Anime List", "Loading List..", false);
@@ -77,6 +77,7 @@ public class MainFXMLController implements Crawler {
 	}
 
 	@FXML private void initialize() {
+		animeProviders.values().keySet().forEach(sources.getItems()::add);
 		message = new Message();
 		animeBox = (VBox) scrollPane.getContent().lookup("#list");
 		defaultImg = new Image(getClass().getResourceAsStream("/icons/panda1.jpg"));
@@ -156,7 +157,8 @@ public class MainFXMLController implements Crawler {
 			episodeController.setDownloadController(downloadController);
 			// Synopsis can be empty
 			if (content != null && content.length() > 0) {
-				text = content.replaceAll("([\\w]+ :)", "\n$1").trim();
+				String anime = animeList.getSelectionModel().getSelectedItem().getName();
+				text = "Anime : " + anime + "\n" + content.replaceAll("([\\w]+ :)", "\n$1").trim();
 			} else {
 				text = "Unable to load";
 				if (result.getStatus() == Result.Status.ERROR) {

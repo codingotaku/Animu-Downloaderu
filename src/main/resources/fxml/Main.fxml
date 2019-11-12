@@ -18,6 +18,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.CheckBox?>
+<?import java.lang.Object?>
 
 <VBox fx:controller="com.codingotaku.apps.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
@@ -26,15 +27,7 @@
 			<Insets top="5" right="10" bottom="10" left="10" />
 		</padding>
 
-		<ComboBox fx:id="sources" prefWidth="150">
-			<items>
-				<FXCollections fx:factory="observableArrayList">
-					<String fx:value="Anime1" />
-					<String fx:value="AnimeFreak"></String>
-					<String fx:value="GOGOAnime"></String>
-				</FXCollections>
-			</items>
-		</ComboBox>
+		<ComboBox fx:id="sources" prefWidth="150" />
 		<TextField fx:id="search" promptText="Enter Anime to search"
 			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
 		<Button text="Donate" onAction="#donate"></Button>
@@ -45,33 +38,40 @@
 		<padding>
 			<Insets right="10" bottom="10" left="10" />
 		</padding>
-		<ScrollPane fx:id="scrollPane" styleClass="edge-to-edge"
-			fitToHeight="true" fitToWidth="true">
-			<VBox id="list" prefWidth="400" />
-		</ScrollPane>
+		<SplitPane orientation="HORIZONTAL" HBox.hgrow="ALWAYS"  dividerPositions="0.3">
+			<items>
+				<ScrollPane fx:id="scrollPane" styleClass="edge-to-edge"
+					fitToHeight="true" fitToWidth="true">
+					<VBox id="list" prefWidth="400" />
+				</ScrollPane>
 
-		<VBox spacing="10" HBox.hgrow="ALWAYS">
-			<HBox>
-				<ImageView fx:id="poster" fitHeight="180" fitWidth="120"
-					pickOnBounds="true" preserveRatio="true">
-					<image>
-						<Image url="@../icons/panda.jpg" />
-					</image>
-				</ImageView>
-				<TextArea fx:id="area" prefHeight="180" maxWidth="Infinity"
-					HBox.hgrow="ALWAYS" />
-			</HBox>
-			<TabPane fx:id="tabPane">
-				<tabs>
-					<Tab fx:id="epTab" text="Episodes"  closable="false">
-						<fx:include fx:id="episode" source="EpisodeList.fxml" />
-					</Tab>
-					<Tab fx:id="dwnTab" text="Downloads" closable="false">
-						<fx:include fx:id="download" source="DownloadTable.fxml" />
-					</Tab>
-				</tabs>
-			</TabPane>
-
-		</VBox>
+				<SplitPane orientation="VERTICAL" HBox.hgrow="ALWAYS" dividerPositions="0.1">
+					<items>
+						<HBox>
+							<ImageView fx:id="poster" fitHeight="180"
+								fitWidth="120" pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="@../icons/panda.jpg" />
+								</image>
+							</ImageView>
+							<TextArea fx:id="area" prefHeight="180"
+								maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+						</HBox>
+						<TabPane fx:id="tabPane" VBox.vgrow="ALWAYS">
+							<tabs>
+								<Tab fx:id="epTab" text="Episodes" closable="false">
+									<fx:include fx:id="episode"
+										source="EpisodeList.fxml" />
+								</Tab>
+								<Tab fx:id="dwnTab" text="Downloads" closable="false">
+									<fx:include fx:id="download"
+										source="DownloadTable.fxml" />
+								</Tab>
+							</tabs>
+						</TabPane>
+					</items>
+				</SplitPane>
+			</items>
+		</SplitPane>
 	</HBox>
 </VBox>
