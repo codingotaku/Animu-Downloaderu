@@ -18,60 +18,73 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.CheckBox?>
-<?import java.lang.Object?>
 
 <VBox fx:controller="com.codingotaku.apps.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
-	<HBox spacing="10">
-		<padding>
-			<Insets top="5" right="10" bottom="10" left="10" />
-		</padding>
+	<TabPane side="LEFT" VBox.vgrow="ALWAYS">
+		<tabs>
+			<Tab text="Bookmarks" closable="false">
+				<VBox></VBox>
+			</Tab>
+			<Tab text="Browse" closable="false">
+				<VBox>
+					<HBox spacing="10">
+						<padding>
+							<Insets top="5" right="10" bottom="10" left="10" />
+						</padding>
 
-		<ComboBox fx:id="sources" prefWidth="150" />
-		<TextField fx:id="search" promptText="Enter Anime to search"
-			maxWidth="Infinity" HBox.hgrow="ALWAYS" />
-		<Button text="Donate" onAction="#donate"></Button>
-		<Button text="Settings" onAction="#settings"></Button>
-	</HBox>
+						<ComboBox fx:id="sources" prefWidth="150" />
+						<TextField fx:id="search"
+							promptText="Enter Anime to search" maxWidth="Infinity"
+							HBox.hgrow="ALWAYS" />
+					</HBox>
 
-	<HBox spacing="10" VBox.vgrow="ALWAYS">
-		<padding>
-			<Insets right="10" bottom="10" left="10" />
-		</padding>
-		<SplitPane orientation="HORIZONTAL" HBox.hgrow="ALWAYS"  dividerPositions="0.3">
-			<items>
-				<ScrollPane fx:id="scrollPane" styleClass="edge-to-edge"
-					fitToHeight="true" fitToWidth="true">
-					<VBox id="list" prefWidth="400" />
-				</ScrollPane>
+					<HBox spacing="10" VBox.vgrow="ALWAYS">
+						<padding>
+							<Insets right="10" bottom="10" left="10" />
+						</padding>
+						<SplitPane orientation="HORIZONTAL" HBox.hgrow="ALWAYS"
+							dividerPositions="0.3">
+							<items>
+								<ScrollPane fx:id="scrollPane"
+									styleClass="edge-to-edge" fitToHeight="true" fitToWidth="true">
+									<VBox id="list" prefWidth="400" />
+								</ScrollPane>
 
-				<SplitPane orientation="VERTICAL" HBox.hgrow="ALWAYS" dividerPositions="0.1">
-					<items>
-						<HBox>
-							<ImageView fx:id="poster" fitHeight="180"
-								fitWidth="120" pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="@../icons/panda.jpg" />
-								</image>
-							</ImageView>
-							<TextArea fx:id="area" prefHeight="180"
-								maxWidth="Infinity" HBox.hgrow="ALWAYS" />
-						</HBox>
-						<TabPane fx:id="tabPane" VBox.vgrow="ALWAYS">
-							<tabs>
-								<Tab fx:id="epTab" text="Episodes" closable="false">
-									<fx:include fx:id="episode"
-										source="EpisodeList.fxml" />
-								</Tab>
-								<Tab fx:id="dwnTab" text="Downloads" closable="false">
-									<fx:include fx:id="download"
-										source="DownloadTable.fxml" />
-								</Tab>
-							</tabs>
-						</TabPane>
-					</items>
-				</SplitPane>
-			</items>
-		</SplitPane>
-	</HBox>
+								<SplitPane orientation="VERTICAL" HBox.hgrow="ALWAYS"
+									dividerPositions="0.1">
+									<items>
+										<HBox minWidth="380">
+											<VBox minWidth="130">
+												<ImageView fx:id="poster" fitHeight="180"
+													fitWidth="120" pickOnBounds="true" preserveRatio="true">
+													<image>
+														<Image url="@../icons/panda.jpg" />
+													</image>
+												</ImageView>
+												<Button text="Add Bookmark" disable="true" />
+											</VBox>
+											<TextArea fx:id="area" prefHeight="200"
+												maxWidth="Infinity" HBox.hgrow="ALWAYS" minWidth="250" />
+										</HBox>
+										<fx:include fx:id="episode"
+											source="EpisodeList.fxml" />
+									</items>
+								</SplitPane>
+							</items>
+						</SplitPane>
+					</HBox>
+				</VBox>
+			</Tab>
+			<Tab text="Downloads" closable="false">
+				<fx:include fx:id="download" source="DownloadTable.fxml" />
+			</Tab>
+			<Tab text="Settings" closable="false">
+				<fx:include source="Settings.fxml" />
+			</Tab>
+			<Tab text="About" closable="false">
+				<fx:include source="About.fxml" />
+			</Tab>
+		</tabs>
+	</TabPane>
 </VBox>

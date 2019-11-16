@@ -1,34 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.control.*?>
-
-<VBox xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<GridPane xmlns:fx="http://javafx.com/fxml/1"
+	alignment="CENTER" hgap="10" vgap="15"
+	fx:controller="com.codingotaku.apps.SettingsController" fx:id="root">
+	<padding>
+		<Insets top="25" right="25" bottom="25" left="25" />
+	</padding>
 	<children>
-		<HBox>
-			<children>
-				<Button text="Download Folder" onAction="#chooseFolder" />
-				<TextField editable="false"></TextField>
-			</children>
-		</HBox>
-		<HBox>
-			<children>
-				<Label text="Download thread count : " />
-				<Spinner fx:id="spinner" editable="true">
-					<valueFactory>
-						<SpinnerValueFactory.IntegerSpinnerValueFactory
-							min="1" max="10" initialValue="8" />
-					</valueFactory>
-				</Spinner>
-			</children>
-		</HBox>
-		<HBox>
-			<children>
-				<Label text="Auto switch Tab" />
-				<CheckBox fx:id="switchTabs" editable="true"
-					selected="true">
-				</CheckBox>
-			</children>
-		</HBox>
+		<Button text="Download Folder" onAction="#chooseFolder"
+			GridPane.columnIndex="0" GridPane.rowIndex="0" />
+		<TextField fx:id="folderPath" editable="false"
+			GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="400" />
+
+		<Label text="Auto switch Tab" GridPane.columnIndex="0"
+			GridPane.rowIndex="1" />
+		<CheckBox fx:id="switchTabs" selected="true"
+			text="Auto switch to Download tab when downloading episode"
+			GridPane.columnIndex="1" GridPane.rowIndex="1" />
+		<Label text="Download thread count" GridPane.columnIndex="0"
+			GridPane.rowIndex="2" />
+		<Spinner fx:id="threadCountSpinner" editable="true"
+			GridPane.columnIndex="1" GridPane.rowIndex="2">
+			<valueFactory>
+				<SpinnerValueFactory.IntegerSpinnerValueFactory
+					min="1" max="10" initialValue="8" />
+			</valueFactory>
+		</Spinner>
+		<Button text="Reset" GridPane.columnIndex="0"
+			GridPane.rowIndex="3" onAction="#reset" />
+		<Button text="Save" GridPane.columnIndex="1"
+			GridPane.rowIndex="3" onAction="#save" />
 	</children>
-</VBox>
+</GridPane>

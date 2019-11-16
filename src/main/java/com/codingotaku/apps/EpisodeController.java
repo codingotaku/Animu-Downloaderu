@@ -17,8 +17,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -29,9 +27,7 @@ public class EpisodeController {
 	@FXML private ScrollPane epScrollPane;
 	@FXML VBox root;
 
-	private TabPane tabPane;
 	private ListView<Episode> episodeList;
-	private Tab dwnTab;
 	private Stage stage;
 	private VBox episodeBox;
 
@@ -75,7 +71,6 @@ public class EpisodeController {
 			if (Boolean.TRUE.equals(res)) {
 				new Thread(() -> episodeList.getSelectionModel().getSelectedItems().forEach(manager::addDownloadURL))
 						.start();
-				tabPane.getSelectionModel().select(dwnTab);
 			}
 		});
 	}
@@ -94,11 +89,6 @@ public class EpisodeController {
 				episodeList.getSelectionModel().select(size - sel);
 			}
 		}
-	}
-
-	void init(TabPane tabPane, Tab dwnTab) {
-		this.tabPane = tabPane;
-		this.dwnTab = dwnTab;
 	}
 
 	void setCheckBoxStatus(int selSize, int epSize) {

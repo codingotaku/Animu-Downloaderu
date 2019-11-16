@@ -9,7 +9,6 @@ import com.codingotaku.apis.animecrawler.EpisodeList;
 import com.codingotaku.apis.animecrawler.Result;
 import com.codingotaku.apps.callback.Crawler;
 import com.codingotaku.apps.custom.AlertDialog;
-import com.codingotaku.apps.custom.DonateDialog;
 import com.codingotaku.apps.custom.LoadDialog;
 import com.codingotaku.apps.custom.Message;
 import com.codingotaku.apps.source.AnimeSources;
@@ -21,8 +20,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -48,9 +45,6 @@ public class MainFXMLController implements Crawler {
 	@FXML private ScrollPane scrollPane;
 	@FXML private DownloadController downloadController;
 	@FXML private EpisodeController episodeController;
-	@FXML private Tab epTab;
-	@FXML private Tab dwnTab;
-	@FXML private TabPane tabPane;
 
 	private final ObservableList<Anime> animes = FXCollections.observableArrayList();
 
@@ -85,7 +79,6 @@ public class MainFXMLController implements Crawler {
 
 		sources.getSelectionModel().select(0);
 		poster.setImage(defaultImg);
-		episodeController.init(tabPane, dwnTab);
 		initListeners();
 	}
 
@@ -113,26 +106,6 @@ public class MainFXMLController implements Crawler {
 				new Thread(() -> api.getPosterUrl(newV, this::loadedPoster)).start();
 			}
 		});
-	}
-
-	@FXML private void donate() {
-		var dialog = new DonateDialog();
-		if (stage == null)
-			stage = (Stage) root.getScene().getWindow(); // an ugly way of initializing stage
-		// Calculate the center position of the parent Stage
-		double centerXPosition = stage.getX() + stage.getWidth() / 2d;
-		double centerYPosition = stage.getY() + stage.getHeight() / 2d;
-
-		dialog.setOnShowing(e -> {
-			dialog.setX(centerXPosition - dialog.getDialogPane().getWidth() / 2d);
-			dialog.setY(centerYPosition - dialog.getDialogPane().getHeight() / 2d);
-		});
-
-		dialog.showAndWait();
-	}
-
-	@FXML private void settings() {
-
 	}
 
 	private void search(String text) {
@@ -221,7 +194,6 @@ public class MainFXMLController implements Crawler {
 		if (result.getStatus() == Result.Status.OK) {
 			message.setMessage(episodes, result.getStatus().name(), true);
 			episodeController.loadEpisodes(episodesTmp);
-			tabPane.getSelectionModel().select(epTab);
 		} else {
 			Platform.runLater(() -> {
 				message.setMessage(episodes, "Error : " + result.getError().getMessage(), true);

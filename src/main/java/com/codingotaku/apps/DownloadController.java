@@ -1,14 +1,10 @@
 package com.codingotaku.apps;
 
-import java.io.File;
-
 import com.codingotaku.apps.callback.TableObserver;
 import com.codingotaku.apps.callback.TableSelectListener;
 import com.codingotaku.apps.download.DownloadInfo;
 import com.codingotaku.apps.download.DownloadManager;
 import com.codingotaku.apps.download.Status;
-import com.codingotaku.apps.util.Backup;
-import com.codingotaku.apps.util.Constants;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -16,11 +12,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Window;
 
 public class DownloadController implements TableObserver {
-	private Window window;
 
 	@FXML
 	private VBox root;
@@ -85,28 +78,5 @@ public class DownloadController implements TableObserver {
 	@Override
 	public void updated(DownloadInfo download) {
 		tableView.refresh();
-	}
-
-	@FXML
-	private void chooseFolder() {
-		if (window == null)
-			window = root.getScene().getWindow();
-
-		DirectoryChooser chooser = new DirectoryChooser();
-		chooser.setTitle("Select Download folder");
-		File defaultDirectory;
-
-		defaultDirectory = new File(Constants.getDownloadFolder());
-		if (!defaultDirectory.exists()) {// If the path was external HD or it doesn't exist.
-			Constants.setDownloadFolder(System.getProperty("user.home") + File.separator + "Downloads");
-			defaultDirectory = new File(Constants.getDownloadFolder());
-		}
-
-		chooser.setInitialDirectory(defaultDirectory);
-		File selectedDir = chooser.showDialog(window);
-		if (selectedDir != null && selectedDir.exists()) {
-			Constants.setDownloadFolder(selectedDir.getAbsolutePath());
-			Backup.saveDownloadFolder();
-		}
 	}
 }

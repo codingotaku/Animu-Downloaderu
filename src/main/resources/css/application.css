@@ -48,7 +48,14 @@
 .scroll-bar > .decrement-button:pressed > .decrement-arrow {
     -fx-background-color: -fx-mark-highlight-color, rgb(255.0, 255.0, 255.0);
 }
-
+.text-area{
+	-fx-control-inner-background: rgb(50.0, 50.0, 50.0);
+	  /* text fields focus glow color*/
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color:transparent; /* here rgba (corrected) */
+    -fx-background-insets:0.0;
+    
+}
 .button{
    /*-fx-background-color:firebrick;*/
    -fx-text-fill:white;
@@ -56,7 +63,6 @@
    -fx-cursor:hand;
    -fx-font-weight:bold;
  }
-
 .button:hover{     
   -fx-background-color:white;
   -fx-text-fill:black;
@@ -117,7 +123,7 @@ ListView{
     -fx-background-color: #222222;
     -fx-text-fill: white;
 }
-Label {
+Label, Hyperlink{
 	-fx-font-size: 1.0em;
     -fx-font-weight: bold;
     -fx-text-fill: white;
