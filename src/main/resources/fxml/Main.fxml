@@ -24,7 +24,7 @@
 	<TabPane side="LEFT" VBox.vgrow="ALWAYS">
 		<tabs>
 			<Tab text="Bookmarks" closable="false">
-				<VBox></VBox>
+				<fx:include source="Bookmarks.fxml" />
 			</Tab>
 			<Tab text="Browse" closable="false">
 				<VBox>
@@ -32,8 +32,8 @@
 						<padding>
 							<Insets top="5" right="10" bottom="10" left="10" />
 						</padding>
-
 						<ComboBox fx:id="sources" prefWidth="150" />
+						<Button text="Load List" onAction="#reload" />
 						<TextField fx:id="search"
 							promptText="Enter Anime to search" maxWidth="Infinity"
 							HBox.hgrow="ALWAYS" />

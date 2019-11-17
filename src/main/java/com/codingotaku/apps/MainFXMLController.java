@@ -82,16 +82,16 @@ public class MainFXMLController implements Crawler {
 		initListeners();
 	}
 
+	@FXML private void reload() {
+		if (window == null)
+			window = root.getScene().getWindow();
+		loadAnime(window);
+		poster.setImage(defaultImg);
+		area.clear();
+	}
+
 	private void initListeners() {
 		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
-		sources.valueProperty().addListener(e -> {
-			if (window == null)
-				window = root.getScene().getWindow();
-			loadAnime(window);
-			poster.setImage(defaultImg);
-			area.clear();
-		});
-
 		animeList.getSelectionModel().selectedItemProperty().addListener((observable, oldV, newV) -> {
 			if (newV != null) {
 				if (window == null)
