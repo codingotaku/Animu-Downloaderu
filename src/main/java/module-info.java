@@ -5,7 +5,6 @@ module animu_downloaderu {
 	exports com.codingotaku.apps.callback;
 	exports com.codingotaku.apps.custom;
 	exports com.codingotaku.apps.source;
-
 	opens com.codingotaku.apps to javafx.fxml;
 
 	requires java.desktop;
@@ -17,4 +16,5 @@ module animu_downloaderu {
 	requires transitive anime_crawler_api;
 	requires java.logging;
 	requires javafx.base;
+	requires com.fasterxml.jackson.databind;
 }

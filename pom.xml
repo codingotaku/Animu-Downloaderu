@@ -26,7 +26,12 @@
 		<dependency>
 			<groupId>com.codingotaku.api</groupId>
 			<artifactId>anime-crawler-api</artifactId>
-			<version>0.3</version>
+			<version>0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.10.1</version>
 		</dependency>
 	</dependencies>
 	<repositories>

@@ -10,6 +10,7 @@ import com.codingotaku.apps.download.DownloadInfo;
 import com.codingotaku.apps.download.DownloadManager;
 import com.codingotaku.apps.download.Status;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
@@ -69,8 +70,8 @@ public class DownloadController implements TableObserver {
 		if (download.getStatus() == Status.ERROR) {
 			Window window = root.getScene().getWindow();
 			String file = new File(download.getFileName()).getName();
-			Toast.makeToast(window, String.format("Downloading %s failed!", file), Delay.SHORT, Delay.VERY_SHORT,
-					Delay.SHORT).show();
+			Platform.runLater(() -> Toast.makeToast(window, String.format("Downloading %s failed!", file), Delay.SHORT,
+					Delay.VERY_SHORT, Delay.SHORT).show());
 		}
 		tableView.refresh();
 	}

@@ -32,7 +32,15 @@
 .text-input:focused {
     -fx-prompt-text-fill: transparent;
 }
-
+.tab-pane .tab-header-area .tab {
+	-fx-pref-height: 120.0;
+	-fx-pref-width: 40.0;
+	-fx-alignment: top-left;
+	-fx-padding: 12.5;
+	-fx-faint-focus-color: transparent;
+    -fx-focus-color:transparent; /* here rgba (corrected) */
+	
+}
 /* Fix scroll bar buttons arrows colors */
 .scroll-bar > .increment-button > .increment-arrow,
 .scroll-bar > .decrement-button > .decrement-arrow {

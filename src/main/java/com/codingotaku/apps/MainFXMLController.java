@@ -1,5 +1,9 @@
 package com.codingotaku.apps;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.codingotaku.apis.animecrawler.Anime;
@@ -12,14 +16,20 @@ import com.codingotaku.apps.custom.AlertDialog;
 import com.codingotaku.apps.custom.LoadDialog;
 import com.codingotaku.apps.custom.Message;
 import com.codingotaku.apps.source.AnimeSources;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -40,11 +50,12 @@ public class MainFXMLController implements Crawler {
 	// Anime information
 	@FXML private ImageView poster;
 	@FXML private TextArea area;
-
+	@FXML private Button addBookmark;
 	// For displaying downloads
 	@FXML private ScrollPane scrollPane;
 	@FXML private DownloadController downloadController;
 	@FXML private EpisodeController episodeController;
+	@FXML private BookmarkController bookmarkController;
 
 	private final ObservableList<Anime> animes = FXCollections.observableArrayList();
 
@@ -80,6 +91,7 @@ public class MainFXMLController implements Crawler {
 		sources.getSelectionModel().select(0);
 		poster.setImage(defaultImg);
 		initListeners();
+		bookmarkController.setDownloadController(downloadController);
 	}
 
 	@FXML private void reload() {
@@ -88,6 +100,7 @@ public class MainFXMLController implements Crawler {
 		loadAnime(window);
 		poster.setImage(defaultImg);
 		area.clear();
+		addBookmark.setDisable(true);
 	}
 
 	private void initListeners() {
@@ -131,6 +144,9 @@ public class MainFXMLController implements Crawler {
 			// Synopsis can be empty
 			if (content != null && content.length() > 0) {
 				String anime = animeList.getSelectionModel().getSelectedItem().getName();
+				boolean disable = bookmarkController.getBookmarks().stream()
+						.filter(item -> item.getName().equals(anime)).count() == 1;
+				addBookmark.setDisable(disable);
 				text = "Anime : " + anime + "\n" + content.replaceAll("([\\w]+ :)", "\n$1").trim();
 			} else {
 				text = "Unable to load";
@@ -212,5 +228,35 @@ public class MainFXMLController implements Crawler {
 				dialog.showAndWait();
 			});
 		}
+	}
+
+	@FXML private void loadBookmarks(Event event) {
+		Tab tab = (Tab) event.getTarget();
+		if (tab.getId().equals("bookmarkTab") && tab.isSelected()) {
+			bookmarkController.loadBookmarks();
+		}
+	}
+
+	@FXML private void addBookmark() {
+		ObjectMapper mapper = new ObjectMapper();
+		Anime anime = animeList.getSelectionModel().getSelectedItem();
+		String name = "anime/" + anime.getName() + ".json";
+		File file = new File("anime");
+		if (!file.exists()) {
+			file.mkdirs();
+		}
+		try {
+			FileOutputStream out = new FileOutputStream(name, true);
+			mapper.writeValue(out, anime);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 }

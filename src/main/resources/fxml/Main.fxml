@@ -6,6 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import javafx.scene.Group?>
 <?import javafx.collections.*?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
@@ -21,12 +22,22 @@
 
 <VBox fx:controller="com.codingotaku.apps.MainFXMLController"
 	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
-	<TabPane side="LEFT" VBox.vgrow="ALWAYS">
+	<TabPane side="LEFT" VBox.vgrow="ALWAYS" rotateGraphic="true">
 		<tabs>
-			<Tab text="Bookmarks" closable="false">
-				<fx:include source="Bookmarks.fxml" />
+			<Tab closable="false" onSelectionChanged="#loadBookmarks" id="bookmarkTab">
+				<graphic>
+					<Group>
+						<Label text="Bookmarks" rotate="90"/>
+					</Group>
+				</graphic>
+				<fx:include fx:id="bookmark" source="Bookmarks.fxml" />
 			</Tab>
-			<Tab text="Browse" closable="false">
+			<Tab closable="false">
+				<graphic>
+					<Group>
+						<Label text="Browse" rotate="90" />
+					</Group>
+				</graphic>
 				<VBox>
 					<HBox spacing="10">
 						<padding>
@@ -59,10 +70,10 @@
 												<ImageView fx:id="poster" fitHeight="180"
 													fitWidth="120" pickOnBounds="true" preserveRatio="true">
 													<image>
-														<Image url="@../icons/panda.jpg" />
+														<Image url="@../icons/panda1.jpg" />
 													</image>
 												</ImageView>
-												<Button text="Add Bookmark" disable="true" />
+												<Button fx:id="addBookmark" text="Add Bookmark" onAction="#addBookmark" disable="true"/>
 											</VBox>
 											<TextArea fx:id="area" prefHeight="200"
 												maxWidth="Infinity" HBox.hgrow="ALWAYS" minWidth="250" />
@@ -76,13 +87,28 @@
 					</HBox>
 				</VBox>
 			</Tab>
-			<Tab text="Downloads" closable="false">
+			<Tab closable="false">
+				<graphic>
+					<Group>
+						<Label text="Downloads" rotate="90" />
+					</Group>
+				</graphic>
 				<fx:include fx:id="download" source="DownloadTable.fxml" />
 			</Tab>
-			<Tab text="Settings" closable="false">
+			<Tab closable="false">
+				<graphic>
+					<Group>
+						<Label text="Settings" rotate="90" />
+					</Group>
+				</graphic>
 				<fx:include source="Settings.fxml" />
 			</Tab>
-			<Tab text="About" closable="false">
+			<Tab closable="false">
+				<graphic>
+					<Group>
+						<Label text="About" rotate="90" />
+					</Group>
+				</graphic>
 				<fx:include source="About.fxml" />
 			</Tab>
 		</tabs>
