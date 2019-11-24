@@ -21,11 +21,12 @@ public class BookmarkController {
 	private static Logger logger = Logger.getLogger(BookmarkController.class.getName());
 	@FXML private VBox bookmarkList;
 	@FXML EpisodeController episodeController;
-	private List<Anime> animeList;
+	private List<Anime> animeList = new ArrayList<>();
+
 	private ObservableList<HBox> bookmarks = FXCollections.observableArrayList();
 	private DownloadController downloadController;
 
-	 void loadBookmarks() {
+	void loadBookmarks() {
 		listBookmarks();
 		bookmarks.clear();
 		for (int i = 0; i < animeList.size(); i++) {
@@ -46,7 +47,7 @@ public class BookmarkController {
 	}
 
 	private void listBookmarks() {
-		animeList = new ArrayList<>();
+		animeList.clear();
 		ObjectMapper mapper = new ObjectMapper();
 		File folder = new File("anime");
 		if (!folder.exists()) {
@@ -57,7 +58,9 @@ public class BookmarkController {
 		for (File file : files) {
 			try {
 				Anime anime = mapper.readValue(file, Anime.class);
-				animeList.add(anime);
+				if (!animeList.contains(anime)) {
+					animeList.add(anime);
+				}
 			} catch (IOException e) {
 				logger.severe(e.getMessage());
 			}
@@ -67,7 +70,8 @@ public class BookmarkController {
 	public void setDownloadController(DownloadController downloadController) {
 		this.downloadController = downloadController;
 	}
-	public List<Anime> getBookmarks() {
+
+	public List<Anime> getAnimeList() {
 		return animeList;
 	}
 }

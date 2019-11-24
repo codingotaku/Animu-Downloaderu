@@ -1,10 +1,10 @@
 package com.codingotaku.apps;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 import com.codingotaku.apis.animecrawler.Anime;
 import com.codingotaku.apis.animecrawler.AnimeCrawlerAPI;
@@ -16,8 +16,6 @@ import com.codingotaku.apps.custom.AlertDialog;
 import com.codingotaku.apps.custom.LoadDialog;
 import com.codingotaku.apps.custom.Message;
 import com.codingotaku.apps.source.AnimeSources;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.application.Platform;
@@ -40,7 +38,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 public class MainFXMLController implements Crawler {
-
+	private static Logger logger = Logger.getLogger(MainFXMLController.class.getName());
 	@FXML private VBox root; // Root
 
 	// Anime download and interactions
@@ -144,7 +142,7 @@ public class MainFXMLController implements Crawler {
 			// Synopsis can be empty
 			if (content != null && content.length() > 0) {
 				String anime = animeList.getSelectionModel().getSelectedItem().getName();
-				boolean disable = bookmarkController.getBookmarks().stream()
+				boolean disable = bookmarkController.getAnimeList().stream()
 						.filter(item -> item.getName().equals(anime)).count() == 1;
 				addBookmark.setDisable(disable);
 				text = "Anime : " + anime + "\n" + content.replaceAll("([\\w]+ :)", "\n$1").trim();
@@ -240,7 +238,8 @@ public class MainFXMLController implements Crawler {
 	@FXML private void addBookmark() {
 		ObjectMapper mapper = new ObjectMapper();
 		Anime anime = animeList.getSelectionModel().getSelectedItem();
-		String name = "anime/" + anime.getName() + ".json";
+		String name = anime.getName().replaceAll("[^a-zA-Z0-9 \\.\\-]", "_");
+		name = "anime/" + name + ".json";
 		File file = new File("anime");
 		if (!file.exists()) {
 			file.mkdirs();
@@ -248,14 +247,9 @@ public class MainFXMLController implements Crawler {
 		try {
 			FileOutputStream out = new FileOutputStream(name, true);
 			mapper.writeValue(out, anime);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (JsonGenerationException e) {
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
+			addBookmark.setDisable(true);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.severe(e.getMessage());
 		}
 
 	}
