@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<VBox fx:controller="com.codingotaku.apps.BookmarkController"
+	xmlns:fx="http://javafx.com/fxml/1">
+	<SplitPane orientation="HORIZONTAL" VBox.vgrow="ALWAYS"
+		dividerPositions="0.3">
+		<items>
+			<ScrollPane styleClass="edge-to-edge" fitToHeight="true"
+				minWidth="400" prefWidth="400" fitToWidth="true">
+				<VBox fx:id="bookmarkList" spacing="20">
+					<padding>
+						<Insets top="5" right="10" bottom="10" left="10" />
+					</padding>
+				</VBox>
+			</ScrollPane>
+
+			<SplitPane orientation="VERTICAL" HBox.hgrow="ALWAYS"
+				dividerPositions="0.1">
+				<items>
+					<fx:include fx:id="episode" source="EpisodeList.fxml" />
+				</items>
+			</SplitPane>
+		</items>
+	</SplitPane>
+</VBox>
+

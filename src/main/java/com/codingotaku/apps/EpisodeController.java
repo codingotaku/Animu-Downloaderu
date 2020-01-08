@@ -5,6 +5,8 @@ import java.util.Collections;
 import com.codingotaku.apis.animecrawler.Episode;
 import com.codingotaku.apis.animecrawler.EpisodeList;
 import com.codingotaku.apps.custom.DownloadDialog;
+import com.codingotaku.apps.custom.Toast;
+import com.codingotaku.apps.custom.Toast.Delay;
 import com.codingotaku.apps.download.DownloadManager;
 
 import javafx.application.Platform;
@@ -69,8 +71,10 @@ public class EpisodeController {
 		var result = dialog.showAndWait();
 		result.ifPresent(res -> {
 			if (Boolean.TRUE.equals(res)) {
-				new Thread(() -> episodeList.getSelectionModel().getSelectedItems().forEach(manager::addDownloadURL))
-						.start();
+				ObservableList<Episode> selectedItems = episodeList.getSelectionModel().getSelectedItems();
+				new Thread(() -> selectedItems.forEach(manager::addDownloadURL)).start();
+				Toast.makeToast(stage, String.format("Downloading %d episode(s), check downloads tab for details.",
+						selectedItems.size()), Delay.SHORT, Delay.VERY_SHORT, Delay.SHORT).show();
 			}
 		});
 	}
@@ -81,7 +85,7 @@ public class EpisodeController {
 			Integer[] selected = new Integer[list.size()];
 			list.toArray(selected);
 
-			int size = episodeList.getItems().size() -1;
+			int size = episodeList.getItems().size() - 1;
 			episodeList.getSelectionModel().clearSelection();
 			Collections.reverse(episodeList.getItems());
 

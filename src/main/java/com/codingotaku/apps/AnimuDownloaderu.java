@@ -45,8 +45,6 @@ public class AnimuDownloaderu extends Application {
 			stage.setScene(scene);
 			stage.show();
 
-			MainFXMLController controller = loader.getController();
-			controller.loadAnime(stage);
 			Backup.loadDownloadFolder();
 
 			stage.setOnCloseRequest(event -> {

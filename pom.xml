@@ -23,16 +23,15 @@
 			<artifactId>javafx-fxml</artifactId>
 			<version>12.0.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.12.1</version>
-		</dependency>
 		<dependency>
 			<groupId>com.codingotaku.api</groupId>
 			<artifactId>anime-crawler-api</artifactId>
-			<version>0.3</version>
+			<version>0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.10.1</version>
 		</dependency>
 	</dependencies>
 	<repositories>
