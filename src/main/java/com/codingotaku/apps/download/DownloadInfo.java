@@ -308,8 +308,10 @@ public class DownloadInfo implements Runnable {
 
 		String ext = url.getFile();
 		ext = ext.substring(ext.lastIndexOf('.'), ext.indexOf('?'));
-		fileName += ext;
-
+		if(!fileName.endsWith(ext)) { // if retry or other operations calls, filename remains same 
+			fileName += ext;	
+		}
+		
 		size = contentLength;
 	}
 
