@@ -1,11 +1,10 @@
-name: Release
+name: Release Macintosh
 
-on: [push]
-
+on: [release]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v1
     - name: Setup Java environment based on AdoptOpenJDK
@@ -38,21 +37,17 @@ jobs:
             javac --patch-module $module_name=$jar_path $module_name/module-info.java
             jar uf $jar_path -C $module_name module-info.class
         done
-    - name: create linux zip file
+    - name: create macintosh zip file
       run: |
         mvn javafx:jlink
-        mv target/AnimuDownloaderu.zip target/AnimuDownloaderu-linux.zip
-    - name: create_release
-      uses: actions/create-release@latest
+        mv target/AnimuDownloaderu.zip target/AnimuDownloaderu-macintosh.zip
+    - name: Upload release asset
+      if: github.event.action == 'published'
+      uses: actions/upload-release-asset@v1.0.1
       env:
-       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-            Changes in this Release
-            - First Change
-            - Second Change
-        draft: true
-        prerelease: false
-
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./target/AnimuDownloaderu-macintosh.zip
+        asset_name: AnimuDownloaderu-macintosh.zip
+        asset_content_type: application/zip

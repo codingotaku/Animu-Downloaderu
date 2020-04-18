@@ -1,0 +1,53 @@
+name: Release GNU/Linux
+
+on: [release]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Java environment based on AdoptOpenJDK
+      uses: joschi/setup-jdk@v1.0.0
+      with:
+        java-version: "openjdk13"
+    - name: remove non modular files
+      run: |
+        declare -A module_folders
+        module_folders=( ["org/jsoup/jsoup"]="org.jsoup" ) #add more if needed
+        repo="$HOME/.m2/repository"
+        echo $repo
+        for i in "${!module_folders[@]}"; do
+            echo "remove module folder $repo/$i"
+            rm -rf "$repo/$i"
+        done
+    - name: maven compile
+      run: mvn compile
+    - name: fix non modular files
+      run: |
+        declare -A module_folders
+        module_folders=( ["org/jsoup/jsoup"]="org.jsoup" ) #add more if needed
+        repo="$HOME/.m2/repository"
+        for key in "${!module_folders[@]}"; do
+            module_path="$repo/$key"
+            jar_path=`ls $module_path/**/*.jar`
+            module_name=${module_folders[$key]}
+            echo $jar_path $key ${module_folders[$key]}
+            jdeps --generate-module-info . $jar_path
+            javac --patch-module $module_name=$jar_path $module_name/module-info.java
+            jar uf $jar_path -C $module_name module-info.class
+        done
+    - name: create linux zip file
+      run: |
+        mvn javafx:jlink
+        mv target/AnimuDownloaderu.zip target/AnimuDownloaderu-gnu-linux.zip
+    - name: Upload release asset
+      if: github.event.action == 'published'
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./target/AnimuDownloaderu-gnu-linux.zip
+        asset_name: AnimuDownloaderu-gnu-linux.zip
+        asset_content_type: application/zip
