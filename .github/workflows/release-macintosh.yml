@@ -13,9 +13,8 @@ jobs:
         java-version: "openjdk13"
     - name: remove non modular files
       run: |
-        declare -A module_folders
         module_folders=( ["org/jsoup/jsoup"]="org.jsoup" ) #add more if needed
-        repo="$HOME/.m2/repository"
+        repo="~/.m2/repository"
         echo $repo
         for i in "${!module_folders[@]}"; do
             echo "remove module folder $repo/$i"
@@ -25,9 +24,8 @@ jobs:
       run: mvn compile
     - name: fix non modular files
       run: |
-        declare -A module_folders
         module_folders=( ["org/jsoup/jsoup"]="org.jsoup" ) #add more if needed
-        repo="$HOME/.m2/repository"
+        repo="~/.m2/repository"
         for key in "${!module_folders[@]}"; do
             module_path="$repo/$key"
             jar_path=`ls $module_path/**/*.jar`
