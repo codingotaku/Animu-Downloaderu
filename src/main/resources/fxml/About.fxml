@@ -6,6 +6,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import java.lang.String?>
 
 <GridPane fx:id="root" alignment="CENTER" hgap="10" vgap="10"
 	xmlns:fx="http://javafx.com/fxml/1"
@@ -21,15 +22,26 @@
 			GridPane.rowIndex="0" />
 		<Label text="LICENSE" GridPane.columnIndex="0"
 			GridPane.rowIndex="1" />
-		<Label text="MIT" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+		<Hyperlink onAction="#openLink" text="MIT"
+			GridPane.columnIndex="1" GridPane.rowIndex="1">
+			<userData>
+				<String
+					fx:value="https://github.com/codingotaku/Animu-Downloaderu/blob/master/LICENSE" />
+			</userData>
+		</Hyperlink>
 		<Label text="Source code" GridPane.columnIndex="0"
 			GridPane.rowIndex="2" />
-		<Hyperlink onAction="#openRepo" fx:id="repoLink"
-			text="https://github.com/codingotaku/Animu-Downloaderu"
-			GridPane.columnIndex="1" GridPane.rowIndex="2" />
+		<Hyperlink onAction="#openLink" text="GitHub"
+			GridPane.columnIndex="1" GridPane.rowIndex="2">
+			<userData>
+				<String
+					fx:value="https://github.com/codingotaku/Animu-Downloaderu" />
+			</userData>
+		</Hyperlink>
 		<Label text="Version" GridPane.columnIndex="0"
 			GridPane.rowIndex="3" />
-		<Label text="" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+		<Label text="2.6.4" GridPane.columnIndex="1"
+			GridPane.rowIndex="3" />
 		<Label text="Buy me a coffee!" GridPane.columnIndex="0"
 			GridPane.rowIndex="4" />
 		<Hyperlink onAction="#donate" text="Donate"

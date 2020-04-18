@@ -46,6 +46,7 @@ public class AnimuDownloaderu extends Application {
 			stage.show();
 
 			Backup.loadDownloadFolder();
+			Backup.loadThreadCount();
 
 			stage.setOnCloseRequest(event -> {
 				event.consume();

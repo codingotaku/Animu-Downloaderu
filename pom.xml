@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.codingotaku.animu-downloaderu</groupId>
 	<artifactId>animu-downloaderu</artifactId>
-	<version>2.6.3</version>
+	<version>2.6.4</version>
 	<name>Animu Downloaderu</name>
 	<description>An anime downloader for all otakus</description>
 	<properties>

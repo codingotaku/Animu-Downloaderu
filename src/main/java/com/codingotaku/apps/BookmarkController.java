@@ -35,7 +35,7 @@ public class BookmarkController {
 			try {
 				HBox box = fxmlLoader.load();
 				CardController controller = fxmlLoader.getController();
-				controller.init(episodeController, downloadController);
+				controller.init(episodeController, downloadController, this);
 				bookmarks.add(box);
 				new Thread(() -> controller.load(anime)).start();
 			} catch (IOException e) {
@@ -70,7 +70,11 @@ public class BookmarkController {
 	public void setDownloadController(DownloadController downloadController) {
 		this.downloadController = downloadController;
 	}
-
+	
+	public void removeBookmarkIfExists(Anime anime) {
+		animeList.remove(anime);
+		loadBookmarks();
+	}
 	public List<Anime> getAnimeList() {
 		return animeList;
 	}

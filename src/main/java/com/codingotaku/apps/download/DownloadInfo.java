@@ -20,7 +20,7 @@ import com.codingotaku.apps.util.Constants;
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
 	private static Logger logger = Logger.getLogger(DownloadInfo.class.getName());
-	private static final int MAX_THREAD = 8; // Maximum threads allowed for each download
+	private static final int MAX_THREAD = Constants.getThreadCount(); // Maximum threads allowed for each download
 	private long size; // Size of download in bytes
 	private long downloaded; // Number of bytes downloaded
 

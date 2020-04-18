@@ -19,12 +19,6 @@
 			GridPane.columnIndex="0" GridPane.rowIndex="0" />
 		<TextField fx:id="folderPath" editable="false"
 			GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="400" />
-
-		<Label text="Auto switch Tab" GridPane.columnIndex="0"
-			GridPane.rowIndex="1" />
-		<CheckBox fx:id="switchTabs" selected="true"
-			text="Auto switch to Download tab when downloading episode"
-			GridPane.columnIndex="1" GridPane.rowIndex="1" />
 		<Label text="Download thread count" GridPane.columnIndex="0"
 			GridPane.rowIndex="2" />
 		<Spinner fx:id="threadCountSpinner" editable="true"

@@ -6,7 +6,6 @@ import com.codingotaku.apps.util.Backup;
 import com.codingotaku.apps.util.Constants;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -16,9 +15,9 @@ import javafx.stage.Window;
 public class SettingsController {
 	@FXML private GridPane root;
 	@FXML private Spinner<Integer> threadCountSpinner;
-	@FXML private CheckBox switchTabs;
 	@FXML private TextField folderPath;
 	private String path;
+	private int count;
 
 	@FXML private void chooseFolder() {
 		Window window = root.getScene().getWindow();
@@ -40,17 +39,22 @@ public class SettingsController {
 
 	@FXML private void initialize() {
 		Backup.loadDownloadFolder();
+		Backup.loadThreadCount();
 		this.path = Constants.getDownloadFolder();
-		folderPath.setText(path);
+		this.folderPath.setText(this.path);
+		this.count = Constants.getThreadCount();
+		this.threadCountSpinner.getValueFactory().setValue(this.count);
 	}
 
 	@FXML private void save() {
 		Constants.setDownloadFolder(this.path);
-		Backup.saveDownloadFolder();
+		Constants.setThreadCount(threadCountSpinner.getValue());
 	}
 
 	@FXML private void reset() {
 		this.path = Constants.getDownloadFolder();
-		folderPath.setText(this.path);
+		this.folderPath.setText(this.path);
+		this.count = Constants.getThreadCount();
+		this.threadCountSpinner.getValueFactory().setValue(this.count);
 	}
 }
