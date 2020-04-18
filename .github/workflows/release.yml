@@ -39,7 +39,9 @@ jobs:
             jar uf $jar_path -C $module_name module-info.class
         done
     - name: create linux zip file
-      run: mvn javafx:jlink
+      run: |
+        mvn javafx:jlink
+        mv target/AnimuDownloaderu.zip target/AnimuDownloaderu-linux.zip
     - name: create_release
       uses: actions/create-release@latest
         env:
