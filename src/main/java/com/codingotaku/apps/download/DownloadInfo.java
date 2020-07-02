@@ -17,19 +17,23 @@ import com.codingotaku.apis.animecrawler.Episode;
 import com.codingotaku.apps.callback.DownloadObserver;
 import com.codingotaku.apps.util.Constants;
 
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
 	private static Logger logger = Logger.getLogger(DownloadInfo.class.getName());
 	private static final int MAX_THREAD = Constants.getThreadCount(); // Maximum threads allowed for each download
-	private long size; // Size of download in bytes
-	private long downloaded; // Number of bytes downloaded
+	private SimpleLongProperty size; // Size of download in bytes
+	private SimpleLongProperty downloaded; // Number of bytes downloaded
 
 	private ArrayList<Segment> segments = new ArrayList<>(); // Download segments
 
 	private DownloadObserver observer = null; // Callback for download status
-	private String fileName; // Download file name
-	private String anime;
+	private SimpleStringProperty fileName; // Download file name
+	private SimpleStringProperty anime;
 	private URL url;
+	private SimpleStringProperty progress; // Progress in percentage
 	private Status status; // Current status of download
 	private Callback callBack = new Callback(this) {
 		@Override
@@ -45,7 +49,8 @@ public class DownloadInfo implements Runnable {
 
 		// For tracking download progress
 		private synchronized void addDownloaded(long count) {
-			downloaded += count;
+			progress.set(String.format("%.2f%%", (downloaded.getValue() / (float) size.getValue()) * 100));
+			downloaded.set(downloaded.getValue().longValue() + count);
 		}
 	};
 	private Episode episode;
@@ -55,15 +60,16 @@ public class DownloadInfo implements Runnable {
 		this.episode = episode;
 		this.observer = observer;
 		// sanitize file and folder names
-		this.anime = episode.getanimeName().replaceAll("[^a-zA-Z0-9 \\-]", "_");
+		this.anime = new SimpleStringProperty(episode.getanimeName().replaceAll("[^a-zA-Z0-9 \\-]", "_"));
 
 		var folderName = Constants.getDownloadFolder() + "/" + anime;
-		this.fileName = folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9 \\.\\-]", "_"));
+		this.fileName = new SimpleStringProperty(folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9 \\.\\-]", "_")));
 
 		new File(folderName).mkdir();
 
-		size = -1;
-		downloaded = 0;
+		size = new SimpleLongProperty(-1);
+		downloaded = new SimpleLongProperty(0);
+		this.progress = new SimpleStringProperty("0%");
 		status = Status.PENDING;
 		observer.pending(this);
 	}
@@ -111,17 +117,17 @@ public class DownloadInfo implements Runnable {
 
 	// Returns total downloaded size
 	public long getDownloaded() {
-		return downloaded;
+		return downloaded.get();
 	}
 
 	// Get this download's size.
 	public long getSize() {
-		return size;
+		return size.get();
 	}
 
 	// Get this download's progress.
 	public String getProgress() {
-		return String.format("%.2f%%", (downloaded / (float) size) * 100);
+		return progress.get();
 	}
 
 	// Get this download's status.
@@ -167,7 +173,7 @@ public class DownloadInfo implements Runnable {
 
 	// Get file name portion of URL.
 	public String getFileName() {
-		return fileName;
+		return fileName.get();
 	}
 
 	private long setDownloadSize() {
@@ -183,8 +189,8 @@ public class DownloadInfo implements Runnable {
 		segments.removeIf(Segment::isFinished);
 
 		if (!segments.isEmpty())
-			return size - downloaded;
-		long partLen = size / MAX_THREAD;
+			return size.get() - downloaded.get();
+		long partLen = size.get() / MAX_THREAD;
 		long start = 0;
 		long end = partLen;
 		for (long i = 0; i < MAX_THREAD - 1; i++) {
@@ -194,10 +200,10 @@ public class DownloadInfo implements Runnable {
 		}
 
 		// Just to make sure no bit is missed out in previous calculation
-		segments.add(new Segment(start, end + (size % MAX_THREAD), fileName + ".part" + MAX_THREAD));
+		segments.add(new Segment(start, end + (size.get() % MAX_THREAD), fileName + ".part" + MAX_THREAD));
 
 		// Delete previously downloaded file if it exists
-		File tmp = new File(fileName);
+		File tmp = new File(fileName.get());
 		if (tmp.exists()) {
 			try {
 				java.nio.file.Files.delete(tmp.toPath());
@@ -206,7 +212,7 @@ public class DownloadInfo implements Runnable {
 				logger.log(Level.SEVERE, e.getMessage());
 			}
 		}
-		return size;
+		return size.get();
 	}
 
 	void setStatus(Status status) {
@@ -251,13 +257,13 @@ public class DownloadInfo implements Runnable {
 				error();
 				break;
 			case DOWNLOADING:
-				if (getDownloaded() != size) {
+				if (getDownloaded() != size.get()) {
 					error();
 				}else {
 					this.status = Status.MERGING_FILES;
 					observer.mergingFiles(this);
 					Thread.sleep(5000); // Dirty delay for closing all files
-					mergeSegments(files, new File(fileName));	
+					mergeSegments(files, new File(fileName.get()));	
 				}
 				break;
 			case CANCELLING:
@@ -308,11 +314,11 @@ public class DownloadInfo implements Runnable {
 
 		String ext = url.getFile();
 		ext = ext.substring(ext.lastIndexOf('.'), ext.indexOf('?'));
-		if(!fileName.endsWith(ext)) { // if retry or other operations calls, filename remains same 
-			fileName += ext;	
+		if(!fileName.get().endsWith(ext)) { // if retry or other operations calls, filename remains same 
+			fileName.set( fileName.get()+ ext);	
 		}
 		
-		size = contentLength;
+		size.set(contentLength);
 	}
 
 	// Merge all downloaded segments
@@ -416,7 +422,7 @@ public class DownloadInfo implements Runnable {
 			return;
 
 		cancel();
-		downloaded = 0;
+		downloaded.set(0);
 
 		startDownload();
 	}

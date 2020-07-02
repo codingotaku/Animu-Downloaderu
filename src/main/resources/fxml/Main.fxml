@@ -1,116 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
-<?import javafx.collections.*?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.CheckBox?>
 
-<VBox fx:controller="com.codingotaku.apps.MainFXMLController"
-	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="root">
-	<TabPane side="LEFT" VBox.vgrow="ALWAYS" rotateGraphic="true">
-		<tabs>
-			<Tab closable="false" onSelectionChanged="#loadBookmarks" id="bookmarkTab">
-				<graphic>
-					<Group>
-						<Label text="Bookmarks" rotate="90"/>
-					</Group>
-				</graphic>
-				<fx:include fx:id="bookmark" source="Bookmarks.fxml" />
-			</Tab>
-			<Tab closable="false">
-				<graphic>
-					<Group>
-						<Label text="Browse" rotate="90" />
-					</Group>
-				</graphic>
-				<VBox>
-					<HBox spacing="10">
-						<padding>
-							<Insets top="5" right="10" bottom="10" left="10" />
-						</padding>
-						<ComboBox fx:id="sources" prefWidth="150" />
-						<Button text="Load List" onAction="#reload" />
-						<TextField fx:id="search"
-							promptText="Enter Anime to search" maxWidth="Infinity"
-							HBox.hgrow="ALWAYS" />
-					</HBox>
+<VBox fx:id="root" spacing="10"
+	stylesheets="@../css/application.css"
+	xmlns="http://javafx.com/javafx/11.0.1"
+	xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="com.codingotaku.apps.MainFXMLController">
+	<HBox VBox.vgrow="ALWAYS">
+		<children>
+			<TabPane rotateGraphic="true" side="LEFT" HBox.hgrow="ALWAYS">
+				<tabs>
+					<Tab id="bookmarkTab" closable="false"
+						onSelectionChanged="#loadBookmarks">
+						<graphic>
+							<Group>
+								<Label rotate="90" text="Bookmarks" />
+							</Group>
+						</graphic>
+						<fx:include fx:id="bookmark" source="Bookmarks.fxml" />
+					</Tab>
+					<Tab closable="false">
+						<graphic>
+							<Group>
+								<Label rotate="90" text="Browse" />
+							</Group>
+						</graphic>
+						<VBox>
+							<HBox spacing="10">
+								<padding>
+									<Insets bottom="10" left="10" right="10" top="5" />
+								</padding>
+								<ComboBox fx:id="sources" prefWidth="150" />
+								<Button onAction="#reload" text="Load List" />
+								<TextField fx:id="search" maxWidth="Infinity"
+									promptText="Enter Anime to search" HBox.hgrow="ALWAYS" />
+							</HBox>
 
-					<HBox spacing="10" VBox.vgrow="ALWAYS">
-						<padding>
-							<Insets right="10" bottom="10" left="10" />
-						</padding>
-						<SplitPane orientation="HORIZONTAL" HBox.hgrow="ALWAYS"
-							dividerPositions="0.3">
-							<items>
-								<ScrollPane fx:id="scrollPane"
-									styleClass="edge-to-edge" fitToHeight="true" fitToWidth="true">
-									<VBox id="list" prefWidth="400" />
-								</ScrollPane>
-
-								<SplitPane orientation="VERTICAL" HBox.hgrow="ALWAYS"
-									dividerPositions="0.1">
+							<HBox spacing="10" VBox.vgrow="ALWAYS">
+								<padding>
+									<Insets bottom="10" left="10" right="10" />
+								</padding>
+								<SplitPane dividerPositions="0.3"
+									orientation="HORIZONTAL" HBox.hgrow="ALWAYS">
 									<items>
-										<HBox minWidth="380">
-											<VBox minWidth="130">
-												<ImageView fx:id="poster" fitHeight="180"
-													fitWidth="120" pickOnBounds="true" preserveRatio="true">
-													<image>
-														<Image url="@../icons/panda1.jpg" />
-													</image>
-												</ImageView>
-												<Button fx:id="addBookmark" text="Add Bookmark" onAction="#addBookmark" disable="true"/>
-											</VBox>
-											<TextArea fx:id="area" prefHeight="200"
-												maxWidth="Infinity" HBox.hgrow="ALWAYS" minWidth="250" />
-										</HBox>
-										<fx:include fx:id="episode"
-											source="EpisodeList.fxml" />
+										<ScrollPane fx:id="scrollPane" fitToHeight="true"
+											fitToWidth="true" styleClass="edge-to-edge">
+											<VBox id="list" prefWidth="400" />
+										</ScrollPane>
+
+										<SplitPane dividerPositions="0.1"
+											orientation="VERTICAL" HBox.hgrow="ALWAYS">
+											<items>
+												<HBox minWidth="380">
+													<VBox minWidth="130">
+														<ImageView fx:id="poster" fitHeight="180"
+															fitWidth="120" pickOnBounds="true" preserveRatio="true">
+															<image>
+																<Image url="@../icons/panda1.jpg" />
+															</image>
+														</ImageView>
+														<Button fx:id="addBookmark" disable="true"
+															onAction="#addBookmark" text="Add Bookmark" />
+													</VBox>
+													<TextArea fx:id="area" maxWidth="Infinity"
+														minWidth="250" prefHeight="200" HBox.hgrow="ALWAYS" />
+												</HBox>
+												<fx:include fx:id="episode"
+													source="EpisodeList.fxml" />
+											</items>
+										</SplitPane>
 									</items>
 								</SplitPane>
-							</items>
-						</SplitPane>
-					</HBox>
-				</VBox>
-			</Tab>
-			<Tab closable="false">
-				<graphic>
-					<Group>
-						<Label text="Downloads" rotate="90" />
-					</Group>
-				</graphic>
-				<fx:include fx:id="download" source="DownloadTable.fxml" />
-			</Tab>
-			<Tab closable="false">
-				<graphic>
-					<Group>
-						<Label text="Settings" rotate="90" />
-					</Group>
-				</graphic>
-				<fx:include source="Settings.fxml" />
-			</Tab>
-			<Tab closable="false">
-				<graphic>
-					<Group>
-						<Label text="About" rotate="90" />
-					</Group>
-				</graphic>
-				<fx:include source="About.fxml" />
-			</Tab>
-		</tabs>
-	</TabPane>
+							</HBox>
+						</VBox>
+					</Tab>
+					<Tab closable="false">
+						<graphic>
+							<Group>
+								<Label rotate="90" text="Downloads" />
+							</Group>
+						</graphic>
+						<fx:include fx:id="download"
+							source="DownloadTable.fxml" />
+					</Tab>
+					<Tab closable="false">
+						<graphic>
+							<Group>
+								<Label rotate="90" text="Settings" />
+							</Group>
+						</graphic>
+						<fx:include source="Settings.fxml" />
+					</Tab>
+					<Tab closable="false">
+						<graphic>
+							<Group>
+								<Label rotate="90" text="About" />
+							</Group>
+						</graphic>
+						<fx:include source="About.fxml" />
+					</Tab>
+				</tabs>
+			</TabPane>
+			<VBox>
+				<children>
+					<Label text="Notifications" alignment="CENTER" />
+					<ListView fx:id="notificationList" prefHeight="200.0"
+						prefWidth="500.0" VBox.vgrow="ALWAYS"/>
+				</children>
+			</VBox>
+		</children>
+	</HBox>
 </VBox>
