@@ -10,6 +10,8 @@ import com.codingotaku.apps.download.DownloadInfo;
 import com.codingotaku.apps.download.DownloadManager;
 import com.codingotaku.apps.download.Status;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
@@ -32,7 +34,7 @@ public class DownloadController implements TableObserver {
 	@FXML
 	private TableColumn<DownloadInfo, String> progress;
 	@FXML
-	private TableColumn<DownloadInfo, Status> status;
+	private TableColumn<DownloadInfo, String> statusString;
 
 	@FXML
 	private Button clearAll;
@@ -47,6 +49,7 @@ public class DownloadController implements TableObserver {
 	@FXML
 	private Button restartAll;
 	private NotificationListener notificationListener;
+	private ObservableList<DownloadInfo> downloadList = FXCollections.observableArrayList();
 
 	@FXML
 	private void initialize() {
@@ -56,17 +59,17 @@ public class DownloadController implements TableObserver {
 		size.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("size"));
 		downloaded.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Double>("downloaded"));
 		progress.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("progress"));
-		status.setCellValueFactory(new PropertyValueFactory<DownloadInfo, Status>("status"));
+		statusString.setCellValueFactory(new PropertyValueFactory<DownloadInfo, String>("statusString"));
+		tableView.setItems(downloadList);
 
 		clearAll.setOnAction(e -> {
-			tableView.getItems().removeIf(d -> {
+			downloadList.removeIf(d -> {
 				boolean remove = d.getStatus() == Status.FINISHED || d.getStatus() == Status.CANCELLED;
 				if (remove) {
 					manager.remove(d);
 				}
 				return remove;
 			});
-			tableView.refresh();
 		});
 		pauseAll.setOnAction(e -> manager.pauseAll());
 		resumeAll.setOnAction(e -> manager.resumeAll());
@@ -77,7 +80,7 @@ public class DownloadController implements TableObserver {
 
 	@Override
 	public void added(DownloadInfo download) {
-		tableView.getItems().add(download);
+		downloadList.add(download);
 	}
 
 	@Override
@@ -99,7 +102,7 @@ public class DownloadController implements TableObserver {
 		default:
 			break;
 		}
-//		tableView.refresh();
+		tableView.refresh();
 	}
 
 	public void setNotificationListener(NotificationListener notificationListener) {

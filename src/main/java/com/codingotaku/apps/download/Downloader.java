@@ -66,7 +66,7 @@ public class Downloader implements Runnable {
 		int retry = 0;
 		boolean quit = false;
 
-		while (!quit && callBack.getStaus() == Status.DOWNLOADING && (segment.getStart() < segment.getEnd())) {
+		while (!quit && callBack.getStaus().equals(Status.DOWNLOADING) && (segment.getStart() < segment.getEnd())) {
 
 			try {
 				this.httpURLConnection = (HttpURLConnection) downloadURL.openConnection();
@@ -86,7 +86,7 @@ public class Downloader implements Runnable {
 				int readNum;
 
 				byte[] data = new byte[MAX_BUFFER_SIZE];
-				while (callBack.getStaus() == Status.DOWNLOADING && (readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1
+				while (callBack.getStaus().equals(Status.DOWNLOADING) && (readNum = is.read(data, 0, MAX_BUFFER_SIZE)) != -1
 						&& (segment.getStart() < segment.getEnd())) { // Redundant
 					// Write buffer to file.
 					file.write(data, 0, readNum);
