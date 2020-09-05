@@ -32,16 +32,13 @@ Run
 ## Screenshots
 
 **Huge list of anime to choose from**
-![screenshot](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/screenshot.png "screenshot")
+![screenshot](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/anime-list.webp "anime list screenshot")
 
 **Search your favorite anime**
-![Search anime](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/search.png "Search anime")
-
-**Get all episodes in a single page**
-![Selecting episodes](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/episodes.png "Selecting episodes")
+![Search anime](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/search.webp "Search anime")
 
 **Download all episodes in a batch**
-![Download](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/download.png "Download")
+![Download](https://github.com/codingotaku/Animu-Downloaderu/raw/master/screenshots/download.webp "Download")
 
 ### It is still under development and the code is a bit spaghettified so feel free to contribute :)
 
