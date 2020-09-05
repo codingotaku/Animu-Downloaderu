@@ -85,19 +85,19 @@ public class DownloadController implements TableObserver {
 
 	@Override
 	public void updated(DownloadInfo download) {
+		String file = new File(download.getFileName()).getName();
 		switch (download.getStatus()) {
 		case ERROR:
-			String file = new File(download.getFileName()).getName();
 			notificationListener.created(NotificationController.Type.ERROR,
-					String.format("Downloading %s failed!", file));
+					String.format("Failed Downloading %s", file));
 			break;
 		case CANCELLED:
-			notificationListener.created(NotificationController.Type.ERROR,
-					String.format("Downloading %s Cancelled!", download.getFileName()));
+			notificationListener.created(NotificationController.Type.WARNING,
+					String.format("Cancelled Downloading %s", file));
 			break;
 		case FINISHED:
-			notificationListener.created(NotificationController.Type.ERROR,
-					String.format("Downloading %s Completed!", download.getFileName()));
+			notificationListener.created(NotificationController.Type.INFO,
+					String.format("Completed Downloading %s", file));
 			break;
 		default:
 			break;

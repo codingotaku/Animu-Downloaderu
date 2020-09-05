@@ -83,13 +83,16 @@ public class DownloadInfo implements Runnable {
 		try {
 			newUrl = episode.getVideoUrl();
 		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
 			error();
 			return;
 		}
+		logger.log(Level.INFO, "url is " + newUrl);
 		URL verifiedUrl = verifyUrl(newUrl);
 		if (verifiedUrl != null) {
 			setUrl(verifiedUrl);
 		} else {
+			logger.log(Level.SEVERE, "verified url is null");
 			error();
 			return;
 		}
@@ -100,10 +103,6 @@ public class DownloadInfo implements Runnable {
 	private URL verifyUrl(String url) {
 		if (url == null)
 			return null;
-		// Only allow HTTP URLs.
-		if (!url.toLowerCase().startsWith("http://"))
-			return null;
-
 		// Verify format of URL.
 		URL verifiedUrl = null;
 		try {
@@ -248,6 +247,7 @@ public class DownloadInfo implements Runnable {
 					files.add(file);
 					threadPool.submit(new Downloader(url, segment, status, callBack));
 				} else {
+					logger.log(Level.SEVERE, "Couldn't create new file!");
 					error();
 				}
 
@@ -270,6 +270,7 @@ public class DownloadInfo implements Runnable {
 				break;
 			case DOWNLOADING:
 				if (getDownloaded() != size.get()) {
+					logger.log(Level.SEVERE, "Error : Downloaded size is not same as actual size");
 					error();
 				} else {
 					setStatus(Status.MERGING_FILES);
@@ -311,8 +312,34 @@ public class DownloadInfo implements Runnable {
 
 		// Make sure response code is in the 200 range.
 		if (connection.getResponseCode() / 100 != 2) {
-			logger.log(Level.INFO, "Response code" + connection.getResponseCode());
-			error();
+			logger.log(Level.INFO, "Response code " + connection.getResponseCode());
+			
+			if(connection.getResponseCode() > 300 && connection.getResponseCode() < 400) {
+				logger.log(Level.INFO, "Retrying");
+				// Attempt one more time
+				String newURL = "";
+				try {
+					newURL = episode.getVideoUrl();
+				} catch (IOException e) {
+					logger.log(Level.SEVERE, e.getMessage());
+				}
+				URL verifiedUrl = verifyUrl(newURL);
+				if (verifiedUrl == null) {
+					logger.log(Level.SEVERE, "URl is null");
+					error();
+				} else {
+					setUrl(verifiedUrl);
+					connection = (HttpURLConnection) url.openConnection();
+				}
+			} else {
+				error();
+				return;
+			}
+			connection.connect();
+			if (connection.getResponseCode() / 100 != 2) {
+				logger.log(Level.SEVERE, "Response code " + connection.getResponseCode());
+				error();
+			}
 			return;
 		}
 
@@ -421,6 +448,7 @@ public class DownloadInfo implements Runnable {
 
 			URL verifiedUrl = verifyUrl(newURL);
 			if (verifiedUrl == null) {
+				logger.log(Level.SEVERE, "URL is null");
 				error();
 			} else {
 				setUrl(verifiedUrl);

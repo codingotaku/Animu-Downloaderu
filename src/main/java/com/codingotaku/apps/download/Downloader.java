@@ -99,6 +99,7 @@ public class Downloader implements Runnable {
 
 			} catch (IOException e) {
 				if (retry == MAX_RETRY) {
+					logger.log(Level.SEVERE, "Maximum retry, failed request "+ e.getMessage());
 					error();
 				}
 
@@ -128,6 +129,7 @@ public class Downloader implements Runnable {
 			if (httpURLConnection != null)
 				httpURLConnection.disconnect();
 		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
 			error();
 		}
 	}
