@@ -40,12 +40,12 @@ public class AnimuDownloaderu extends Application {
 
 			stage.getIcons().add(icon);
 			stage.centerOnScreen();
-			scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
 			stage.setTitle("Animu Downloaderu");
 			stage.setScene(scene);
 			stage.show();
 
 			Backup.loadDownloadFolder();
+			Backup.loadThreadCount();
 
 			stage.setOnCloseRequest(event -> {
 				event.consume();

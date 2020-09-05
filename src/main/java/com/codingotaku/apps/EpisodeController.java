@@ -4,9 +4,9 @@ import java.util.Collections;
 
 import com.codingotaku.apis.animecrawler.Episode;
 import com.codingotaku.apis.animecrawler.EpisodeList;
+import com.codingotaku.apps.callback.NotificationListener;
 import com.codingotaku.apps.custom.DownloadDialog;
-import com.codingotaku.apps.custom.Toast;
-import com.codingotaku.apps.custom.Toast.Delay;
+import com.codingotaku.apps.custom.NotificationController;
 import com.codingotaku.apps.download.DownloadManager;
 
 import javafx.application.Platform;
@@ -35,6 +35,7 @@ public class EpisodeController {
 
 	private final ObservableList<Episode> episodes = FXCollections.observableArrayList();
 	private final DownloadManager manager = DownloadManager.getInstance();
+	private NotificationListener notificationListener;
 
 	@FXML private void initialize() {
 		episodeBox = (VBox) epScrollPane.getContent().lookup("#epList");
@@ -73,8 +74,7 @@ public class EpisodeController {
 			if (Boolean.TRUE.equals(res)) {
 				ObservableList<Episode> selectedItems = episodeList.getSelectionModel().getSelectedItems();
 				new Thread(() -> selectedItems.forEach(manager::addDownloadURL)).start();
-				Toast.makeToast(stage, String.format("Downloading %d episode(s), check downloads tab for details.",
-						selectedItems.size()), Delay.SHORT, Delay.VERY_SHORT, Delay.SHORT).show();
+				notificationListener.created(NotificationController.Type.INFO, String.format("Downloading %d episode(s) of %s.", selectedItems.size(), selectedItems.get(0).getanimeName()));
 			}
 		});
 	}
@@ -130,5 +130,9 @@ public class EpisodeController {
 
 	void setDownloadController(DownloadController downloadController) {
 		manager.setController(downloadController);
+	}
+	
+	void setNotificationListener(NotificationListener notificationListener) {
+		this.notificationListener = notificationListener;
 	}
 }

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.codingotaku.apis.animecrawler.Anime;
+import com.codingotaku.apps.callback.NotificationListener;
+import com.codingotaku.apps.util.CacheManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.application.Platform;
@@ -26,7 +28,10 @@ public class BookmarkController {
 	private ObservableList<HBox> bookmarks = FXCollections.observableArrayList();
 	private DownloadController downloadController;
 
-	void loadBookmarks() {
+	void loadBookmarks(DownloadController downloadController) {
+		var cacheManager = CacheManager.getInstance();
+		cacheManager.loadCacheFromDisk("bookmarks");
+		this.downloadController = downloadController;
 		listBookmarks();
 		bookmarks.clear();
 		for (int i = 0; i < animeList.size(); i++) {
@@ -35,7 +40,7 @@ public class BookmarkController {
 			try {
 				HBox box = fxmlLoader.load();
 				CardController controller = fxmlLoader.getController();
-				controller.init(episodeController, downloadController);
+				controller.init(episodeController, downloadController, this);
 				bookmarks.add(box);
 				new Thread(() -> controller.load(anime)).start();
 			} catch (IOException e) {
@@ -66,11 +71,15 @@ public class BookmarkController {
 			}
 		}
 	}
-
-	public void setDownloadController(DownloadController downloadController) {
-		this.downloadController = downloadController;
+	
+	public void setNotificationListener(NotificationListener listener) {
+		this.episodeController.setNotificationListener(listener);
 	}
-
+	
+	public void removeBookmarkIfExists(Anime anime) {
+		animeList.remove(anime);
+		loadBookmarks(this.downloadController);
+	}
 	public List<Anime> getAnimeList() {
 		return animeList;
 	}

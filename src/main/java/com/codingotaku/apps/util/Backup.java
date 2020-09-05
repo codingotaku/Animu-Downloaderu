@@ -45,11 +45,37 @@ public class Backup {
 				Properties properties = new Properties();
 				FileReader fileReader = new FileReader(Constants.CONFIG_FILE);
 				properties.load(fileReader);
-				String folder = properties.getProperty("folder");
+				String folder = properties.getProperty("folder",(System.getProperty("user.home") + File.separator + "Downloads"));
 				if (new File(folder).exists()) {
 					// Don't assign if folder doesn't exist
 					Constants.setDownloadFolder(folder);
 				}
+				fileReader.close();
+			} catch (IOException e) {
+				logger.log(Level.SEVERE, e.getMessage());
+			}
+		}
+	}
+	
+	public static void saveThreadCount() {
+		try {
+			try (FileWriter fileWriter = new FileWriter(Constants.CONFIG_FILE)) {
+				fileWriter.write(String.format("threadCount %s", Constants.getThreadCount()));
+			}
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+	}
+	
+	public static void loadThreadCount() {
+		File file = new File(Constants.CONFIG_FILE);
+		if (file.exists()) {
+			try {
+				Properties properties = new Properties();
+				FileReader fileReader = new FileReader(Constants.CONFIG_FILE);
+				properties.load(fileReader);
+				int count = Integer.parseInt(properties.getProperty("threadCount", "8"));
+				Constants.setThreadCount(count);
 				fileReader.close();
 			} catch (IOException e) {
 				logger.log(Level.SEVERE, e.getMessage());

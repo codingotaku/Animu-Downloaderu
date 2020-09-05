@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import com.codingotaku.apps.custom.DonateDialog;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.GridPane;
@@ -16,11 +17,15 @@ public class AboutController {
 	@FXML private Hyperlink repoLink;
 	private static Logger logger = Logger.getLogger(AboutController.class.getName());
 
-	@FXML private void openRepo() {
-		try {
-			new ProcessBuilder("x-www-browser", repoLink.getText()).start();
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, e.getMessage());
+	@FXML private void openLink(ActionEvent e) {
+
+		if(e.getSource() instanceof Hyperlink) {
+			Hyperlink object = (Hyperlink)e.getSource();
+			try {
+				new ProcessBuilder("x-www-browser", object.getUserData().toString()).start();
+			} catch (IOException ex) {
+				logger.log(Level.SEVERE, ex.getMessage());
+			}
 		}
 	}
 

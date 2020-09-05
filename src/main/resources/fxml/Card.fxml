@@ -19,6 +19,7 @@
 		<VBox spacing="10" minHeight="120">
 			<Label fx:id="title" wrapText="true" />
 			<Button text="Episodes" onAction="#showEpisodes" />
+			<Button text="Remove Bookmark" onAction="#removeBookmark" />
 		</VBox>
 	</children>
 </HBox>

@@ -40,7 +40,7 @@
 				widthPercentage="0.10" sortable="false" fx:id="progress"
 				text="Progess" />
 			<CustomTableColumn editable="false"
-				widthPercentage="0.15" sortable="true" fx:id="status" text="Status" />
+				widthPercentage="0.15" sortable="true" fx:id="statusString" text="Status" />
 		</columns>
 	</TableView>
 </VBox>

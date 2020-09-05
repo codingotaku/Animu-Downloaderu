@@ -17,20 +17,25 @@ import com.codingotaku.apis.animecrawler.Episode;
 import com.codingotaku.apps.callback.DownloadObserver;
 import com.codingotaku.apps.util.Constants;
 
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 // This class downloads a file from a URL.
 public class DownloadInfo implements Runnable {
 	private static Logger logger = Logger.getLogger(DownloadInfo.class.getName());
-	private static final int MAX_THREAD = 8; // Maximum threads allowed for each download
-	private long size; // Size of download in bytes
-	private long downloaded; // Number of bytes downloaded
+	private static final int MAX_THREAD = Constants.getThreadCount(); // Maximum threads allowed for each download
+	private SimpleLongProperty size; // Size of download in bytes
+	private SimpleLongProperty downloaded; // Number of bytes downloaded
 
 	private ArrayList<Segment> segments = new ArrayList<>(); // Download segments
 
 	private DownloadObserver observer = null; // Callback for download status
-	private String fileName; // Download file name
-	private String anime;
+	private SimpleStringProperty fileName; // Download file name
+	private SimpleStringProperty anime;
 	private URL url;
+	private SimpleStringProperty progress; // Progress in percentage
 	private Status status; // Current status of download
+	private SimpleStringProperty statusString; // Current status of download in string (for table view)
 	private Callback callBack = new Callback(this) {
 		@Override
 		public void add(long progress, Status status) {
@@ -45,7 +50,8 @@ public class DownloadInfo implements Runnable {
 
 		// For tracking download progress
 		private synchronized void addDownloaded(long count) {
-			downloaded += count;
+			progress.set(String.format("%.2f%%", (downloaded.get() / (float) size.get()) * 100));
+			downloaded.set(downloaded.get() + count);
 		}
 	};
 	private Episode episode;
@@ -55,16 +61,19 @@ public class DownloadInfo implements Runnable {
 		this.episode = episode;
 		this.observer = observer;
 		// sanitize file and folder names
-		this.anime = episode.getanimeName().replaceAll("[^a-zA-Z0-9 \\-]", "_");
+		this.anime = new SimpleStringProperty(episode.getanimeName().replaceAll("[^a-zA-Z0-9 \\-]", "_"));
 
-		var folderName = Constants.getDownloadFolder() + "/" + anime;
-		this.fileName = folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9 \\.\\-]", "_"));
+		var folderName = Constants.getDownloadFolder() + "/" + anime.get();
+		this.fileName = new SimpleStringProperty(
+				folderName + File.separator + (episode.toString().replaceAll("[^a-zA-Z0-9 \\.\\-]", "_")));
 
 		new File(folderName).mkdir();
 
-		size = -1;
-		downloaded = 0;
-		status = Status.PENDING;
+		size = new SimpleLongProperty(-1);
+		downloaded = new SimpleLongProperty(0);
+		this.progress = new SimpleStringProperty("0%");
+		statusString = new SimpleStringProperty();
+		setStatus(Status.PENDING);
 		observer.pending(this);
 	}
 
@@ -74,27 +83,26 @@ public class DownloadInfo implements Runnable {
 		try {
 			newUrl = episode.getVideoUrl();
 		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
 			error();
 			return;
 		}
+		logger.log(Level.INFO, "url is " + newUrl);
 		URL verifiedUrl = verifyUrl(newUrl);
 		if (verifiedUrl != null) {
 			setUrl(verifiedUrl);
 		} else {
+			logger.log(Level.SEVERE, "verified url is null");
 			error();
 			return;
 		}
-		status = Status.DOWNLOADING;
+		setStatus(Status.DOWNLOADING);
 		download();
 	}
 
 	private URL verifyUrl(String url) {
 		if (url == null)
 			return null;
-		// Only allow HTTP URLs.
-		if (!url.toLowerCase().startsWith("http://"))
-			return null;
-
 		// Verify format of URL.
 		URL verifiedUrl = null;
 		try {
@@ -111,17 +119,17 @@ public class DownloadInfo implements Runnable {
 
 	// Returns total downloaded size
 	public long getDownloaded() {
-		return downloaded;
+		return downloaded.get();
 	}
 
 	// Get this download's size.
 	public long getSize() {
-		return size;
+		return size.get();
 	}
 
 	// Get this download's progress.
 	public String getProgress() {
-		return String.format("%.2f%%", (downloaded / (float) size) * 100);
+		return progress.get();
 	}
 
 	// Get this download's status.
@@ -129,9 +137,17 @@ public class DownloadInfo implements Runnable {
 		return status;
 	}
 
+	public void setStatusString(String status) {
+		statusString.set(status);
+	}
+
+	public String getStatusString() {
+		return statusString.get();
+	}
+
 	// Pause this download.
 	public void pause() {
-		status = Status.PAUSED;
+		setStatus(Status.PAUSED);
 		observer.paused(this);
 	}
 
@@ -140,7 +156,7 @@ public class DownloadInfo implements Runnable {
 		// Do not allow resuming downloads if it is not paused
 		if (status != Status.PAUSED)
 			return;
-		status = Status.DOWNLOADING;
+		setStatus(Status.DOWNLOADING);
 		observer.resumed(this);
 		download();
 	}
@@ -149,13 +165,13 @@ public class DownloadInfo implements Runnable {
 	public void cancel() {
 		if (status != Status.DOWNLOADING)
 			return;
-		status = Status.CANCELLING;
+		setStatus(Status.CANCELLING);
 		observer.cancelling(this);
 	}
 
 	// Mark this download as having an error.
 	private void error() {
-		status = Status.ERROR;
+		setStatus(Status.ERROR);
 		observer.error(this);
 	}
 
@@ -167,7 +183,7 @@ public class DownloadInfo implements Runnable {
 
 	// Get file name portion of URL.
 	public String getFileName() {
-		return fileName;
+		return fileName.get();
 	}
 
 	private long setDownloadSize() {
@@ -183,21 +199,21 @@ public class DownloadInfo implements Runnable {
 		segments.removeIf(Segment::isFinished);
 
 		if (!segments.isEmpty())
-			return size - downloaded;
-		long partLen = size / MAX_THREAD;
+			return size.get() - downloaded.get();
+		long partLen = size.get() / MAX_THREAD;
 		long start = 0;
 		long end = partLen;
 		for (long i = 0; i < MAX_THREAD - 1; i++) {
-			segments.add(new Segment(start, end, fileName + ".part" + (i + 1)));
+			segments.add(new Segment(start, end, fileName.get() + ".part" + (i + 1)));
 			start = end + 1;
 			end += partLen;
 		}
 
 		// Just to make sure no bit is missed out in previous calculation
-		segments.add(new Segment(start, end + (size % MAX_THREAD), fileName + ".part" + MAX_THREAD));
+		segments.add(new Segment(start, end + (size.get() % MAX_THREAD), fileName.get() + ".part" + MAX_THREAD));
 
 		// Delete previously downloaded file if it exists
-		File tmp = new File(fileName);
+		File tmp = new File(fileName.get());
 		if (tmp.exists()) {
 			try {
 				java.nio.file.Files.delete(tmp.toPath());
@@ -206,11 +222,12 @@ public class DownloadInfo implements Runnable {
 				logger.log(Level.SEVERE, e.getMessage());
 			}
 		}
-		return size;
+		return size.get();
 	}
 
 	void setStatus(Status status) {
 		this.status = status;
+		setStatusString(status.name());
 	}
 
 	// Download file.
@@ -230,6 +247,7 @@ public class DownloadInfo implements Runnable {
 					files.add(file);
 					threadPool.submit(new Downloader(url, segment, status, callBack));
 				} else {
+					logger.log(Level.SEVERE, "Couldn't create new file!");
 					error();
 				}
 
@@ -251,13 +269,14 @@ public class DownloadInfo implements Runnable {
 				error();
 				break;
 			case DOWNLOADING:
-				if (getDownloaded() != size) {
+				if (getDownloaded() != size.get()) {
+					logger.log(Level.SEVERE, "Error : Downloaded size is not same as actual size");
 					error();
-				}else {
-					this.status = Status.MERGING_FILES;
+				} else {
+					setStatus(Status.MERGING_FILES);
 					observer.mergingFiles(this);
 					Thread.sleep(5000); // Dirty delay for closing all files
-					mergeSegments(files, new File(fileName));	
+					mergeSegments(files, new File(fileName.get()));
 				}
 				break;
 			case CANCELLING:
@@ -272,7 +291,7 @@ public class DownloadInfo implements Runnable {
 
 				});
 				segments.clear();
-				status = Status.CANCELLED;
+				setStatus(Status.CANCELLED);
 				observer.cancelled(this);
 				break;
 			default:
@@ -293,8 +312,34 @@ public class DownloadInfo implements Runnable {
 
 		// Make sure response code is in the 200 range.
 		if (connection.getResponseCode() / 100 != 2) {
-			logger.log(Level.INFO, "Response code" + connection.getResponseCode());
-			error();
+			logger.log(Level.INFO, "Response code " + connection.getResponseCode());
+			
+			if(connection.getResponseCode() > 300 && connection.getResponseCode() < 400) {
+				logger.log(Level.INFO, "Retrying");
+				// Attempt one more time
+				String newURL = "";
+				try {
+					newURL = episode.getVideoUrl();
+				} catch (IOException e) {
+					logger.log(Level.SEVERE, e.getMessage());
+				}
+				URL verifiedUrl = verifyUrl(newURL);
+				if (verifiedUrl == null) {
+					logger.log(Level.SEVERE, "URl is null");
+					error();
+				} else {
+					setUrl(verifiedUrl);
+					connection = (HttpURLConnection) url.openConnection();
+				}
+			} else {
+				error();
+				return;
+			}
+			connection.connect();
+			if (connection.getResponseCode() / 100 != 2) {
+				logger.log(Level.SEVERE, "Response code " + connection.getResponseCode());
+				error();
+			}
 			return;
 		}
 
@@ -308,11 +353,11 @@ public class DownloadInfo implements Runnable {
 
 		String ext = url.getFile();
 		ext = ext.substring(ext.lastIndexOf('.'), ext.indexOf('?'));
-		if(!fileName.endsWith(ext)) { // if retry or other operations calls, filename remains same 
-			fileName += ext;	
+		if (!fileName.get().endsWith(ext)) { // if retry or other operations calls, filename remains same
+			fileName.set(fileName.get() + ext);
 		}
-		
-		size = contentLength;
+
+		size.set(contentLength);
 	}
 
 	// Merge all downloaded segments
@@ -340,7 +385,7 @@ public class DownloadInfo implements Runnable {
 			closeFileStream(out);
 
 			if (status != Status.ERROR) {
-				status = Status.FINISHED;
+				setStatus(Status.FINISHED);
 				observer.finished(this);
 			} else {
 				observer.error(this);
@@ -393,7 +438,7 @@ public class DownloadInfo implements Runnable {
 			return;
 
 		if (status == Status.ERROR || status == Status.CANCELLED) {
-			status = Status.DOWNLOADING;
+			setStatus(Status.DOWNLOADING);
 			String newURL = null;
 			try {
 				newURL = episode.getVideoUrl();
@@ -403,6 +448,7 @@ public class DownloadInfo implements Runnable {
 
 			URL verifiedUrl = verifyUrl(newURL);
 			if (verifiedUrl == null) {
+				logger.log(Level.SEVERE, "URL is null");
 				error();
 			} else {
 				setUrl(verifiedUrl);
@@ -416,7 +462,7 @@ public class DownloadInfo implements Runnable {
 			return;
 
 		cancel();
-		downloaded = 0;
+		downloaded.set(0);
 
 		startDownload();
 	}

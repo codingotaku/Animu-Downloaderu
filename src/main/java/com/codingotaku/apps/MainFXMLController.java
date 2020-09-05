@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.codingotaku.apis.animecrawler.Anime;
@@ -12,9 +14,12 @@ import com.codingotaku.apis.animecrawler.AnimeList;
 import com.codingotaku.apis.animecrawler.EpisodeList;
 import com.codingotaku.apis.animecrawler.Result;
 import com.codingotaku.apps.callback.Crawler;
+import com.codingotaku.apps.callback.NotificationListener;
 import com.codingotaku.apps.custom.AlertDialog;
 import com.codingotaku.apps.custom.LoadDialog;
 import com.codingotaku.apps.custom.Message;
+import com.codingotaku.apps.custom.NotificationController;
+import com.codingotaku.apps.custom.NotificationController.Type;
 import com.codingotaku.apps.source.AnimeSources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,6 +28,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
@@ -32,29 +38,43 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
-public class MainFXMLController implements Crawler {
+public class MainFXMLController implements Crawler, NotificationListener {
 	private static Logger logger = Logger.getLogger(MainFXMLController.class.getName());
-	@FXML private VBox root; // Root
+	@FXML
+	private VBox root; // Root
 
 	// Anime download and interactions
-	@FXML private TextField search;
-	@FXML private ComboBox<String> sources;
-
+	@FXML
+	private TextField search;
+	@FXML
+	private ComboBox<String> sources;
+	@FXML
+	private ListView<HBox> notificationList;
 	// Anime information
-	@FXML private ImageView poster;
-	@FXML private TextArea area;
-	@FXML private Button addBookmark;
+	@FXML
+	private ImageView poster;
+	@FXML
+	private TextArea area;
+	@FXML
+	private Button addBookmark;
 	// For displaying downloads
-	@FXML private ScrollPane scrollPane;
-	@FXML private DownloadController downloadController;
-	@FXML private EpisodeController episodeController;
-	@FXML private BookmarkController bookmarkController;
+	@FXML
+	private ScrollPane scrollPane;
+	@FXML
+	private DownloadController downloadController;
+	@FXML
+	private EpisodeController episodeController;
+	@FXML
+	private BookmarkController bookmarkController;
 
+	private final ObservableList<HBox> notifications = FXCollections.observableArrayList();
+	private final Map<NotificationController,HBox> notControllerMapper = new HashMap<>();
 	private final ObservableList<Anime> animes = FXCollections.observableArrayList();
 
 	private final AnimeCrawlerAPI api = new AnimeCrawlerAPI();
@@ -70,6 +90,8 @@ public class MainFXMLController implements Crawler {
 	private Image defaultImg;
 	private Message message;
 
+	private boolean isInitialized = false;
+
 	public void loadAnime(Window window) {
 		var source = animeProviders.values().get(sources.getSelectionModel().getSelectedItem());
 
@@ -79,7 +101,8 @@ public class MainFXMLController implements Crawler {
 		api.listAllAnime(source, this::loadedAnime);
 	}
 
-	@FXML private void initialize() {
+	@FXML
+	private void initialize() {
 		animeProviders.values().keySet().forEach(sources.getItems()::add);
 		message = new Message();
 		animeBox = (VBox) scrollPane.getContent().lookup("#list");
@@ -88,11 +111,13 @@ public class MainFXMLController implements Crawler {
 
 		sources.getSelectionModel().select(0);
 		poster.setImage(defaultImg);
+		notificationList.setItems(notifications);
 		initListeners();
-		bookmarkController.setDownloadController(downloadController);
+		isInitialized = true;
 	}
 
-	@FXML private void reload() {
+	@FXML
+	private void reload() {
 		if (window == null)
 			window = root.getScene().getWindow();
 		loadAnime(window);
@@ -102,7 +127,15 @@ public class MainFXMLController implements Crawler {
 	}
 
 	private void initListeners() {
+		// Bind notification listeners
+		downloadController.setNotificationListener(this);
+		bookmarkController.setNotificationListener(this);
+		episodeController.setNotificationListener(this);
+		bookmarkController.loadBookmarks(this.downloadController);
+		// Search
 		search.textProperty().addListener((observable, oldValue, newValue) -> search(newValue));
+
+		// Select Anime
 		animeList.getSelectionModel().selectedItemProperty().addListener((observable, oldV, newV) -> {
 			if (newV != null) {
 				if (window == null)
@@ -116,6 +149,12 @@ public class MainFXMLController implements Crawler {
 				new Thread(() -> api.listAllEpisodes(newV, this::loadedEpisodes)).start();
 				new Thread(() -> api.getPosterUrl(newV, this::loadedPoster)).start();
 			}
+		});
+		
+		// make notification list not select
+		notificationList.getSelectionModel().selectedItemProperty().addListener((selected, old, current)->{
+			if(!notificationList.getSelectionModel().isEmpty())
+			 Platform.runLater(()->notificationList.getSelectionModel().clearSelection());
 		});
 	}
 
@@ -134,7 +173,8 @@ public class MainFXMLController implements Crawler {
 		}
 	}
 
-	@Override public void loadedSynopsis(String content, Result result) {
+	@Override
+	public void loadedSynopsis(String content, Result result) {
 		Platform.runLater(() -> {
 			String text;
 			String msg = result.getStatus().name();
@@ -160,7 +200,8 @@ public class MainFXMLController implements Crawler {
 		});
 	}
 
-	@Override public void loadedPoster(String url, Result result) {
+	@Override
+	public void loadedPoster(String url, Result result) {
 		Platform.runLater(() -> {
 			String msg = result.getStatus().name();
 			if (url == null) {
@@ -175,7 +216,8 @@ public class MainFXMLController implements Crawler {
 		});
 	}
 
-	@Override public void loadedAnime(AnimeList animesTmp, Result result) {
+	@Override
+	public void loadedAnime(AnimeList animesTmp, Result result) {
 		Platform.runLater(() -> {
 			message.setMessage("Anime List", result.getStatus().name(), true);
 			if (result.getStatus() == Result.Status.OK) {
@@ -203,7 +245,8 @@ public class MainFXMLController implements Crawler {
 
 	}
 
-	@Override public void loadedEpisodes(EpisodeList episodesTmp, Result result) {
+	@Override
+	public void loadedEpisodes(EpisodeList episodesTmp, Result result) {
 		String episodes = "Episodes";
 		if (result.getStatus() == Result.Status.OK) {
 			message.setMessage(episodes, result.getStatus().name(), true);
@@ -228,14 +271,16 @@ public class MainFXMLController implements Crawler {
 		}
 	}
 
-	@FXML private void loadBookmarks(Event event) {
+	@FXML
+	private void loadBookmarks(Event event) {
 		Tab tab = (Tab) event.getTarget();
-		if (tab.getId().equals("bookmarkTab") && tab.isSelected()) {
-			bookmarkController.loadBookmarks();
+		if (tab.getId().equals("bookmarkTab") && tab.isSelected() && isInitialized) {
+			bookmarkController.loadBookmarks(this.downloadController);
 		}
 	}
 
-	@FXML private void addBookmark() {
+	@FXML
+	private void addBookmark() {
 		ObjectMapper mapper = new ObjectMapper();
 		Anime anime = animeList.getSelectionModel().getSelectedItem();
 		String name = anime.getName().replaceAll("[^a-zA-Z0-9 \\.\\-]", "_");
@@ -252,5 +297,27 @@ public class MainFXMLController implements Crawler {
 			logger.severe(e.getMessage());
 		}
 
+	}
+
+	@Override
+	public void created(Type type, String message) {
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Notification.fxml"));
+		try {
+			HBox box = fxmlLoader.load();
+			NotificationController controller = fxmlLoader.getController();
+			controller.init(message, type, this);
+			Platform.runLater(() -> {
+				notControllerMapper.put(controller, box);
+				notifications.add(box);	
+			});
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}
+	}
+
+	@Override
+	public void closed(NotificationController notification) {
+		Platform.runLater(()-> notifications.remove(notControllerMapper.get(notification)));
 	}
 }
