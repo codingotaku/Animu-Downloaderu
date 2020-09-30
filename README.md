@@ -2,7 +2,7 @@
 
 ## Notes
 
-1. Now has three Servers (Anime1, AnimeFreak, and GogoAnime1) all are in essence the same site (same content hosted differently),
+1. Now has three Servers (Anime1, AnimeFreak, and GogoAnime1) all are in essence the same site (same content hosted differently).
 1. Uses AnimeCrawlerAPI ([github](https://github.com/codingotaku/AnimeCrawlerAPI), [gitlab](https://gitlab.com/codingotaku/AnimeCrawlerAPI)) for fetching Anime.
 1. Modified code so that it would be easier to add new servers in the future! ([this file](./src/main/java/com/codingotaku/apps/source/AnimeSources.java))
 We might add more servers in the future! 
